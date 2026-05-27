@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control Freak | Price Bailey</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          'pb-navy': '#0a2540',
+          'pb-navy-light': '#1a3a5c',
+          'pb-gold': '#c9a961',
+          'pb-cream': '#f8f6f1',
+          'pb-slate': '#475569',
+        },
+        fontFamily: {
+          'sans': ['Inter', 'sans-serif'],
+          'display': ['"Playfair Display"', 'serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  html, body { font-family: 'Inter', sans-serif; background-color: #f8f6f1; }
+  .screen { display: none; }
+  .screen.active { display: flex; }
+
+  .map-bg {
+    background-color: #f8f6f1;
+    background-image:
+      linear-gradient(rgba(10, 37, 64, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10, 37, 64, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .building-card { transition: all 0.2s ease; cursor: pointer; }
+  .building-card:hover:not(.inspected) {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(10, 37, 64, 0.18);
+  }
+  .building-card:focus { outline: 2px solid #c9a961; outline-offset: 2px; }
+  .building-card.inspected { cursor: default; opacity: 0.75; }
+
+  .modal-backdrop { animation: fadeIn 0.2s ease; }
+  .modal-content { animation: slideUp 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px) } to { opacity: 1; transform: translateY(0) } }
+
+  .score-flash { animation: flash 0.5s ease; }
+  @keyframes flash { 0%,100% { transform: scale(1) } 50% { transform: scale(1.15) } }
+
+  .custom-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230a2540' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 12px;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  /* Make icon cutouts blend on white backgrounds */
+  .bld-icon .cut { fill: white; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ============================= SCREEN 1: LEAD CAPTURE ============================= -->
+<div id="screen-form" class="screen active min-h-screen flex-col">
+  <header class="bg-pb-navy text-white py-4 px-6 shadow-lg w-full">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <!-- ============== BRANDING PLACEHOLDER: replace with <img src="logo.svg"> ============== -->
+      <div class="flex items-center gap-4">
+        <div class="bg-white/10 border border-white/20 rounded px-4 py-2 text-xs uppercase tracking-[0.25em] text-pb-gold font-semibold">
+          [ Price Bailey Logo ]
+        </div>
+      </div>
+      <div class="text-xs uppercase tracking-[0.25em] text-pb-gold/90 hidden sm:block">Exhibition Edition</div>
+    </div>
+  </header>
+
+  <main class="flex-1 flex items-center justify-center px-6 py-10 w-full">
+    <div class="max-w-2xl w-full">
+      <div class="text-center mb-8">
+        <p class="text-pb-gold uppercase tracking-[0.3em] text-xs font-semibold mb-3">An Interactive Audit Challenge</p>
+        <h1 class="font-display text-5xl md:text-6xl text-pb-navy mb-4">Control Freak</h1>
+        <p class="text-pb-slate text-lg max-w-lg mx-auto leading-relaxed">
+          Step into the shoes of an internal auditor. Inspect a town's organisations and uncover the strength — or weakness — of their financial controls.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-xl border border-pb-navy/10 p-8 md:p-10">
+        <h2 class="font-display text-2xl text-pb-navy mb-1">Begin Your Inspection</h2>
+        <p class="text-pb-slate text-sm mb-6">Please provide your details to start.</p>
+
+        <form id="lead-form" class="space-y-5" autocomplete="on" novalidate>
+          <div>
+            <label for="lead-name" class="block text-sm font-semibold text-pb-navy mb-2">Full Name</label>
+            <input id="lead-name" name="name" type="text" required
+              class="w-full px-4 py-3 border border-pb-navy/20 rounded-md focus:ring-2 focus:ring-pb-gold focus:border-pb-gold outline-none transition text-pb-navy"
+              placeholder="Jane Smith">
+          </div>
+
+          <div>
+            <label for="lead-email" class="block text-sm font-semibold text-pb-navy mb-2">Email Address</label>
+            <input id="lead-email" name="email" type="email" required
+              class="w-full px-4 py-3 border border-pb-navy/20 rounded-md focus:ring-2 focus:ring-pb-gold focus:border-pb-gold outline-none transition text-pb-navy"
+              placeholder="jane@organisation.org">
+          </div>
+
+          <div>
+            <label for="lead-org" class="block text-sm font-semibold text-pb-navy mb-2">Organisation Type</label>
+            <select id="lead-org" name="org" required
+              class="custom-select w-full px-4 py-3 border border-pb-navy/20 rounded-md focus:ring-2 focus:ring-pb-gold focus:border-pb-gold outline-none transition text-pb-navy bg-white">
+              <option value="">Please select...</option>
+              <option value="Charity/NFP">Charity / Not-for-Profit</option>
+              <option value="Corporate">Corporate</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div id="form-error" class="hidden text-red-600 text-sm font-medium"></div>
+
+          <button id="start-button" type="submit" disabled
+            class="w-full bg-pb-navy text-white font-semibold py-4 rounded-md hover:bg-pb-navy-light disabled:bg-gray-300 disabled:cursor-not-allowed transition uppercase tracking-[0.15em] text-sm">
+            Start Game
+          </button>
+
+          <p class="text-xs text-pb-slate/70 text-center leading-relaxed pt-2">
+            By starting the game you consent to Price Bailey contacting you about relevant services. We will never share your details with third parties.
+          </p>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============================= SCREEN 2: TOWN MAP ============================= -->
+<div id="screen-game" class="screen min-h-screen flex-col">
+  <header class="bg-pb-navy text-white px-4 md:px-6 py-4 shadow-lg w-full">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="bg-white/10 border border-white/20 rounded px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-pb-gold font-semibold">
+          [ Price Bailey ]
+        </div>
+        <span class="hidden md:block font-display text-xl">Control Freak</span>
+      </div>
+      <div class="flex items-center gap-4 md:gap-6">
+        <div class="text-right">
+          <div class="text-[10px] md:text-xs uppercase tracking-[0.2em] text-pb-gold/80">Inspected</div>
+          <div id="progress-display" class="font-display text-lg md:text-xl font-semibold">0 / 8</div>
+        </div>
+        <div class="h-10 w-px bg-white/20"></div>
+        <div class="text-right">
+          <div class="text-[10px] md:text-xs uppercase tracking-[0.2em] text-pb-gold/80">Score</div>
+          <div id="score-display" class="font-display text-xl md:text-2xl font-bold">0</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 map-bg px-4 md:px-6 py-6 w-full">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-6">
+        <h2 class="font-display text-2xl md:text-3xl text-pb-navy">Town of Pricebury</h2>
+        <p class="text-pb-slate text-sm mt-1">Tap each building to inspect its internal financial controls.</p>
+      </div>
+
+      <div id="buildings-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ============================= SCREEN 3: LEADERBOARD ============================= -->
+<div id="screen-leaderboard" class="screen min-h-screen flex-col">
+  <header class="bg-pb-navy text-white py-4 px-6 shadow-lg w-full">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="bg-white/10 border border-white/20 rounded px-4 py-2 text-xs uppercase tracking-[0.25em] text-pb-gold font-semibold">
+        [ Price Bailey Logo ]
+      </div>
+      <div class="text-xs uppercase tracking-[0.25em] text-pb-gold/90 hidden sm:block">Inspection Complete</div>
+    </div>
+  </header>
+
+  <main class="flex-1 px-4 md:px-6 py-10 w-full">
+    <div class="max-w-3xl mx-auto">
+      <div class="bg-white rounded-lg shadow-xl border border-pb-navy/10 p-8 md:p-12 text-center mb-6">
+        <p class="text-pb-gold uppercase tracking-[0.3em] text-xs font-semibold mb-3">Final Score</p>
+        <div id="final-score" class="font-display text-6xl md:text-7xl text-pb-navy mb-3">0</div>
+        <div id="final-message" class="font-display text-xl text-pb-slate mb-4"></div>
+        <p id="final-flavour" class="text-pb-slate max-w-lg mx-auto leading-relaxed mb-6"></p>
+
+        <div class="border-t border-pb-navy/10 pt-6">
+          <p class="text-sm text-pb-slate mb-3">Strong internal controls protect your organisation, your donors, and your beneficiaries.</p>
+          <p class="text-pb-navy font-semibold">Speak with a Price Bailey advisor at our stand to learn more.</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-xl border border-pb-navy/10 p-6 md:p-8 mb-6">
+        <h3 class="font-display text-2xl text-pb-navy mb-4">Today's Leaderboard</h3>
+        <div id="leaderboard-table" class="overflow-x-auto"></div>
+      </div>
+
+      <button id="play-again-button" class="w-full bg-pb-navy text-white font-semibold py-4 rounded-md hover:bg-pb-navy-light transition uppercase tracking-[0.15em] text-sm">
+        Play Again
+      </button>
+    </div>
+  </main>
+</div>
+
+<!-- ============================= MODAL ============================= -->
+<div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+  <div class="modal-backdrop absolute inset-0 bg-pb-navy/70"></div>
+  <div class="modal-content relative bg-white rounded-lg shadow-2xl max-w-xl w-full max-h-[92vh] overflow-y-auto">
+    <div class="p-6 border-b border-pb-navy/10">
+      <div class="flex items-start gap-4">
+        <div id="modal-icon" class="text-pb-navy bld-icon flex-shrink-0"></div>
+        <div class="flex-1">
+          <p class="text-xs uppercase tracking-[0.25em] text-pb-gold font-semibold mb-1">On-Site Inspection</p>
+          <h3 id="modal-title" class="font-display text-2xl text-pb-navy leading-tight"></h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6">
+      <p class="text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold mb-2">Observed Procedure</p>
+      <p id="modal-scenario" class="text-pb-navy leading-relaxed"></p>
+    </div>
+
+    <div id="modal-pre-action" class="px-6 pb-6">
+      <button id="inspect-button" class="w-full bg-pb-navy text-white font-semibold py-3 rounded-md hover:bg-pb-navy-light transition uppercase tracking-[0.15em] text-sm">
+        Inspect Controls
+      </button>
+    </div>
+
+    <div id="modal-result" class="hidden px-6 pb-6">
+      <div id="result-banner" class="rounded-md p-4 mb-4 flex items-center gap-3">
+        <div id="result-icon" class="flex-shrink-0"></div>
+        <div>
+          <div id="result-verdict" class="font-display text-lg"></div>
+          <div id="result-points" class="text-sm font-semibold"></div>
+        </div>
+      </div>
+
+      <p class="text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold mb-2">Auditor's Note</p>
+      <p id="modal-principle" class="text-pb-slate text-sm leading-relaxed mb-4"></p>
+
+      <button id="continue-button" class="w-full bg-pb-navy text-white font-semibold py-3 rounded-md hover:bg-pb-navy-light transition uppercase tracking-[0.15em] text-sm">
+        Continue Inspection
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =================================================================================
+// GAME DATA — Buildings & Scenarios
+// =================================================================================
+const BUILDINGS = [
+  {
+    id: 'charity-hq',
+    name: 'Hopebridge Charity HQ',
+    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 26L32 12L56 26V30H8V26Z" fill="currentColor"/><rect x="12" y="32" width="6" height="20" fill="currentColor"/><rect x="22" y="32" width="6" height="20" fill="currentColor"/><rect x="36" y="32" width="6" height="20" fill="currentColor"/><rect x="46" y="32" width="6" height="20" fill="currentColor"/><rect x="6" y="52" width="52" height="4" fill="currentColor"/></svg>`,
+    scenarios: {
+      good: {
+        scenario: "The trustees meet quarterly to review management accounts, with documented minutes circulated to all board members. Financial KPIs are tracked against the annual budget, and significant variances trigger formal investigation by the Finance Committee.",
+        principle: "Active trustee oversight ensures strategic financial decisions are scrutinised and accountable, meeting Charity Commission expectations for proper governance."
+      },
+      bad: {
+        scenario: "The trustees haven't formally reviewed management accounts in over 18 months. The Chair signs off figures during a brief phone call with the Finance Director, with no documented discussion, minutes, or board challenge.",
+        principle: "Absence of trustee oversight undermines governance, breaches Charity Commission expectations, and creates conditions in which financial irregularities can go undetected for extended periods."
+      }
+    }
+  },
+  {
+    id: 'bank',
+    name: 'Pricebury High Street Bank',
+    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none"><path d="M6 22L32 8L58 22V26H6V22Z" fill="currentColor"/><rect x="10" y="28" width="4" height="22" fill="currentColor"/><rect x="20" y="28" width="4" height="22" fill="currentColor"/><rect x="30" y="28" width="4" height="22" fill="currentColor"/><rect x="40" y="28" width="4" height="22" fill="currentColor"/><rect x="50" y="28" width="4" height="22" fill="currentColor"/><rect x="6" y="52" width="52" height="4" fill="currentColor"/></svg>`,
+    scenarios: {
+      good: {
+        scenario: "All outgoing payments above £500 require dual authorisation by two designated signatories from separate functions. The bank mandate is up to date, and signatories are reviewed annually against current trustees and staff.",
+        principle: "Dual authorisation enforces segregation of duties and eliminates single points of failure. It is one of the most effective controls against payment fraud and error."
+      },
+      bad: {
+        scenario: "A single staff member holds sole online banking access and can authorise payments of any amount. The bank mandate hasn't been updated for three years, and two former trustees remain listed as signatories.",
+        principle: "Sole banking authority is a critical control failure. Combined with an out-of-date mandate, it exposes the organisation to large unauthorised payments and significant reputational damage."
+      }
+    }
+  },
+  {
+    id: 'community',
+    name: "St Mary's Community Hall",
+    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><path d="M32 8L8 26V56H56V26L32 8Z" fill="currentColor"/><rect x="26" y="36" width="12" height="20" class="cut"/><rect x="14" y="32" width="8" height="8" class="cut"/><rect x="42" y="32" width="8" height="8" class="cut"/></svg>`,
+    scenarios: {
+      good: {
+        scenario: "Cash donations from community events are counted by two unrelated volunteers immediately after each event. A signed counting sheet is retained, and the total is banked intact within two working days.",
+        principle: "Dual counting and prompt, intact banking minimise opportunities for misappropriation and create a robust audit trail for cash income — a known area of charity sector risk."
+      },
+      bad: {
+        scenario: "One volunteer takes the donation tin home after events and brings the cash to the bank 'when convenient'. Counts are recorded informally on scraps of paper, sometimes weeks after collection.",
+        principle: "Single-person cash handling combined with delayed banking is a classic high-risk weakness identified in the majority of charity cash fraud cases."
+      }
+    }
+  },
+  {
+    id: 'shop',
+    name: 'Hopebridge Charity Shop',
+    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><rect x="8" y="22" width="48" height="34" fill="currentColor"/><path d="M6 22L32 12L58 22H6Z" fill="currentColor"/><rect x="14" y="30" width="8" height="8" class="cut"/><rect x="26" y="30" width="12" height="22" class="cut"/><rect x="42" y="30" width="8" height="8" class="cut"/></svg>`,
+    scenarios: {
+      good: {
+        scenario: "Till readings are reconciled to physical cash at the end of every shift by the duty manager, with discrepancies investigated and signed off. Weekly stock counts are performed by a member of staff who does not handle the till.",
+        principle: "Daily reconciliation paired with segregated stock counts provides early detection of errors, theft, or systemic issues at the operational level."
+      },
+      bad: {
+        scenario: "The till float and takings are reconciled 'when there's time', often days later. The shop manager personally handles all cash, banking, sales recording, stock receipts, and donation valuations.",
+        principle: "Absence of timely reconciliation combined with one individual holding incompatible duties creates significant fraud risk and material misstatement exposure."
+      }
+    }
+  },
+  {
+    id: 'solicitor',
+    name: 'Hartley & Co. Solicitors',
+    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><rect x="10" y="22" width="44" height="34" fill="currentColor"/><path d="M8 22L32 10L56 22H8Z" fill="currentColor"/><rect x="28" y="34" width="8" height="22" class="cut"/><rect x="16" y="30" width="6" height="6" class="cut"/><rect x="42" y="30" width="6" height="6" class="cut"/></svg>`,
+    scenarios: {
+      good: {
+        scenario: "The organisation maintains a formal whistleblowing policy supported by an external independent reporting hotline. All staff complete annual training, and the policy is published openly on the public website.",
+        principle: "Independent reporting channels are critical for surfacing fraud, misconduct, or control failures that internal hierarchies may suppress or obscure."
+      },
+      bad: {
+        scenario: "There is no formal whistleblowing policy. Staff are expected to raise concerns verbally with their line manager, who reports up to the Chief Executive. There is no anonymous or independent route.",
+        principle: "Without independent reporting channels, concerns about senior management or systemic failures are unlikely to surface — allowing problems to escalate undetected."
+      }
+    }
+  },
+  {
+    id: 'accountancy',
+    name: 'Pricebury Audit Chambers',
+    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><rect x="12" y="8" width="40" height="48" fill="currentColor"/><rect x="18" y="14" width="6" height="6" class="cut"/><rect x="28" y="14" width="6" height="6" class="cut"/><rect x="38" y="14" width="6" height="6" class="cut"/><rect x="18" y="24" width="6" height="6" class="cut"/><rect x="28" y="24" width="6" height="6" class="cut"/><rect x="38" y="24" width="6" height="6" class="cut"/><rect x="18" y="34" width="6" height="6" class="cut"/><rect x="28" y="34" width="6" height="6" class="cut"/><rect x="38" y="34" width="6" height="6" class="cut"/><rect x="26" y="44" width="10" height="12" class="cut"/></svg>`,
+    scenarios: {
+      good: {
+        scenario: "Year-end accounts are prepared by the in-house finance team and independently reviewed by an external auditor. All audit adjustments are documented and formally approved by the Audit Committee before sign-off.",
+        principle: "Independent external review provides assurance and applies professional scepticism beyond the limits of internal controls — particularly important for material financial statements."
+      },
+      bad: {
+        scenario: "The Finance Director prepares the year-end accounts, reviews them personally, presents them to the trustees, and liaises with the external auditor — with no other staff or trustee meaningfully involved at any stage.",
+        principle: "When a single individual controls preparation, review, and audit liaison, segregation of duties collapses and any errors, omissions, or misstatements can be concealed unchecked."
+      }
+    }
+  },
+  {
+    id: 'warehouse',
+    name: 'Hopebridge Distribution Centre',
+    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><path d="M6 26L32 12L58 26V56H6V26Z" fill="currentColor"/><rect x="12" y="34" width="14" height="22" class="cut"/><rect x="30" y="34" width="10" height="10" class="cut"/><rect x="44" y="34" width="10" height="10" class="cut"/><rect x="30" y="48" width="10" height="8" class="cut"/><rect x="44" y="48" width="10" height="8" class="cut"/></svg>`,
+    scenarios: {
+      good: {
+        scenario: "A fixed asset register is maintained and reconciled to physical inventory annually. Disposals require documented authorisation from a senior manager, and any donations of goods are independently valued before being recorded.",
+        principle: "Asset registers and physical verification protect against loss and theft, and ensure the balance sheet accurately reflects the organisation's resources."
+      },
+      bad: {
+        scenario: "No fixed asset register exists. Donations-in-kind are estimated informally by the warehouse manager without supporting documentation, and equipment occasionally 'disappears' without any formal write-off process.",
+        principle: "Without an asset register, organisations cannot detect or evidence asset misappropriation, and accounts may be materially misstated — a significant red flag for auditors and regulators."
+      }
+    }
+  },
+  {
+    id: 'it',
+    name: 'Pricebury Data Centre',
+    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><rect x="10" y="10" width="44" height="46" fill="currentColor"/><rect x="16" y="16" width="32" height="8" class="cut"/><rect x="16" y="28" width="32" height="8" class="cut"/><rect x="16" y="40" width="32" height="8" class="cut"/><circle cx="42" cy="20" r="1.5" fill="currentColor"/><circle cx="42" cy="32" r="1.5" fill="currentColor"/><circle cx="42" cy="44" r="1.5" fill="currentColor"/></svg>`,
+    scenarios: {
+      good: {
+        scenario: "User access to finance systems is granted on a least-privilege basis with documented approvals. Admin passwords rotate quarterly, multi-factor authentication is enforced for all users, and leavers' access is revoked within 24 hours of departure.",
+        principle: "Robust access controls protect against both external cyber threats and internal misuse — a critical part of any modern financial control framework."
+      },
+      bad: {
+        scenario: "Several staff share a single common admin password for the finance system, which hasn't been changed in over two years. A former employee's login was still active six months after they left the organisation.",
+        principle: "Shared credentials and unmanaged access create unauditable trails, breach data protection obligations, and represent one of the most exploited weaknesses in fraud cases."
+      }
+    }
+  }
+];
+
+// =================================================================================
+// STATE
+// =================================================================================
+const state = {
+  player: null,
+  score: 0,
+  inspectedCount: 0,
+  buildingStates: {}, // { buildingId: { type: 'good'|'bad', revealed: bool } }
+  currentBuildingId: null
+};
+
+// =================================================================================
+// STORAGE — localStorage with graceful in-memory fallback
+// (Works on GitHub Pages; falls back silently if storage is blocked.)
+// =================================================================================
+const Storage = {
+  KEY: 'controlFreakLeaderboard',
+  memoryCache: [],
+
+  load() {
+    try {
+      const raw = localStorage.getItem(this.KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      this.memoryCache = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      // localStorage unavailable; continue with memory only
+    }
+    return this.memoryCache;
+  },
+
+  save(entry) {
+    this.memoryCache.push(entry);
+    this.memoryCache.sort((a, b) => b.score - a.score);
+    this.memoryCache = this.memoryCache.slice(0, 10);
+    try {
+      localStorage.setItem(this.KEY, JSON.stringify(this.memoryCache));
+    } catch (e) {
+      // Silent fallback
+    }
+    return this.memoryCache;
+  }
+};
+
+// =================================================================================
+// SCREEN MANAGEMENT
+// =================================================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// =================================================================================
+// FORM HANDLING
+// =================================================================================
+const leadForm    = document.getElementById('lead-form');
+const nameInput   = document.getElementById('lead-name');
+const emailInput  = document.getElementById('lead-email');
+const orgInput    = document.getElementById('lead-org');
+const startButton = document.getElementById('start-button');
+const formError   = document.getElementById('form-error');
+
+function validateForm() {
+  const name  = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const org   = orgInput.value;
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const valid = name.length >= 2 && emailValid && !!org;
+  startButton.disabled = !valid;
+  return valid;
+}
+
+[nameInput, emailInput, orgInput].forEach(el => {
+  el.addEventListener('input', validateForm);
+  el.addEventListener('change', validateForm);
+});
+
+leadForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (!validateForm()) {
+    formError.textContent = 'Please complete all fields correctly.';
+    formError.classList.remove('hidden');
+    return;
+  }
+  formError.classList.add('hidden');
+  state.player = {
+    name:  nameInput.value.trim(),
+    email: emailInput.value.trim(),
+    org:   orgInput.value
+  };
+  startGame();
+});
+
+// =================================================================================
+// GAME LOGIC
+// =================================================================================
+function startGame() {
+  state.score = 0;
+  state.inspectedCount = 0;
+  state.buildingStates = {};
+
+  // Randomly assign each building a good or bad scenario for replayability.
+  // We force roughly balanced distribution: ensure at least 3 of each type
+  // so the game isn't trivially all-good or all-bad.
+  const types = [];
+  for (let i = 0; i < BUILDINGS.length; i++) {
+    types.push(i < BUILDINGS.length / 2 ? 'good' : 'bad');
+  }
+  // Fisher-Yates shuffle
+  for (let i = types.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [types[i], types[j]] = [types[j], types[i]];
+  }
+  BUILDINGS.forEach((b, i) => {
+    state.buildingStates[b.id] = { type: types[i], revealed: false };
+  });
+
+  renderBuildings();
+  updateHUD();
+  showScreen('screen-game');
+}
+
+function renderBuildings() {
+  const grid = document.getElementById('buildings-grid');
+  grid.innerHTML = '';
+  BUILDINGS.forEach(b => {
+    const bs = state.buildingStates[b.id];
+    const isInspected = bs.revealed;
+    const verdict = isInspected ? bs.type : null;
+
+    const card = document.createElement('div');
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', isInspected ? '-1' : '0');
+    card.className = `building-card bg-white rounded-lg shadow-md border-2 p-4 md:p-5 flex flex-col items-center text-center ${isInspected ? 'inspected ' : ''}${
+      verdict === 'good' ? 'border-green-500' :
+      verdict === 'bad'  ? 'border-red-500' :
+      'border-pb-navy/10'
+    }`;
+
+    const verdictBadge = isInspected ? `
+      <div class="absolute -top-2 -right-2 w-7 h-7 rounded-full ${verdict === 'good' ? 'bg-green-500' : 'bg-red-500'} flex items-center justify-center shadow-md">
+        ${verdict === 'good'
+          ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+          : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'}
+      </div>` : '';
+
+    card.innerHTML = `
+      <div class="text-pb-navy mb-3 relative bld-icon">
+        ${b.iconSvg}
+        ${verdictBadge}
+      </div>
+      <h3 class="font-display text-sm md:text-base text-pb-navy leading-tight">${b.name}</h3>
+      ${isInspected
+        ? `<div class="mt-2 text-xs uppercase tracking-wider font-semibold ${verdict === 'good' ? 'text-green-700' : 'text-red-700'}">${verdict === 'good' ? '+100 pts' : '−50 pts'}</div>`
+        : '<div class="mt-2 text-xs text-pb-slate/60 uppercase tracking-wider">Tap to inspect</div>'}
+    `;
+
+    if (!isInspected) {
+      const handler = () => openModal(b.id);
+      card.addEventListener('click', handler);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); }
+      });
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+function updateHUD() {
+  document.getElementById('progress-display').textContent = `${state.inspectedCount} / ${BUILDINGS.length}`;
+  const scoreEl = document.getElementById('score-display');
+  scoreEl.textContent = state.score;
+  scoreEl.classList.remove('score-flash');
+  // Force reflow to restart animation
+  void scoreEl.offsetWidth;
+  scoreEl.classList.add('score-flash');
+}
+
+// =================================================================================
+// MODAL
+// =================================================================================
+const modal = document.getElementById('modal');
+
+function openModal(buildingId) {
+  const building = BUILDINGS.find(b => b.id === buildingId);
+  const bs = state.buildingStates[buildingId];
+  const scenarioData = building.scenarios[bs.type];
+
+  state.currentBuildingId = buildingId;
+
+  document.getElementById('modal-icon').innerHTML = building.iconSvg;
+  document.getElementById('modal-title').textContent = building.name;
+  document.getElementById('modal-scenario').textContent = scenarioData.scenario;
+  document.getElementById('modal-principle').textContent = scenarioData.principle;
+
+  document.getElementById('modal-pre-action').classList.remove('hidden');
+  document.getElementById('modal-result').classList.add('hidden');
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closeModal() {
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  state.currentBuildingId = null;
+}
+
+document.getElementById('inspect-button').addEventListener('click', () => {
+  const buildingId = state.currentBuildingId;
+  if (!buildingId) return;
+
+  const bs = state.buildingStates[buildingId];
+  bs.revealed = true;
+
+  const isGood = bs.type === 'good';
+  state.score += isGood ? 100 : -50;
+  state.inspectedCount += 1;
+
+  // Update result panel
+  const banner   = document.getElementById('result-banner');
+  const resIcon  = document.getElementById('result-icon');
+  const verdict  = document.getElementById('result-verdict');
+  const pointsEl = document.getElementById('result-points');
+
+  if (isGood) {
+    banner.className = 'rounded-md p-4 mb-4 flex items-center gap-3 bg-green-50 border border-green-200';
+    resIcon.innerHTML = '<div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>';
+    verdict.textContent = 'Strong Internal Control';
+    verdict.className = 'font-display text-lg text-green-800';
+    pointsEl.textContent = '+100 points';
+    pointsEl.className = 'text-sm font-semibold text-green-700';
+  } else {
+    banner.className = 'rounded-md p-4 mb-4 flex items-center gap-3 bg-red-50 border border-red-200';
+    resIcon.innerHTML = '<div class="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>';
+    verdict.textContent = 'Weak Internal Control';
+    verdict.className = 'font-display text-lg text-red-800';
+    pointsEl.textContent = '−50 points';
+    pointsEl.className = 'text-sm font-semibold text-red-700';
+  }
+
+  document.getElementById('modal-pre-action').classList.add('hidden');
+  document.getElementById('modal-result').classList.remove('hidden');
+
+  renderBuildings();
+  updateHUD();
+});
+
+document.getElementById('continue-button').addEventListener('click', () => {
+  closeModal();
+  if (state.inspectedCount >= BUILDINGS.length) {
+    setTimeout(showGameOver, 400);
+  }
+});
+
+// Backdrop click closes only BEFORE reveal (after reveal, force Continue)
+modal.addEventListener('click', (e) => {
+  if (e.target === modal || e.target.classList.contains('modal-backdrop')) {
+    const resultShown = !document.getElementById('modal-result').classList.contains('hidden');
+    if (!resultShown) closeModal();
+  }
+});
+
+// =================================================================================
+// GAME OVER / LEADERBOARD
+// =================================================================================
+function showGameOver() {
+  const entry = {
+    name:  state.player.name,
+    org:   state.player.org,
+    score: state.score,
+    date:  new Date().toISOString()
+  };
+  const leaderboard = Storage.save(entry);
+
+  document.getElementById('final-score').textContent = state.score;
+
+  const { message, flavour } = getPerformanceMessage(state.score);
+  document.getElementById('final-message').textContent = message;
+  document.getElementById('final-flavour').textContent = flavour;
+
+  renderLeaderboard(leaderboard, entry);
+  showScreen('screen-leaderboard');
+}
+
+function getPerformanceMessage(score) {
+  if (score >= 600) return {
+    message: 'Exemplary control framework',
+    flavour: 'You uncovered a town of robust governance and best-practice controls. Organisations like these protect their stakeholders, their reputation, and their mission.'
+  };
+  if (score >= 300) return {
+    message: 'A generally healthy control environment',
+    flavour: 'You found a mostly well-controlled town, but some weaknesses remain that could expose organisations to fraud, error, or regulatory risk. Targeted improvements would lift this materially.'
+  };
+  if (score >= 0) return {
+    message: 'Significant control improvements needed',
+    flavour: 'You uncovered a worrying mix of practices. The town has the foundations of governance, but key controls are missing or weakly applied. A formal controls review is highly recommended.'
+  };
+  return {
+    message: 'Major governance concerns identified',
+    flavour: 'You found pervasive weaknesses across the town. Without intervention, organisations like these face substantial risk of fraud, regulatory action, and stakeholder harm. Strengthening internal controls should be an urgent priority.'
+  };
+}
+
+function renderLeaderboard(leaderboard, justAdded) {
+  const container = document.getElementById('leaderboard-table');
+  if (!leaderboard.length) {
+    container.innerHTML = '<p class="text-pb-slate text-center py-6">No scores yet — be the first!</p>';
+    return;
+  }
+
+  let html = `
+    <table class="w-full">
+      <thead>
+        <tr class="border-b-2 border-pb-navy/10">
+          <th class="text-left py-2 px-2 text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold">#</th>
+          <th class="text-left py-2 px-2 text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold">Auditor</th>
+          <th class="text-left py-2 px-2 text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold hidden md:table-cell">Organisation</th>
+          <th class="text-right py-2 px-2 text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold">Score</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  leaderboard.forEach((entry, i) => {
+    const isMe = entry.name === justAdded.name && entry.date === justAdded.date;
+    const rowClass = isMe ? 'bg-pb-gold/10 font-semibold' : '';
+    html += `
+      <tr class="border-b border-pb-navy/5 ${rowClass}">
+        <td class="py-3 px-2 text-pb-navy">${i + 1}</td>
+        <td class="py-3 px-2 text-pb-navy">${escapeHtml(entry.name)}${isMe ? ' <span class="text-pb-gold text-xs uppercase tracking-wider ml-2">You</span>' : ''}</td>
+        <td class="py-3 px-2 text-pb-slate hidden md:table-cell">${escapeHtml(entry.org)}</td>
+        <td class="py-3 px-2 text-right font-display text-lg text-pb-navy">${entry.score}</td>
+      </tr>
+    `;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+document.getElementById('play-again-button').addEventListener('click', () => {
+  // Reset to lead capture for the next visitor at the stand
+  leadForm.reset();
+  validateForm();
+  showScreen('screen-form');
+});
+
+// =================================================================================
+// INIT
+// =================================================================================
+Storage.load();
+validateForm();
+</script>
+
+</body>
+</html>
