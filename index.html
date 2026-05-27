@@ -11,7 +11,7 @@
 <style>
   html, body {
     font-family: 'Fredoka', sans-serif;
-    background: #87ceeb;
+    background: #0a2540;
     overflow: hidden;
     margin: 0;
     height: 100%;
@@ -21,17 +21,10 @@
   }
   .screen { display: none; }
   .screen.active { display: flex; }
-
   .font-cartoon { font-family: 'Bungee', sans-serif; }
 
-  /* Title pop */
   .title-pop {
-    text-shadow:
-      4px 4px 0 #0a2540,
-      -1px -1px 0 #0a2540,
-      1px -1px 0 #0a2540,
-      -1px 1px 0 #0a2540,
-      1px 1px 0 #0a2540;
+    text-shadow: 4px 4px 0 #0a2540, -1px -1px 0 #0a2540, 1px -1px 0 #0a2540, -1px 1px 0 #0a2540, 1px 1px 0 #0a2540;
     animation: bobTitle 2.5s ease-in-out infinite;
   }
   @keyframes bobTitle {
@@ -40,66 +33,72 @@
   }
 
   .btn-cartoon {
-    background: #ffcc33;
-    color: #0a2540;
-    border: 4px solid #0a2540;
-    border-radius: 16px;
+    background: #ffcc33; color: #0a2540;
+    border: 4px solid #0a2540; border-radius: 16px;
     box-shadow: 0 6px 0 #0a2540;
-    font-family: 'Fredoka', sans-serif;
-    font-weight: 700;
-    transition: transform 0.1s, box-shadow 0.1s;
-    cursor: pointer;
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    transition: transform 0.1s, box-shadow 0.1s; cursor: pointer;
   }
   .btn-cartoon:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #0a2540; }
   .btn-cartoon:active { transform: translateY(4px); box-shadow: 0 2px 0 #0a2540; }
-  .btn-cartoon.secondary { background: #ffffff; }
   .btn-cartoon.success { background: #6dd47e; color: white; text-shadow: 1px 1px 0 #0a2540; }
   .btn-cartoon.danger  { background: #ff6b6b; color: white; text-shadow: 1px 1px 0 #0a2540; }
+  .btn-cartoon:disabled { opacity: 0.5; cursor: default; }
 
   .walk-btn {
-    width: 80px; height: 80px;
-    background: rgba(255,255,255,0.9);
-    border: 4px solid #0a2540;
-    border-radius: 50%;
+    width: 90px; height: 90px;
+    background: #ffcc33; color: #0a2540;
+    border: 4px solid #0a2540; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 5px 0 #0a2540;
-    cursor: pointer;
+    box-shadow: 0 6px 0 #0a2540;
+    cursor: pointer; pointer-events: auto;
     transition: transform 0.05s, box-shadow 0.05s;
-    pointer-events: auto;
   }
-  .walk-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #0a2540; }
-  .walk-btn svg { width: 38px; height: 38px; color: #0a2540; }
-  .walk-btn:disabled { opacity: 0.35; cursor: default; }
+  .walk-btn.big { width: 110px; height: 110px; }
+  .walk-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #0a2540; }
+  .walk-btn svg { width: 46px; height: 46px; }
+
+  .mute-btn {
+    width: 50px; height: 50px;
+    background: white; color: #0a2540;
+    border: 3px solid #0a2540; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 0 #0a2540;
+    cursor: pointer;
+  }
+  .mute-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #0a2540; }
 
   #game-canvas { display: block; image-rendering: auto; }
 
   .modal-pop { animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  @keyframes pop {
-    0% { opacity: 0; transform: scale(0.6) rotate(-3deg); }
-    100% { opacity: 1; transform: scale(1) rotate(0); }
-  }
+  @keyframes pop { 0% { opacity: 0; transform: scale(0.6) rotate(-3deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
   .modal-back { animation: fadeIn 0.2s ease; }
   @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 
   .scoreflash { animation: flash 0.5s ease; }
-  @keyframes flash {
-    0%,100% { transform: scale(1); }
-    50%     { transform: scale(1.25); }
-  }
+  @keyframes flash { 0%,100% { transform: scale(1); } 50% { transform: scale(1.25); } }
 
-  /* Cloud float used in title screen */
-  .cloud-float { animation: cloudFloat 8s ease-in-out infinite; }
-  @keyframes cloudFloat {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(20px); }
-  }
-
-  /* Stamp animation when revealing */
   .stamp { animation: stamp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  @keyframes stamp {
-    0%   { opacity: 0; transform: scale(2) rotate(-15deg); }
-    100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+  @keyframes stamp { 0% { opacity: 0; transform: scale(2) rotate(-15deg); } 100% { opacity: 1; transform: scale(1) rotate(-8deg); } }
+
+  .cloud-float { animation: cloudFloat 8s ease-in-out infinite; }
+  @keyframes cloudFloat { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(20px); } }
+
+  .judge-btn {
+    flex: 1;
+    border: 4px solid #0a2540; border-radius: 16px;
+    box-shadow: 0 6px 0 #0a2540;
+    font-family: 'Bungee', sans-serif;
+    padding: 18px 12px;
+    color: white;
+    text-shadow: 2px 2px 0 #0a2540;
+    transition: transform 0.1s, box-shadow 0.1s;
+    cursor: pointer;
   }
+  .judge-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #0a2540; }
+  .judge-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #0a2540; }
+  .judge-btn.strong { background: #6dd47e; }
+  .judge-btn.weak   { background: #ff6b6b; }
 </style>
 </head>
 <body>
@@ -108,7 +107,6 @@
 <div id="screen-title" class="screen active fixed inset-0 flex-col items-center justify-center overflow-hidden"
      style="background: linear-gradient(to bottom, #87ceeb 0%, #b8e3f5 60%, #6dd47e 60%, #5cc06d 100%);">
 
-  <!-- Decorative clouds -->
   <div class="absolute cloud-float" style="top: 8%; left: 8%;">
     <svg width="120" height="60" viewBox="0 0 120 60"><ellipse cx="60" cy="40" rx="55" ry="18" fill="white" stroke="#0a2540" stroke-width="3"/><circle cx="40" cy="28" r="18" fill="white" stroke="#0a2540" stroke-width="3"/><circle cx="70" cy="22" r="22" fill="white" stroke="#0a2540" stroke-width="3"/></svg>
   </div>
@@ -116,28 +114,28 @@
     <svg width="100" height="50" viewBox="0 0 120 60"><ellipse cx="60" cy="40" rx="55" ry="18" fill="white" stroke="#0a2540" stroke-width="3"/><circle cx="45" cy="28" r="18" fill="white" stroke="#0a2540" stroke-width="3"/><circle cx="75" cy="25" r="20" fill="white" stroke="#0a2540" stroke-width="3"/></svg>
   </div>
 
-  <!-- Sun -->
   <div class="absolute" style="top: 6%; right: 18%;">
     <svg width="100" height="100" viewBox="0 0 100 100">
-      <g style="transform-origin: 50px 50px; animation: spin 20s linear infinite;">
-        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-        <g stroke="#0a2540" stroke-width="3" stroke-linecap="round">
-          <line x1="50" y1="5" x2="50" y2="18"/><line x1="50" y1="82" x2="50" y2="95"/>
-          <line x1="5" y1="50" x2="18" y2="50"/><line x1="82" y1="50" x2="95" y2="50"/>
-          <line x1="18" y1="18" x2="27" y2="27"/><line x1="73" y1="73" x2="82" y2="82"/>
-          <line x1="82" y1="18" x2="73" y2="27"/><line x1="18" y1="82" x2="27" y2="73"/>
-        </g>
+      <style>@keyframes spin { to { transform: rotate(360deg); } } #sunrays { transform-origin: 50px 50px; animation: spin 20s linear infinite; }</style>
+      <g id="sunrays" stroke="#0a2540" stroke-width="3" stroke-linecap="round">
+        <line x1="50" y1="5" x2="50" y2="18"/><line x1="50" y1="82" x2="50" y2="95"/>
+        <line x1="5" y1="50" x2="18" y2="50"/><line x1="82" y1="50" x2="95" y2="50"/>
+        <line x1="18" y1="18" x2="27" y2="27"/><line x1="73" y1="73" x2="82" y2="82"/>
+        <line x1="82" y1="18" x2="73" y2="27"/><line x1="18" y1="82" x2="27" y2="73"/>
       </g>
       <circle cx="50" cy="50" r="22" fill="#ffcc33" stroke="#0a2540" stroke-width="3"/>
     </svg>
   </div>
 
-  <!-- Branding (placeholder) -->
   <div class="absolute top-6 left-6 bg-white border-4 border-[#0a2540] rounded-xl px-4 py-2 font-bold text-[#0a2540] text-sm" style="box-shadow: 0 4px 0 #0a2540;">
     [ Price Bailey Logo ]
   </div>
 
-  <!-- Title block -->
+  <button id="mute-title" class="mute-btn absolute top-6 right-6" title="Toggle sound">
+    <svg id="sound-on-title" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+    <svg id="sound-off-title" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
+
   <div class="text-center px-6 mt-12 z-10">
     <div class="title-pop">
       <h1 class="font-cartoon text-7xl md:text-8xl text-[#ffcc33] mb-2 leading-none">CONTROL</h1>
@@ -145,7 +143,7 @@
     </div>
 
     <p class="mt-8 text-xl md:text-2xl font-semibold text-[#0a2540] max-w-xl mx-auto leading-snug" style="text-shadow: 2px 2px 0 white;">
-      Stroll through town. Inspect the locals' books. Spot the dodgy controls before they cost a fortune.
+      Walk through town. Inspect the locals' books. Spot which controls are STRONG and which are WEAK — before they cost a fortune.
     </p>
 
     <button id="btn-start" class="btn-cartoon mt-10 px-12 py-5 text-2xl">
@@ -157,28 +155,18 @@
     </p>
   </div>
 
-  <!-- Inspector character peeking at bottom -->
   <div class="absolute bottom-0 right-12" style="transform: translateY(20%);">
     <svg width="180" height="220" viewBox="0 0 180 220">
-      <!-- Body -->
       <ellipse cx="90" cy="200" rx="55" ry="20" fill="#0a2540" opacity="0.2"/>
       <rect x="55" y="110" width="70" height="90" rx="10" fill="#0a2540" stroke="#0a2540" stroke-width="3"/>
-      <!-- Tie -->
       <polygon points="90,110 80,125 90,180 100,125" fill="#ffcc33" stroke="#0a2540" stroke-width="2"/>
-      <!-- Head -->
       <circle cx="90" cy="80" r="38" fill="#fde0c1" stroke="#0a2540" stroke-width="3"/>
-      <!-- Hair -->
       <path d="M52 70 Q55 45 90 42 Q125 45 128 70 Q120 62 90 60 Q60 62 52 70" fill="#5a3825" stroke="#0a2540" stroke-width="3"/>
-      <!-- Eyes -->
       <circle cx="78" cy="80" r="3" fill="#0a2540"/>
       <circle cx="102" cy="80" r="3" fill="#0a2540"/>
-      <!-- Smile -->
       <path d="M78 95 Q90 105 102 95" fill="none" stroke="#0a2540" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Magnifying glass -->
       <circle cx="140" cy="130" r="22" fill="rgba(173, 216, 230, 0.5)" stroke="#0a2540" stroke-width="3"/>
       <line x1="155" y1="145" x2="170" y2="160" stroke="#5a3825" stroke-width="6" stroke-linecap="round"/>
-      <line x1="155" y1="145" x2="170" y2="160" stroke="#0a2540" stroke-width="2.5"/>
-      <!-- Arm holding magnifier -->
       <path d="M125 130 Q135 125 140 130" fill="none" stroke="#0a2540" stroke-width="3"/>
     </svg>
   </div>
@@ -187,10 +175,15 @@
 <!-- ============================= GAME SCREEN ============================= -->
 <div id="screen-game" class="screen fixed inset-0 flex-col items-center justify-center" style="background: #0a2540;">
 
-  <!-- HUD top bar -->
   <div class="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 py-3 pointer-events-none">
-    <div class="bg-white border-4 border-[#0a2540] rounded-xl px-3 py-1.5 font-bold text-[#0a2540] text-xs pointer-events-auto" style="box-shadow: 0 4px 0 #0a2540;">
-      [ Price Bailey ]
+    <div class="flex gap-3 items-center">
+      <div class="bg-white border-4 border-[#0a2540] rounded-xl px-3 py-1.5 font-bold text-[#0a2540] text-xs pointer-events-auto" style="box-shadow: 0 4px 0 #0a2540;">
+        [ Price Bailey ]
+      </div>
+      <button id="mute-game" class="mute-btn pointer-events-auto" title="Toggle sound">
+        <svg id="sound-on-game" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        <svg id="sound-off-game" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+      </button>
     </div>
 
     <div class="flex gap-3">
@@ -205,41 +198,27 @@
     </div>
   </div>
 
-  <!-- Canvas container -->
   <div id="canvas-wrap" class="relative w-full h-full flex items-center justify-center">
     <canvas id="game-canvas" width="1280" height="720"></canvas>
-
-    <!-- Hover tooltip -->
-    <div id="tooltip" class="absolute hidden pointer-events-none bg-white border-3 border-[#0a2540] rounded-lg px-3 py-1.5 font-bold text-[#0a2540] text-sm whitespace-nowrap"
-         style="border-width: 3px; box-shadow: 0 3px 0 #0a2540; transform: translate(-50%, -130%);">
-      Click to inspect!
-      <div class="absolute left-1/2 bottom-0 w-0 h-0" style="transform: translate(-50%, 100%); border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #0a2540;"></div>
-    </div>
   </div>
 
-  <!-- Walking controls -->
-  <div class="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-between px-6 pointer-events-none">
-    <button id="walk-left" class="walk-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-
-    <div class="bg-white border-4 border-[#0a2540] rounded-xl px-4 py-2 pointer-events-auto" style="box-shadow: 0 4px 0 #0a2540;">
-      <div class="font-cartoon text-sm text-[#0a2540] text-center">Tap a building →</div>
+  <!-- Big walk-forward button at the bottom -->
+  <div class="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center gap-6 pointer-events-none">
+    <div class="bg-white border-4 border-[#0a2540] rounded-xl px-4 py-3 pointer-events-auto" style="box-shadow: 0 4px 0 #0a2540;">
+      <div class="font-cartoon text-sm text-[#0a2540] text-center leading-tight">HOLD TO WALK<br><span class="text-xs opacity-70">Tap any building to inspect</span></div>
     </div>
-
-    <button id="walk-right" class="walk-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    <button id="walk-forward" class="walk-btn big">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
     </button>
   </div>
 </div>
 
 <!-- ============================= INSPECTION MODAL ============================= -->
 <div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
-  <div class="modal-back absolute inset-0" style="background: rgba(10, 37, 64, 0.65);"></div>
+  <div class="modal-back absolute inset-0" style="background: rgba(10, 37, 64, 0.7);"></div>
   <div class="modal-pop relative bg-white border-4 border-[#0a2540] rounded-2xl max-w-xl w-full max-h-[88vh] overflow-y-auto"
        style="box-shadow: 0 10px 0 #0a2540;">
 
-    <!-- Header -->
     <div class="bg-[#ffcc33] border-b-4 border-[#0a2540] px-5 py-4 rounded-t-2xl">
       <div class="text-xs uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">On-Site Inspection</div>
       <h3 id="m-title" class="font-cartoon text-2xl text-[#0a2540] leading-tight"></h3>
@@ -250,10 +229,16 @@
       <p id="m-scenario" class="text-[#0a2540] text-base leading-relaxed font-medium"></p>
     </div>
 
+    <!-- Pre-judgment: two buttons -->
     <div id="m-pre" class="px-5 pb-5">
-      <button id="btn-inspect" class="btn-cartoon w-full py-4 text-lg">🔍 INSPECT THE CONTROLS</button>
+      <div class="text-xs uppercase font-bold text-[#0a2540] opacity-70 tracking-wider mb-3 text-center">Your call, inspector:</div>
+      <div class="flex gap-3">
+        <button class="judge-btn strong" data-judge="good">✓ STRONG<br><span class="text-xs">CONTROL</span></button>
+        <button class="judge-btn weak" data-judge="bad">✗ WEAK<br><span class="text-xs">CONTROL</span></button>
+      </div>
     </div>
 
+    <!-- Result -->
     <div id="m-result" class="hidden px-5 pb-5">
       <div id="m-banner" class="relative rounded-xl border-4 border-[#0a2540] p-4 mb-4 flex items-center gap-3" style="box-shadow: 0 4px 0 #0a2540;">
         <div id="m-banner-icon"></div>
@@ -261,8 +246,10 @@
           <div id="m-verdict" class="font-cartoon text-lg"></div>
           <div id="m-points" class="font-bold text-sm"></div>
         </div>
-        <div id="m-stamp" class="stamp absolute -top-2 -right-2 font-cartoon text-xl px-3 py-1 rounded-lg border-3 border-[#0a2540]" style="border-width: 3px; transform: rotate(-8deg);"></div>
+        <div id="m-stamp" class="stamp absolute -top-2 -right-2 font-cartoon text-xl px-3 py-1 rounded-lg border-3" style="border-width: 3px; transform: rotate(-8deg);"></div>
       </div>
+
+      <div id="m-truth" class="text-sm font-bold text-[#0a2540] mb-3 text-center"></div>
 
       <div class="text-xs uppercase font-bold text-[#0a2540] opacity-60 tracking-wider mb-1">Auditor's Note</div>
       <p id="m-principle" class="text-[#0a2540] text-sm leading-relaxed mb-4 font-medium"></p>
@@ -280,6 +267,11 @@
     [ Price Bailey ]
   </div>
 
+  <button id="mute-over" class="mute-btn absolute top-6 right-6" title="Toggle sound">
+    <svg id="sound-on-over" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    <svg id="sound-off-over" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
+
   <div class="max-w-2xl w-full px-6 py-12 z-10">
     <div class="bg-white border-4 border-[#0a2540] rounded-2xl p-8 text-center mb-5" style="box-shadow: 0 10px 0 #0a2540;">
       <div class="font-cartoon text-3xl text-[#0a2540] mb-2">INSPECTION COMPLETE!</div>
@@ -288,7 +280,6 @@
       <div id="final-message" class="font-cartoon text-xl text-[#0a2540] mb-3"></div>
       <p id="final-flavour" class="text-[#0a2540] font-medium leading-relaxed mb-5"></p>
 
-      <!-- Name entry for leaderboard -->
       <div id="name-entry" class="border-t-4 border-dashed border-[#0a2540] pt-5">
         <p class="text-sm font-bold text-[#0a2540] mb-3">Pop your name on the board (optional):</p>
         <div class="flex gap-2">
@@ -319,102 +310,247 @@
 
 <script>
 // =================================================================================
-// BUILDING DATA — financial controls scenarios (Charity / NFP focus)
+// AUDIO MODULE — Web Audio API procedural music + SFX (no audio files)
+// =================================================================================
+const Audio = {
+  ctx: null,
+  masterGain: null,
+  musicGain: null,
+  sfxGain: null,
+  muted: false,
+  musicPlaying: false,
+  nextNoteTime: 0,
+  beatIndex: 0,
+  schedulerInterval: null,
+
+  init() {
+    if (this.ctx) return;
+    try {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.value = 0.5;
+      this.masterGain.connect(this.ctx.destination);
+      this.musicGain = this.ctx.createGain();
+      this.musicGain.gain.value = 0.25;
+      this.musicGain.connect(this.masterGain);
+      this.sfxGain = this.ctx.createGain();
+      this.sfxGain.gain.value = 0.8;
+      this.sfxGain.connect(this.masterGain);
+    } catch(e) { this.ctx = null; }
+  },
+
+  resume() {
+    if (!this.ctx) this.init();
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  },
+
+  setMuted(m) {
+    this.muted = m;
+    if (this.masterGain) this.masterGain.gain.value = m ? 0 : 0.5;
+  },
+
+  // Schedule a tone at a precise audio-clock time
+  tone(freq, startTime, duration, type = 'square', vol = 0.15, output = null) {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, startTime);
+    g.gain.setValueAtTime(0, startTime);
+    g.gain.linearRampToValueAtTime(vol, startTime + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.connect(g).connect(output || this.sfxGain);
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.02);
+  },
+
+  // Quick SFX
+  sfxClick() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.tone(660, t, 0.08, 'square', 0.12);
+    this.tone(880, t + 0.04, 0.08, 'square', 0.10);
+  },
+  sfxCorrect() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.tone(523.25, t, 0.15, 'square', 0.15);          // C5
+    this.tone(659.25, t + 0.12, 0.15, 'square', 0.15);   // E5
+    this.tone(783.99, t + 0.24, 0.30, 'square', 0.18);   // G5
+  },
+  sfxWrong() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.tone(349.23, t, 0.20, 'sawtooth', 0.12);    // F4
+    this.tone(207.65, t + 0.18, 0.35, 'sawtooth', 0.14); // G#3-ish
+  },
+  sfxFootstep() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    // Low thump
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(110, t);
+    osc.frequency.exponentialRampToValueAtTime(45, t + 0.1);
+    g.gain.setValueAtTime(0.12, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    osc.connect(g).connect(this.sfxGain);
+    osc.start(t); osc.stop(t + 0.12);
+  },
+  sfxFanfare() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((f, i) => this.tone(f, t + i * 0.12, 0.3, 'square', 0.18));
+  },
+
+  // Music — looping 4-bar cheerful tune
+  MELODY: [
+    // Bar 1 (C)
+    523.25, 659.25, 783.99, 1046.50,
+    // Bar 2 (Am)
+    880.00, 1046.50, 1318.51, 1046.50,
+    // Bar 3 (F)
+    698.46, 880.00, 1046.50, 880.00,
+    // Bar 4 (G)
+    783.99, 987.77, 1174.66, 987.77,
+  ],
+  BASS: [
+    // Bar 1 (C: C-E-G-C)
+    130.81, 164.81, 196.00, 261.63,
+    // Bar 2 (Am: A-C-E-A)
+    110.00, 130.81, 164.81, 220.00,
+    // Bar 3 (F: F-A-C-F)
+    87.31, 110.00, 130.81, 174.61,
+    // Bar 4 (G: G-B-D-G)
+    98.00, 123.47, 146.83, 196.00,
+  ],
+  BEAT_DUR: 0.4, // seconds per beat (~150 bpm)
+
+  startMusic() {
+    if (!this.ctx || this.musicPlaying) return;
+    this.musicPlaying = true;
+    this.beatIndex = 0;
+    this.nextNoteTime = this.ctx.currentTime + 0.1;
+    this.scheduler();
+    this.schedulerInterval = setInterval(() => this.scheduler(), 80);
+  },
+  stopMusic() {
+    this.musicPlaying = false;
+    if (this.schedulerInterval) { clearInterval(this.schedulerInterval); this.schedulerInterval = null; }
+  },
+  scheduler() {
+    if (!this.musicPlaying || !this.ctx) return;
+    const lookahead = this.ctx.currentTime + 0.25;
+    while (this.nextNoteTime < lookahead) {
+      const i = this.beatIndex % this.MELODY.length;
+      // Melody (square)
+      this.tone(this.MELODY[i], this.nextNoteTime, this.BEAT_DUR * 0.9, 'square', 0.05, this.musicGain);
+      // Bass (triangle, longer)
+      this.tone(this.BASS[i], this.nextNoteTime, this.BEAT_DUR * 0.95, 'triangle', 0.10, this.musicGain);
+      this.nextNoteTime += this.BEAT_DUR;
+      this.beatIndex++;
+    }
+  }
+};
+
+// =================================================================================
+// BUILDING DATA — same controls scenarios as before (Charity/NFP focus)
 // =================================================================================
 const BUILDINGS = [
-  {
-    id: 'charity-hq', name: 'Hopebridge Charity HQ', signColor: '#c8e8ff', drawFn: 'drawCharityHQ',
+  { id: 'charity-hq',   name: 'Hopebridge Charity HQ',     drawFn: 'drawCharityHQ',
     scenarios: {
       good: { scenario: "Trustees meet quarterly to review management accounts. Minutes are circulated and KPIs are tracked against budget, with formal investigation of any variances.", principle: "Active trustee oversight ensures financial decisions are scrutinised and accountable — a Charity Commission expectation." },
       bad:  { scenario: "Trustees haven't formally reviewed management accounts in 18 months. The Chair signs off figures over a quick phone call with the Finance Director. No minutes. No challenge.", principle: "Absent trustee oversight breaches governance expectations and lets irregularities fester unseen for long periods." }
-    }
-  },
-  {
-    id: 'bank', name: 'Pricebury High Street Bank', signColor: '#ffe5a3', drawFn: 'drawBank',
+    }},
+  { id: 'bank',         name: 'Pricebury High Street Bank', drawFn: 'drawBank',
     scenarios: {
       good: { scenario: "All payments above £500 require dual authorisation by two signatories from separate functions. The bank mandate is reviewed annually against current staff.", principle: "Dual authorisation enforces segregation of duties and is one of the most effective controls against payment fraud." },
       bad:  { scenario: "One staff member has sole online banking access and can authorise payments of any size. The bank mandate is three years out of date — two ex-trustees are still listed.", principle: "Sole banking authority plus a stale mandate is a critical failure — large unauthorised payments become easy and reputational damage is severe." }
-    }
-  },
-  {
-    id: 'community', name: "St Mary's Community Hall", signColor: '#ffd6c4', drawFn: 'drawCommunity',
+    }},
+  { id: 'community',    name: "St Mary's Community Hall",   drawFn: 'drawCommunity',
     scenarios: {
       good: { scenario: "Cash donations from events are counted by two unrelated volunteers immediately. A signed counting sheet is retained and the cash banked intact within two working days.", principle: "Dual counting and prompt intact banking minimise misappropriation and create a robust audit trail for cash income." },
       bad:  { scenario: "One volunteer takes the donation tin home after events and banks the cash 'when convenient'. Counts are scribbled on scraps of paper, sometimes weeks later.", principle: "Single-person cash handling with delayed banking is the classic high-risk weakness behind most charity cash fraud cases." }
-    }
-  },
-  {
-    id: 'shop', name: 'Hopebridge Charity Shop', signColor: '#ffc4d6', drawFn: 'drawShop',
+    }},
+  { id: 'shop',         name: 'Hopebridge Charity Shop',    drawFn: 'drawShop',
     scenarios: {
       good: { scenario: "Till readings are reconciled to physical cash at the end of every shift, with discrepancies investigated and signed off. Weekly stock counts are done by someone who doesn't handle the till.", principle: "Daily reconciliation with segregated stock counts catches errors, theft, and systemic issues at the operational level." },
       bad:  { scenario: "The till is reconciled 'when there's time' — often days late. The shop manager personally handles all cash, banking, sales recording, stock, and donation valuations.", principle: "No reconciliation plus one person holding all duties is a textbook recipe for fraud and material misstatement." }
-    }
-  },
-  {
-    id: 'solicitor', name: 'Hartley & Co. Solicitors', signColor: '#d4c4a3', drawFn: 'drawSolicitor',
+    }},
+  { id: 'solicitor',    name: 'Hartley & Co. Solicitors',   drawFn: 'drawSolicitor',
     scenarios: {
       good: { scenario: "A formal whistleblowing policy is in place with an independent external hotline. All staff complete annual training and the policy is published on the public website.", principle: "Independent reporting channels surface fraud and misconduct that internal hierarchies might otherwise suppress." },
       bad:  { scenario: "No formal whistleblowing policy. Staff raise concerns verbally with their line manager, who reports up to the Chief Executive. No anonymous or independent route exists.", principle: "Without independent channels, concerns about senior management or systemic failures rarely surface — allowing problems to escalate." }
-    }
-  },
-  {
-    id: 'accountancy', name: 'Pricebury Audit Chambers', signColor: '#c4e0ff', drawFn: 'drawAccountancy',
+    }},
+  { id: 'accountancy',  name: 'Pricebury Audit Chambers',   drawFn: 'drawAccountancy',
     scenarios: {
       good: { scenario: "Year-end accounts are prepared in-house then independently reviewed by an external auditor. Adjustments are documented and formally approved by the Audit Committee.", principle: "Independent external review applies professional scepticism beyond internal controls — vital for material financial statements." },
       bad:  { scenario: "The Finance Director prepares the accounts, reviews them personally, presents them to trustees, and liaises with the auditor — with nobody else meaningfully involved at any stage.", principle: "When one person controls preparation, review, and audit liaison, segregation collapses and errors can be quietly concealed." }
-    }
-  },
-  {
-    id: 'warehouse', name: 'Hopebridge Distribution', signColor: '#c4eac4', drawFn: 'drawWarehouse',
+    }},
+  { id: 'warehouse',    name: 'Hopebridge Distribution',    drawFn: 'drawWarehouse',
     scenarios: {
       good: { scenario: "A fixed asset register is maintained and reconciled to physical inventory annually. Disposals require documented senior authorisation, and donations-in-kind are independently valued.", principle: "Asset registers and physical verification protect against loss and theft, and keep the balance sheet honest." },
       bad:  { scenario: "No fixed asset register exists. Donations-in-kind are estimated by the warehouse manager off the cuff, and kit sometimes 'disappears' with no formal write-off process.", principle: "Without an asset register, asset misappropriation can't be detected or evidenced — a major red flag for auditors and regulators." }
-    }
-  },
-  {
-    id: 'datacentre', name: 'Pricebury Data Centre', signColor: '#d6c4ff', drawFn: 'drawDataCentre',
+    }},
+  { id: 'datacentre',   name: 'Pricebury Data Centre',      drawFn: 'drawDataCentre',
     scenarios: {
       good: { scenario: "User access is least-privilege with documented approvals. Admin passwords rotate quarterly, MFA is enforced for all users, and leavers' access is revoked within 24 hours.", principle: "Robust access controls protect against both external cyber threats and internal misuse — a cornerstone of modern financial control." },
       bad:  { scenario: "Several staff share a single admin password for the finance system that hasn't been changed in two years. A former employee's login was still active six months after they left.", principle: "Shared credentials and unmanaged access create unauditable trails, breach data protection law, and rank among the most-exploited fraud vectors." }
-    }
-  }
+    }}
 ];
 
 // =================================================================================
-// STATE
+// PERSPECTIVE & STATE
 // =================================================================================
 const W = 1280, H = 720;
-const WORLD_WIDTH = 5400;
-const STREET_Y = 560;  // ground line
-const BUILD_BASE = STREET_Y; // building baselines
+const HORIZON_Y = 350;
+const CAMERA_HEIGHT = 110;    // world units above ground (player's eye level)
+const FOCAL = 520;             // focal length (controls perspective steepness)
+
+// Layout: 8 buildings, alternating sides, evenly spaced in Z
+const BUILDING_LAYOUT = [
+  { side: 'left',  worldX: -240, worldZ: 220 },
+  { side: 'right', worldX:  240, worldZ: 380 },
+  { side: 'left',  worldX: -240, worldZ: 540 },
+  { side: 'right', worldX:  240, worldZ: 700 },
+  { side: 'left',  worldX: -240, worldZ: 860 },
+  { side: 'right', worldX:  240, worldZ: 1020 },
+  { side: 'left',  worldX: -240, worldZ: 1180 },
+  { side: 'right', worldX:  240, worldZ: 1340 }
+];
+const END_Z = 1500; // walked past the last building
 
 const state = {
-  cameraX: 0,
-  targetCameraX: 0,
-  walking: 0,        // -1, 0, or 1
-  time: 0,
+  playerZ: 0,
+  targetPlayerZ: 0,
+  walking: false,
   walkBob: 0,
+  time: 0,
+  lastFootstepZ: 0,
   score: 0,
   inspectedCount: 0,
-  buildings: [],     // populated at game start with positions + revealed status
+  buildings: [],
   hoverId: null,
   currentBuildingId: null,
-  mouseX: 0,
-  mouseY: 0,
-  pendingName: null
+  pendingName: null,
+  finishing: false
 };
 
-// Building positions along the world
-const BUILDING_LAYOUT = [
-  { x: 240,  w: 380 },
-  { x: 880,  w: 360 },
-  { x: 1480, w: 380 },
-  { x: 2120, w: 380 },
-  { x: 2760, w: 360 },
-  { x: 3380, w: 400 },
-  { x: 4040, w: 420 },
-  { x: 4720, w: 380 }
-];
+// Project (worldX, worldY, worldZ) to screen coords
+// Returns null if behind camera
+function project(worldX, worldY, worldZ) {
+  const zRel = worldZ - state.playerZ;
+  if (zRel <= 5) return null;
+  const scale = FOCAL / zRel;
+  return {
+    x: W/2 + worldX * scale,
+    y: HORIZON_Y + (CAMERA_HEIGHT - worldY) * scale,
+    scale: scale,
+    zRel: zRel
+  };
+}
 
 // =================================================================================
 // STORAGE
@@ -437,15 +573,14 @@ const Storage = {
 };
 
 // =================================================================================
-// CANVAS SETUP
+// CANVAS
 // =================================================================================
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 
 function fitCanvas() {
   const wrap = document.getElementById('canvas-wrap');
-  const cw = wrap.clientWidth;
-  const ch = wrap.clientHeight;
+  const cw = wrap.clientWidth, ch = wrap.clientHeight;
   const targetRatio = W / H;
   const containerRatio = cw / ch;
   if (containerRatio > targetRatio) {
@@ -458,196 +593,19 @@ function fitCanvas() {
 }
 window.addEventListener('resize', fitCanvas);
 
-// =================================================================================
-// SCREEN MGMT
-// =================================================================================
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if (id === 'screen-game') { fitCanvas(); }
+  if (id === 'screen-game') setTimeout(fitCanvas, 50);
 }
 
 // =================================================================================
-// DRAWING — Scenery
+// DRAWING HELPERS
 // =================================================================================
-function drawSky() {
-  const g = ctx.createLinearGradient(0, 0, 0, STREET_Y);
-  g.addColorStop(0, '#87ceeb');
-  g.addColorStop(1, '#d4ecf7');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, STREET_Y);
-}
-
-function drawSun() {
-  const sx = W - 180, sy = 110;
-  ctx.save();
-  ctx.translate(sx, sy);
-  ctx.rotate(state.time * 0.005);
-  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-  for (let i = 0; i < 8; i++) {
-    ctx.save();
-    ctx.rotate(i * Math.PI / 4);
-    ctx.beginPath(); ctx.moveTo(48, 0); ctx.lineTo(64, 0); ctx.stroke();
-    ctx.restore();
-  }
-  ctx.restore();
-  ctx.beginPath(); ctx.arc(sx, sy, 38, 0, Math.PI*2);
-  ctx.fillStyle = '#ffcc33'; ctx.fill();
-  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3.5; ctx.stroke();
-  // smile
-  ctx.beginPath(); ctx.arc(sx, sy + 4, 14, 0.2 * Math.PI, 0.8 * Math.PI);
-  ctx.lineWidth = 2.5; ctx.stroke();
-  // eyes
-  ctx.beginPath(); ctx.arc(sx-12, sy-6, 2.5, 0, Math.PI*2); ctx.arc(sx+12, sy-6, 2.5, 0, Math.PI*2);
-  ctx.fillStyle = '#0a2540'; ctx.fill();
-}
-
-function drawCloud(x, y, scale=1) {
-  ctx.save();
-  ctx.translate(x, y); ctx.scale(scale, scale);
-  ctx.fillStyle = 'white';
-  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 50, 18, 0, 0, Math.PI*2);
-  ctx.fill(); ctx.stroke();
-  ctx.beginPath(); ctx.arc(-20, -12, 18, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.beginPath(); ctx.arc(10, -18, 22, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.restore();
-}
-
-function drawClouds(offset) {
-  const clouds = [
-    { x: 100, y: 90 }, { x: 380, y: 60 }, { x: 700, y: 110 },
-    { x: 1000, y: 80 }, { x: 1320, y: 130 }, { x: 1640, y: 70 }
-  ];
-  clouds.forEach(c => {
-    const cx = ((c.x - offset) % 1800 + 1800) % 1800 - 200;
-    drawCloud(cx, c.y, 1);
-  });
-}
-
-function drawHills(offset) {
-  ctx.fillStyle = '#a8d8a8';
-  ctx.beginPath();
-  ctx.moveTo(0, STREET_Y);
-  for (let x = -200; x <= W + 200; x += 50) {
-    const wx = x + offset;
-    const y = STREET_Y - 60 - Math.sin(wx * 0.005) * 40 - Math.sin(wx * 0.012) * 15;
-    ctx.lineTo(x, y);
-  }
-  ctx.lineTo(W, STREET_Y);
-  ctx.closePath(); ctx.fill();
-
-  // Far hills darker
-  ctx.fillStyle = '#86c486';
-  ctx.beginPath();
-  ctx.moveTo(0, STREET_Y);
-  for (let x = -200; x <= W + 200; x += 50) {
-    const wx = x + offset * 0.6;
-    const y = STREET_Y - 30 - Math.sin(wx * 0.008 + 1) * 25;
-    ctx.lineTo(x, y);
-  }
-  ctx.lineTo(W, STREET_Y); ctx.closePath(); ctx.fill();
-}
-
-function drawTree(x, y, h=80) {
-  const trunkW = h * 0.18;
-  ctx.fillStyle = '#7a4a2a';
-  ctx.fillRect(x - trunkW/2, y - h*0.4, trunkW, h*0.4);
-  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 2.5;
-  ctx.strokeRect(x - trunkW/2, y - h*0.4, trunkW, h*0.4);
-
-  // Foliage (cloud-like puffs)
-  ctx.fillStyle = '#5cc06d';
-  ctx.beginPath();
-  ctx.arc(x - h*0.25, y - h*0.55, h*0.32, 0, Math.PI*2);
-  ctx.arc(x + h*0.25, y - h*0.55, h*0.32, 0, Math.PI*2);
-  ctx.arc(x, y - h*0.85, h*0.36, 0, Math.PI*2);
-  ctx.fill();
-  ctx.lineWidth = 3; ctx.stroke();
-}
-
-function drawGround() {
-  // Pavement
-  ctx.fillStyle = '#d4c8b8';
-  ctx.fillRect(0, STREET_Y, W, 60);
-  // Pavement edge
-  ctx.fillStyle = '#0a2540';
-  ctx.fillRect(0, STREET_Y, W, 4);
-
-  // Road
-  ctx.fillStyle = '#4a4a52';
-  ctx.fillRect(0, STREET_Y + 60, W, H - STREET_Y - 60);
-  ctx.fillStyle = '#0a2540';
-  ctx.fillRect(0, STREET_Y + 56, W, 4);
-
-  // Pavement cracks (move with camera)
-  ctx.strokeStyle = 'rgba(10, 37, 64, 0.15)';
-  ctx.lineWidth = 2;
-  for (let i = 0; i < 14; i++) {
-    const x = ((i * 120 - state.cameraX) % 1440 + 1440) % 1440;
-    ctx.beginPath();
-    ctx.moveTo(x, STREET_Y + 8); ctx.lineTo(x, STREET_Y + 56);
-    ctx.stroke();
-  }
-
-  // Road dashes
-  ctx.strokeStyle = '#ffcc33';
-  ctx.lineWidth = 5;
-  ctx.setLineDash([40, 30]);
-  ctx.lineDashOffset = state.cameraX * 0.6;
-  ctx.beginPath();
-  ctx.moveTo(0, STREET_Y + 120); ctx.lineTo(W, STREET_Y + 120);
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
-
-function drawForegroundTrees() {
-  // Scatter a few cartoon trees between buildings
-  state.buildings.forEach((b, i) => {
-    if (i < state.buildings.length - 1) {
-      const nextB = state.buildings[i + 1];
-      const midX = (b.x + b.w + nextB.x) / 2 - state.cameraX;
-      if (midX > -100 && midX < W + 100) {
-        drawTree(midX, STREET_Y, 100);
-      }
-    }
-  });
-  // Trees on either end
-  const startTree = 100 - state.cameraX;
-  if (startTree > -100 && startTree < W + 100) drawTree(startTree, STREET_Y, 110);
-  const endTree = WORLD_WIDTH - 100 - state.cameraX;
-  if (endTree > -100 && endTree < W + 100) drawTree(endTree, STREET_Y, 110);
-}
-
-function drawLamppost(x) {
-  ctx.fillStyle = '#0a2540';
-  ctx.fillRect(x - 3, STREET_Y - 130, 6, 130);
-  // Lamp
-  ctx.beginPath();
-  ctx.arc(x, STREET_Y - 138, 12, 0, Math.PI*2);
-  ctx.fillStyle = '#ffcc33'; ctx.fill();
-  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3; ctx.stroke();
-  // Glow
-  const grd = ctx.createRadialGradient(x, STREET_Y - 138, 5, x, STREET_Y - 138, 30);
-  grd.addColorStop(0, 'rgba(255,204,51,0.5)');
-  grd.addColorStop(1, 'rgba(255,204,51,0)');
-  ctx.fillStyle = grd;
-  ctx.beginPath(); ctx.arc(x, STREET_Y - 138, 30, 0, Math.PI*2); ctx.fill();
-}
-
-// =================================================================================
-// DRAWING — Buildings (cartoony, each unique)
-// =================================================================================
-
-// Helper: outline rect
 function rect(x, y, w, h, fill, stroke = '#0a2540', strokeW = 4) {
-  ctx.fillStyle = fill;
-  ctx.fillRect(x, y, w, h);
+  if (fill) { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); }
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = strokeW; ctx.strokeRect(x, y, w, h); }
 }
-
-// Helper: rounded rect
 function rrect(x, y, w, h, r, fill, stroke = '#0a2540', strokeW = 4) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -664,436 +622,607 @@ function rrect(x, y, w, h, r, fill, stroke = '#0a2540', strokeW = 4) {
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = strokeW; ctx.stroke(); }
 }
 
-// Helper: cartoon sign on a post
-function drawSign(x, y, text, color) {
-  ctx.font = 'bold 18px Fredoka';
+// Building sign on a post (sits above building, centered at origin local)
+function drawSign(x, y, text, color, fontSize = 18) {
+  ctx.font = `bold ${fontSize}px Fredoka`;
   const tw = ctx.measureText(text).width;
-  const sw = tw + 24, sh = 30;
-  // post
+  const sw = tw + 24, sh = fontSize + 14;
   ctx.fillStyle = '#7a4a2a';
   ctx.fillRect(x - 3, y, 6, 36);
   ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 2; ctx.strokeRect(x - 3, y, 6, 36);
-  // sign
   rrect(x - sw/2, y - sh, sw, sh, 6, color);
   ctx.fillStyle = '#0a2540';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(text, x, y - sh/2 + 1);
 }
 
-function drawCharityHQ(x, w) {
-  const h = 320;
-  const top = BUILD_BASE - h;
+// =================================================================================
+// BUILDING DRAWING — each draws centered at (0,0) with ground at y=0, extending upward
+// Standard building "world width" is 200, "world height" varies
+// =================================================================================
+
+function drawCharityHQ() {
+  const w = 200, h = 240;
   // Steps
-  rect(x - 20, BUILD_BASE - 24, w + 40, 24, '#d4cab8');
+  rect(-w/2 - 16, -18, w + 32, 18, '#d4cab8');
   // Body
-  rect(x, top + 80, w, h - 80, '#fdf6e3');
-  // Roof (triangle)
+  rect(-w/2, -h + 60, w, h - 78, '#fdf6e3');
+  // Triangle roof
   ctx.beginPath();
-  ctx.moveTo(x - 28, top + 80);
-  ctx.lineTo(x + w/2, top + 10);
-  ctx.lineTo(x + w + 28, top + 80);
+  ctx.moveTo(-w/2 - 22, -h + 60);
+  ctx.lineTo(0, -h + 6);
+  ctx.lineTo(w/2 + 22, -h + 60);
   ctx.closePath();
   ctx.fillStyle = '#e8d8b8'; ctx.fill();
   ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
-  // Pediment circle
-  ctx.beginPath(); ctx.arc(x + w/2, top + 55, 14, 0, Math.PI*2);
+  // Pediment heart
+  ctx.beginPath(); ctx.arc(0, -h + 40, 11, 0, Math.PI*2);
   ctx.fillStyle = '#ff6b6b'; ctx.fill(); ctx.stroke();
-  // Heart in pediment
   ctx.fillStyle = 'white';
-  ctx.font = '20px Fredoka'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('♥', x + w/2, top + 56);
-  // Columns (4)
-  const colCount = 4;
-  const colW = 28, colSpace = (w - colCount*colW) / (colCount + 1);
-  for (let i = 0; i < colCount; i++) {
-    const cx = x + colSpace*(i+1) + colW*i;
-    rect(cx, top + 100, colW, h - 120, '#fff9ec');
-    // Capital
-    rect(cx - 4, top + 90, colW + 8, 12, '#e8d8b8');
+  ctx.font = '16px Fredoka'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('♥', 0, -h + 41);
+  // Columns
+  for (let i = 0; i < 4; i++) {
+    const cx = -w/2 + 20 + i * 42;
+    rect(cx, -h + 78, 22, h - 96, '#fff9ec');
+    rect(cx - 3, -h + 70, 28, 10, '#e8d8b8');
   }
   // Door
-  const doorW = 50, doorH = 80;
-  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, 8, '#7a4a2a');
-  // Door knob
-  ctx.beginPath(); ctx.arc(x + w/2 + 12, BUILD_BASE - 40, 3, 0, Math.PI*2);
+  rrect(-22, -70, 44, 70, 6, '#7a4a2a');
+  ctx.beginPath(); ctx.arc(12, -36, 2.5, 0, Math.PI*2);
   ctx.fillStyle = '#ffcc33'; ctx.fill();
-  // Sign
-  drawSign(x + w/2, top - 4, 'CHARITY HQ', '#c8e8ff');
+  drawSign(0, -h - 6, 'CHARITY HQ', '#c8e8ff', 16);
 }
 
-function drawBank(x, w) {
-  const h = 340;
-  const top = BUILD_BASE - h;
-  // Steps
-  rect(x - 16, BUILD_BASE - 20, w + 32, 20, '#bfb09a');
-  // Body
-  rect(x, top + 70, w, h - 70, '#f0e4c2');
-  // Roof - flat with cornice
-  rect(x - 16, top + 60, w + 32, 20, '#d4c290');
-  // Columns (5)
-  const colCount = 5;
-  const colW = 22, colSpace = (w - colCount*colW) / (colCount + 1);
-  for (let i = 0; i < colCount; i++) {
-    const cx = x + colSpace*(i+1) + colW*i;
-    rect(cx, top + 95, colW, h - 115, '#faf3dd');
-    rect(cx - 3, top + 85, colW + 6, 12, '#d4c290');
+function drawBank() {
+  const w = 210, h = 260;
+  rect(-w/2 - 14, -16, w + 28, 16, '#bfb09a');
+  rect(-w/2, -h + 56, w, h - 72, '#f0e4c2');
+  rect(-w/2 - 14, -h + 48, w + 28, 16, '#d4c290');
+  // Columns
+  for (let i = 0; i < 5; i++) {
+    const cx = -w/2 + 14 + i * 34;
+    rect(cx, -h + 74, 20, h - 90, '#faf3dd');
+    rect(cx - 2, -h + 66, 24, 10, '#d4c290');
   }
-  // Big £ symbol on top
+  // Big £
   ctx.fillStyle = '#0a2540';
-  ctx.font = 'bold 60px Bungee';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('£', x + w/2, top + 36);
+  ctx.font = 'bold 48px Bungee'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('£', 0, -h + 28);
   // Door
-  const doorW = 60, doorH = 90;
-  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, 6, '#8b5a3c');
-  // Vault wheel detail on door
-  ctx.beginPath(); ctx.arc(x + w/2, BUILD_BASE - doorH/2, 12, 0, Math.PI*2);
+  rrect(-26, -76, 52, 76, 5, '#8b5a3c');
+  ctx.beginPath(); ctx.arc(0, -38, 9, 0, Math.PI*2);
   ctx.strokeStyle = '#ffcc33'; ctx.lineWidth = 3; ctx.stroke();
-  ctx.beginPath(); ctx.arc(x + w/2, BUILD_BASE - doorH/2, 4, 0, Math.PI*2);
-  ctx.fillStyle = '#ffcc33'; ctx.fill();
-  // Sign
-  drawSign(x + w/2, top - 8, 'BANK', '#ffe5a3');
+  drawSign(0, -h - 6, 'BANK', '#ffe5a3', 16);
 }
 
-function drawCommunity(x, w) {
-  const h = 280;
-  const top = BUILD_BASE - h;
-  // Body
-  rect(x, top + 110, w, h - 110, '#ffb088');
-  // Pitched roof
+function drawCommunity() {
+  const w = 200, h = 220;
+  rect(-w/2, -h + 92, w, h - 92, '#ffb088');
   ctx.beginPath();
-  ctx.moveTo(x - 20, top + 110);
-  ctx.lineTo(x + w/2, top + 30);
-  ctx.lineTo(x + w + 20, top + 110);
+  ctx.moveTo(-w/2 - 16, -h + 92);
+  ctx.lineTo(0, -h + 24);
+  ctx.lineTo(w/2 + 16, -h + 92);
   ctx.closePath();
   ctx.fillStyle = '#c44848'; ctx.fill();
   ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
   // Bell tower
-  rect(x + w/2 - 22, top - 30, 44, 60, '#e8a070');
-  // Bell tower roof (small triangle)
+  rect(-18, -h - 24, 36, 48, '#e8a070');
   ctx.beginPath();
-  ctx.moveTo(x + w/2 - 28, top - 30);
-  ctx.lineTo(x + w/2, top - 70);
-  ctx.lineTo(x + w/2 + 28, top - 30);
+  ctx.moveTo(-22, -h - 24); ctx.lineTo(0, -h - 56); ctx.lineTo(22, -h - 24);
   ctx.closePath();
   ctx.fillStyle = '#c44848'; ctx.fill(); ctx.stroke();
-  // Bell
-  ctx.beginPath(); ctx.arc(x + w/2, top - 5, 10, 0, Math.PI);
+  ctx.beginPath(); ctx.arc(0, -h, 8, 0, Math.PI);
   ctx.fillStyle = '#ffcc33'; ctx.fill(); ctx.stroke();
   // Round windows
-  ctx.beginPath(); ctx.arc(x + w*0.25, top + 160, 20, 0, Math.PI*2);
-  ctx.fillStyle = '#a3d4f0'; ctx.fill(); ctx.stroke();
-  ctx.beginPath(); ctx.arc(x + w*0.75, top + 160, 20, 0, Math.PI*2);
-  ctx.fill(); ctx.stroke();
-  // Cross window detail
-  ctx.beginPath();
-  ctx.moveTo(x + w*0.25 - 20, top + 160); ctx.lineTo(x + w*0.25 + 20, top + 160);
-  ctx.moveTo(x + w*0.25, top + 140); ctx.lineTo(x + w*0.25, top + 180);
-  ctx.moveTo(x + w*0.75 - 20, top + 160); ctx.lineTo(x + w*0.75 + 20, top + 160);
-  ctx.moveTo(x + w*0.75, top + 140); ctx.lineTo(x + w*0.75, top + 180);
-  ctx.lineWidth = 2; ctx.stroke();
-  ctx.lineWidth = 4;
+  for (const wx of [-w/4, w/4]) {
+    ctx.beginPath(); ctx.arc(wx, -h + 130, 16, 0, Math.PI*2);
+    ctx.fillStyle = '#a3d4f0'; ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(wx - 16, -h + 130); ctx.lineTo(wx + 16, -h + 130);
+    ctx.moveTo(wx, -h + 114); ctx.lineTo(wx, -h + 146);
+    ctx.lineWidth = 2; ctx.stroke();
+    ctx.lineWidth = 4;
+  }
   // Door
-  const doorW = 60, doorH = 90;
-  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, doorW/2, '#7a4a2a');
-  ctx.beginPath(); ctx.arc(x + w/2 + 14, BUILD_BASE - 40, 3, 0, Math.PI*2);
-  ctx.fillStyle = '#ffcc33'; ctx.fill();
-  // Sign
-  drawSign(x + w/2, BUILD_BASE - doorH - 30, 'COMMUNITY HALL', '#ffd6c4');
+  rrect(-24, -70, 48, 70, 24, '#7a4a2a');
+  drawSign(0, -h - 64, 'COMMUNITY HALL', '#ffd6c4', 14);
 }
 
-function drawShop(x, w) {
-  const h = 260;
-  const top = BUILD_BASE - h;
-  // Body
-  rect(x, top + 50, w, h - 50, '#ff9ec0');
-  // Flat roof with sign band
-  rect(x - 6, top + 30, w + 12, 30, '#ffcc33');
-  // Awning (striped)
-  const awnY = top + 100;
-  const awnH = 35;
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(x - 6, awnY, w + 12, awnH);
+function drawShop() {
+  const w = 200, h = 210;
+  rect(-w/2, -h + 38, w, h - 56, '#ff9ec0');
+  rect(-w/2 - 6, -h + 22, w + 12, 24, '#ffcc33');
+  // Awning
+  const awnY = -h + 76;
+  ctx.fillStyle = 'white';
+  ctx.fillRect(-w/2 - 6, awnY, w + 12, 28);
   ctx.fillStyle = '#ff6b6b';
-  const stripeW = (w + 12) / 8;
-  for (let i = 0; i < 8; i += 2) {
-    ctx.fillRect(x - 6 + i*stripeW, awnY, stripeW, awnH);
-  }
+  const sw = (w + 12) / 8;
+  for (let i = 0; i < 8; i += 2) ctx.fillRect(-w/2 - 6 + i*sw, awnY, sw, 28);
   ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4;
-  ctx.strokeRect(x - 6, awnY, w + 12, awnH);
-  // Scallop edge
+  ctx.strokeRect(-w/2 - 6, awnY, w + 12, 28);
+  // Scallops
   ctx.fillStyle = '#ff6b6b';
   for (let i = 0; i < 8; i++) {
-    const cx = x - 6 + (i + 0.5) * stripeW;
-    ctx.beginPath();
-    ctx.arc(cx, awnY + awnH, stripeW/2, 0, Math.PI);
-    ctx.fill();
+    const cx = -w/2 - 6 + (i + 0.5) * sw;
+    ctx.beginPath(); ctx.arc(cx, awnY + 28, sw/2, 0, Math.PI); ctx.fill();
   }
-  ctx.beginPath();
-  for (let i = 0; i < 8; i++) {
-    const cx = x - 6 + (i + 0.5) * stripeW;
-    ctx.moveTo(cx + stripeW/2, awnY + awnH);
-    ctx.arc(cx, awnY + awnH, stripeW/2, 0, Math.PI);
-  }
-  ctx.lineWidth = 3; ctx.stroke();
-  // Shop window
-  const wY = awnY + awnH + 8;
-  rect(x + 12, wY, w - 24, 80, '#cfeaf7');
-  // Items in window
-  ctx.fillStyle = '#ff6b6b'; rect(x + 30, wY + 30, 20, 50, '#ff6b6b');
-  ctx.fillStyle = '#6dd47e'; rect(x + 60, wY + 40, 18, 40, '#6dd47e');
+  // Window
+  rect(-w/2 + 12, awnY + 32, w - 24, 56, '#cfeaf7');
+  // Items
+  rect(-w/2 + 28, awnY + 56, 18, 32, '#ff6b6b');
+  rect(-w/2 + 54, awnY + 62, 14, 26, '#6dd47e');
   // SALE tag
   ctx.save();
-  ctx.translate(x + w - 50, wY + 30);
-  ctx.rotate(-0.2);
-  rrect(-22, -12, 44, 24, 4, '#ffcc33');
+  ctx.translate(w/2 - 36, awnY + 50); ctx.rotate(-0.2);
+  rrect(-20, -10, 40, 22, 4, '#ffcc33');
   ctx.fillStyle = '#0a2540';
-  ctx.font = 'bold 14px Bungee'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = 'bold 13px Bungee'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('SALE', 0, 1);
   ctx.restore();
   // Door
-  const doorW = 50, doorH = 80;
-  rrect(x + w/2 - doorW/2 + 25, BUILD_BASE - doorH, doorW, doorH, 4, '#a3d4f0');
-  // Door cross-bar
+  rrect(8, -68, 42, 68, 4, '#a3d4f0');
   ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(x + w/2 - doorW/2 + 25, BUILD_BASE - doorH/2);
-  ctx.lineTo(x + w/2 + doorW/2 + 25, BUILD_BASE - doorH/2);
-  ctx.stroke();
-  // Sign text on band
+  ctx.beginPath(); ctx.moveTo(8, -34); ctx.lineTo(50, -34); ctx.stroke();
+  // Sign text
   ctx.fillStyle = '#0a2540';
-  ctx.font = 'bold 22px Bungee'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('CHARITY SHOP', x + w/2, top + 45);
-  // Tag sign
-  drawSign(x + w/2, top - 4, 'OPEN!', '#ffc4d6');
+  ctx.font = 'bold 16px Bungee'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('CHARITY SHOP', 0, -h + 34);
 }
 
-function drawSolicitor(x, w) {
-  const h = 310;
-  const top = BUILD_BASE - h;
-  // Body - brick texture
-  rect(x, top + 50, w, h - 50, '#c44848');
+function drawSolicitor() {
+  const w = 200, h = 240;
+  rect(-w/2, -h + 38, w, h - 56, '#c44848');
   // Brick lines
   ctx.strokeStyle = 'rgba(10,37,64,0.2)'; ctx.lineWidth = 1.5;
-  for (let r = 0; r < 6; r++) {
-    const ry = top + 80 + r * 40;
-    ctx.beginPath(); ctx.moveTo(x, ry); ctx.lineTo(x + w, ry); ctx.stroke();
-    for (let c = 0; c < 5; c++) {
-      const cx = x + (c + (r % 2 ? 0.5 : 0)) * (w/5);
-      ctx.beginPath(); ctx.moveTo(cx, ry); ctx.lineTo(cx, ry + 40); ctx.stroke();
+  for (let r = 0; r < 5; r++) {
+    const ry = -h + 60 + r * 32;
+    ctx.beginPath(); ctx.moveTo(-w/2, ry); ctx.lineTo(w/2, ry); ctx.stroke();
+    for (let c = 0; c < 4; c++) {
+      const cx = -w/2 + (c + (r % 2 ? 0.5 : 0)) * (w/4);
+      ctx.beginPath(); ctx.moveTo(cx, ry); ctx.lineTo(cx, ry + 32); ctx.stroke();
     }
   }
-  // Flat roof with capping
-  rect(x - 10, top + 30, w + 20, 30, '#3a3a4a');
+  // Roof
+  rect(-w/2 - 8, -h + 22, w + 16, 24, '#3a3a4a');
   // Chimney
-  rect(x + w - 60, top - 30, 30, 60, '#a83838');
-  rect(x + w - 65, top - 38, 40, 10, '#3a3a4a');
-  // Windows (sash style, 4 windows in 2 rows)
+  rect(w/2 - 50, -h - 28, 22, 50, '#a83838');
+  rect(w/2 - 54, -h - 36, 30, 10, '#3a3a4a');
+  // Windows
   for (let row = 0; row < 2; row++) {
     for (let col = 0; col < 3; col++) {
-      const wx = x + 30 + col * (w/3 - 5);
-      const wy = top + 100 + row * 90;
-      rect(wx, wy, 50, 70, '#a3d4f0');
+      const wx = -w/2 + 20 + col * 56;
+      const wy = -h + 78 + row * 70;
+      rect(wx, wy, 40, 52, '#a3d4f0');
       ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(wx + 25, wy); ctx.lineTo(wx + 25, wy + 70);
-      ctx.moveTo(wx, wy + 35); ctx.lineTo(wx + 50, wy + 35);
+      ctx.moveTo(wx + 20, wy); ctx.lineTo(wx + 20, wy + 52);
+      ctx.moveTo(wx, wy + 26); ctx.lineTo(wx + 40, wy + 26);
       ctx.stroke();
       ctx.lineWidth = 4;
     }
   }
-  // Door
-  const doorW = 50, doorH = 95;
-  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, 4, '#1a1a2e');
-  // Brass plaque
-  rect(x + w/2 - 30, BUILD_BASE - doorH - 18, 60, 14, '#ffcc33');
-  ctx.fillStyle = '#0a2540'; ctx.font = 'bold 9px Fredoka';
+  // Door + plaque
+  rrect(-22, -76, 44, 76, 4, '#1a1a2e');
+  rect(-26, -90, 52, 12, '#ffcc33');
+  ctx.fillStyle = '#0a2540'; ctx.font = 'bold 8px Fredoka';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('SOLICITORS', x + w/2, BUILD_BASE - doorH - 10);
-  // Lamppost outside
-  // (handled by sign post)
-  drawSign(x + w/2, top - 8, '⚖ HARTLEY & CO', '#d4c4a3');
+  ctx.fillText('SOLICITORS', 0, -84);
+  drawSign(0, -h - 6, '⚖ HARTLEY & CO', '#d4c4a3', 14);
 }
 
-function drawAccountancy(x, w) {
-  const h = 380;
-  const top = BUILD_BASE - h;
-  // Body - blueish modern
-  rect(x, top + 40, w, h - 40, '#4a90c4');
-  // Roof - flat with antenna
-  rect(x - 6, top + 30, w + 12, 14, '#2a5a80');
-  // Top sign block
-  rect(x + 10, top + 50, w - 20, 36, '#ffcc33');
-  ctx.fillStyle = '#0a2540'; ctx.font = 'bold 16px Bungee';
+function drawAccountancy() {
+  const w = 210, h = 290;
+  rect(-w/2, -h + 30, w, h - 48, '#4a90c4');
+  rect(-w/2 - 6, -h + 22, w + 12, 12, '#2a5a80');
+  rect(-w/2 + 8, -h + 36, w - 16, 30, '#ffcc33');
+  ctx.fillStyle = '#0a2540'; ctx.font = 'bold 14px Bungee';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('AUDIT CO.', x + w/2, top + 68);
-  // Grid of windows (4 cols x 4 rows)
+  ctx.fillText('AUDIT CO.', 0, -h + 50);
+  // Window grid
   const cols = 4, rows = 4;
-  const gw = (w - 40) / cols, gh = (h - 130) / rows;
+  const gw = (w - 36) / cols, gh = (h - 110) / rows;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const wx = x + 20 + c * gw + 4;
-      const wy = top + 100 + r * gh + 4;
-      rect(wx, wy, gw - 8, gh - 8, '#cfeaf7');
-      // Light on in some windows
-      if (Math.sin((r * 7 + c * 3 + state.time * 0.01)) > 0.3) {
-        rect(wx + 4, wy + 4, gw - 16, gh - 16, '#ffe88a', null);
+      const wx = -w/2 + 18 + c * gw + 3;
+      const wy = -h + 76 + r * gh + 3;
+      rect(wx, wy, gw - 6, gh - 6, '#cfeaf7');
+      if (Math.sin(r * 7 + c * 3 + state.time * 0.01) > 0.3) {
+        ctx.fillStyle = '#ffe88a';
+        ctx.fillRect(wx + 3, wy + 3, gw - 12, gh - 12);
       }
     }
   }
-  // Door (revolving style)
-  const doorW = 60, doorH = 80;
-  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, 4, '#2a5a80');
+  // Door
+  rrect(-26, -66, 52, 66, 4, '#2a5a80');
   ctx.beginPath();
-  ctx.moveTo(x + w/2 - doorW/2, BUILD_BASE - doorH/2);
-  ctx.lineTo(x + w/2 + doorW/2, BUILD_BASE - doorH/2);
-  ctx.lineWidth = 3; ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x + w/2, BUILD_BASE - doorH);
-  ctx.lineTo(x + w/2, BUILD_BASE);
-  ctx.stroke();
+  ctx.moveTo(-26, -33); ctx.lineTo(26, -33);
+  ctx.moveTo(0, -66); ctx.lineTo(0, 0);
+  ctx.lineWidth = 3; ctx.strokeStyle = '#0a2540'; ctx.stroke();
   ctx.lineWidth = 4;
 }
 
-function drawWarehouse(x, w) {
-  const h = 240;
-  const top = BUILD_BASE - h;
-  // Body
-  rect(x, top + 60, w, h - 60, '#b0b8c0');
-  // Sawtooth roof
+function drawWarehouse() {
+  const w = 220, h = 190;
+  rect(-w/2, -h + 50, w, h - 68, '#b0b8c0');
+  // Sawtooth
   const teeth = 4;
   const tw = w / teeth;
   ctx.fillStyle = '#8a9098';
   ctx.beginPath();
-  ctx.moveTo(x, top + 60);
+  ctx.moveTo(-w/2, -h + 50);
   for (let i = 0; i < teeth; i++) {
-    ctx.lineTo(x + i * tw, top + 20);
-    ctx.lineTo(x + (i + 1) * tw, top + 60);
+    ctx.lineTo(-w/2 + i * tw, -h + 16);
+    ctx.lineTo(-w/2 + (i + 1) * tw, -h + 50);
   }
   ctx.closePath(); ctx.fill();
   ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
-  // Corrugated lines on body
+  // Corrugation
   ctx.strokeStyle = 'rgba(10,37,64,0.2)'; ctx.lineWidth = 1.5;
   for (let i = 1; i < 10; i++) {
-    const lx = x + (i * w / 10);
-    ctx.beginPath(); ctx.moveTo(lx, top + 60); ctx.lineTo(lx, BUILD_BASE); ctx.stroke();
+    const lx = -w/2 + (i * w / 10);
+    ctx.beginPath(); ctx.moveTo(lx, -h + 50); ctx.lineTo(lx, -18); ctx.stroke();
   }
   ctx.lineWidth = 4;
-  // Roll-up door (big)
-  const doorW = w * 0.5, doorH = 130;
-  rect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, '#ffcc33');
-  // Door slats
+  // Roll-up door
+  const doorW = w * 0.5;
+  rect(-doorW/2, -h + 70, doorW, 100, '#ffcc33');
   ctx.strokeStyle = '#c79a1c'; ctx.lineWidth = 2;
-  for (let i = 1; i < 10; i++) {
-    const sy = BUILD_BASE - doorH + i * (doorH/10);
-    ctx.beginPath();
-    ctx.moveTo(x + w/2 - doorW/2, sy);
-    ctx.lineTo(x + w/2 + doorW/2, sy); ctx.stroke();
+  for (let i = 1; i < 9; i++) {
+    const sy = -h + 70 + i * 11;
+    ctx.beginPath(); ctx.moveTo(-doorW/2, sy); ctx.lineTo(doorW/2, sy); ctx.stroke();
   }
   ctx.lineWidth = 4;
-  // Side window
-  rect(x + 20, top + 80, 40, 40, '#cfeaf7');
-  // Sign
-  drawSign(x + w/2, top - 8, '📦 DISTRIBUTION', '#c4eac4');
+  rect(-w/2 + 18, -h + 64, 32, 28, '#cfeaf7');
+  drawSign(0, -h - 6, '📦 DISTRIBUTION', '#c4eac4', 14);
 }
 
-function drawDataCentre(x, w) {
-  const h = 320;
-  const top = BUILD_BASE - h;
-  // Body - dark modern
-  rect(x, top + 50, w, h - 50, '#3a3a52');
-  // Roof
-  rect(x - 6, top + 40, w + 12, 14, '#1a1a2a');
-  // Server rack windows (slim horizontal slits)
+function drawDataCentre() {
+  const w = 210, h = 250;
+  rect(-w/2, -h + 36, w, h - 54, '#3a3a52');
+  rect(-w/2 - 6, -h + 26, w + 12, 12, '#1a1a2a');
   for (let r = 0; r < 6; r++) {
-    const sy = top + 80 + r * 32;
-    // Window pane
-    rect(x + 20, sy, w - 40, 22, '#0a2540');
-    // LEDs
+    const sy = -h + 60 + r * 24;
+    rect(-w/2 + 16, sy, w - 32, 16, '#0a2540');
     for (let i = 0; i < 8; i++) {
-      const lx = x + 30 + i * ((w - 60) / 8);
+      const lx = -w/2 + 24 + i * ((w - 48) / 8);
       const on = Math.sin(state.time * 0.04 + r * 2 + i) > 0;
       ctx.fillStyle = on ? '#6dd47e' : '#ff6b6b';
-      ctx.fillRect(lx, sy + 8, 4, 6);
+      ctx.fillRect(lx, sy + 6, 3, 4);
     }
-    // Stripes
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x + 20, sy + 15); ctx.lineTo(x + w - 20, sy + 15); ctx.stroke();
-    ctx.lineWidth = 4;
   }
   // Antennas
   ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.moveTo(x + w*0.25, top + 40); ctx.lineTo(x + w*0.25, top - 30);
-  ctx.moveTo(x + w*0.75, top + 40); ctx.lineTo(x + w*0.75, top - 50);
+  ctx.moveTo(-w*0.25, -h + 26); ctx.lineTo(-w*0.25, -h - 24);
+  ctx.moveTo(w*0.25, -h + 26); ctx.lineTo(w*0.25, -h - 38);
   ctx.stroke();
   ctx.fillStyle = '#ff6b6b';
-  ctx.beginPath(); ctx.arc(x + w*0.25, top - 30, 4, 0, Math.PI*2);
-  ctx.arc(x + w*0.75, top - 50, 4, 0, Math.PI*2);
+  ctx.beginPath(); ctx.arc(-w*0.25, -h - 24, 3, 0, Math.PI*2);
+  ctx.arc(w*0.25, -h - 38, 3, 0, Math.PI*2);
   ctx.fill();
-  // Door
-  const doorW = 50, doorH = 80;
-  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, 4, '#1a1a2a');
-  // Keypad
-  rect(x + w/2 + doorW/2 + 6, BUILD_BASE - 50, 14, 20, '#ffcc33');
-  // Sign
-  drawSign(x + w/2, top - 8, '💻 DATA CENTRE', '#d6c4ff');
+  rrect(-22, -64, 44, 64, 4, '#1a1a2a');
+  rect(28, -42, 12, 16, '#ffcc33');
+  drawSign(0, -h - 6, '💻 DATA CENTRE', '#d6c4ff', 14);
 }
 
-const drawFns = {
-  drawCharityHQ, drawBank, drawCommunity, drawShop,
-  drawSolicitor, drawAccountancy, drawWarehouse, drawDataCentre
-};
+const drawFns = { drawCharityHQ, drawBank, drawCommunity, drawShop, drawSolicitor, drawAccountancy, drawWarehouse, drawDataCentre };
 
 // =================================================================================
-// DRAW THE WORLD
+// SCENERY DRAWING
 // =================================================================================
-function drawBuildings() {
+function drawSky() {
+  const g = ctx.createLinearGradient(0, 0, 0, HORIZON_Y);
+  g.addColorStop(0, '#87ceeb');
+  g.addColorStop(1, '#d4ecf7');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, HORIZON_Y);
+}
+
+function drawSun() {
+  const sx = W - 180, sy = 120;
+  ctx.save();
+  ctx.translate(sx, sy);
+  ctx.rotate(state.time * 0.005);
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+  for (let i = 0; i < 8; i++) {
+    ctx.save(); ctx.rotate(i * Math.PI / 4);
+    ctx.beginPath(); ctx.moveTo(46, 0); ctx.lineTo(62, 0); ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(sx, sy, 36, 0, Math.PI*2);
+  ctx.fillStyle = '#ffcc33'; ctx.fill();
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(sx, sy + 4, 12, 0.2 * Math.PI, 0.8 * Math.PI);
+  ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(sx-11, sy-5, 2.5, 0, Math.PI*2); ctx.arc(sx+11, sy-5, 2.5, 0, Math.PI*2);
+  ctx.fillStyle = '#0a2540'; ctx.fill();
+}
+
+function drawCloud(x, y, scale = 1) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
+  ctx.fillStyle = 'white'; ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.ellipse(0, 0, 50, 16, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(-20, -10, 16, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(10, -16, 20, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+
+function drawClouds() {
+  // Slow drift
+  const drift = state.time * 0.15;
+  const clouds = [
+    { x: 100, y: 80, s: 1 },
+    { x: 380, y: 60, s: 1.2 },
+    { x: 700, y: 100, s: 0.9 },
+    { x: 980, y: 70, s: 1.1 },
+    { x: 1200, y: 120, s: 1 }
+  ];
+  clouds.forEach(c => {
+    const cx = ((c.x + drift) % 1500 + 1500) % 1500 - 100;
+    drawCloud(cx, c.y, c.s);
+  });
+}
+
+function drawHills() {
+  // Far hills (darker, smaller)
+  ctx.fillStyle = '#86c486';
+  ctx.beginPath();
+  ctx.moveTo(0, HORIZON_Y);
+  for (let x = 0; x <= W; x += 30) {
+    const y = HORIZON_Y - 20 - Math.sin(x * 0.012) * 15 - Math.sin(x * 0.005 + 1) * 10;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, HORIZON_Y); ctx.closePath(); ctx.fill();
+
+  // Closer hills
+  ctx.fillStyle = '#a8d8a8';
+  ctx.beginPath();
+  ctx.moveTo(0, HORIZON_Y);
+  for (let x = 0; x <= W; x += 30) {
+    const y = HORIZON_Y - 10 - Math.sin(x * 0.008 + 2) * 8;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, HORIZON_Y); ctx.closePath(); ctx.fill();
+}
+
+// Road: trapezoid from horizon to bottom edge
+function drawGround() {
+  // Grass — fills below horizon
+  ctx.fillStyle = '#7dc488';
+  ctx.fillRect(0, HORIZON_Y, W, H - HORIZON_Y);
+
+  // Road perspective trapezoid
+  // Compute pavement and road edges at horizon and at bottom-of-screen
+  const PAV_X = 130; // world units half-width of pavement edge
+  const ROAD_X = 100; // world units half-width of road edge
+
+  // At horizon (z = far), things converge to vanishing point
+  const farZ = 2000;
+  const farPavL = project(-PAV_X, 0, farZ + state.playerZ);
+  const farPavR = project(PAV_X, 0, farZ + state.playerZ);
+  const farRoadL = project(-ROAD_X, 0, farZ + state.playerZ);
+  const farRoadR = project(ROAD_X, 0, farZ + state.playerZ);
+
+  // At a near Z (close to camera but still in front)
+  const nearZ = 30;
+  // Use math directly to extrapolate to screen edges
+  const nearScale = FOCAL / nearZ;
+  const nearPavLX = W/2 - PAV_X * nearScale;
+  const nearPavRX = W/2 + PAV_X * nearScale;
+  const nearRoadLX = W/2 - ROAD_X * nearScale;
+  const nearRoadRX = W/2 + ROAD_X * nearScale;
+  const nearY = HORIZON_Y + CAMERA_HEIGHT * nearScale;
+
+  // Pavement strip on left
+  ctx.fillStyle = '#d4c8b8';
+  ctx.beginPath();
+  ctx.moveTo(farPavL.x, farPavL.y);
+  ctx.lineTo(farRoadL.x, farRoadL.y);
+  ctx.lineTo(nearRoadLX, nearY);
+  ctx.lineTo(nearPavLX, nearY);
+  ctx.closePath(); ctx.fill();
+
+  // Pavement on right
+  ctx.beginPath();
+  ctx.moveTo(farPavR.x, farPavR.y);
+  ctx.lineTo(farRoadR.x, farRoadR.y);
+  ctx.lineTo(nearRoadRX, nearY);
+  ctx.lineTo(nearPavRX, nearY);
+  ctx.closePath(); ctx.fill();
+
+  // Road
+  ctx.fillStyle = '#4a4a52';
+  ctx.beginPath();
+  ctx.moveTo(farRoadL.x, farRoadL.y);
+  ctx.lineTo(farRoadR.x, farRoadR.y);
+  ctx.lineTo(nearRoadRX, nearY);
+  ctx.lineTo(nearRoadLX, nearY);
+  ctx.closePath(); ctx.fill();
+
+  // Pavement-road border lines
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(farRoadL.x, farRoadL.y); ctx.lineTo(nearRoadLX, nearY);
+  ctx.moveTo(farRoadR.x, farRoadR.y); ctx.lineTo(nearRoadRX, nearY);
+  ctx.moveTo(farPavL.x, farPavL.y); ctx.lineTo(nearPavLX, nearY);
+  ctx.moveTo(farPavR.x, farPavR.y); ctx.lineTo(nearPavRX, nearY);
+  ctx.stroke();
+
+  // Road dashes — project segments along the road centerline
+  for (let z = 60; z < 1600; z += 80) {
+    const dashStart = z;
+    const dashEnd = z + 40;
+    // Shift dashes toward viewer with playerZ
+    const startWorldZ = state.playerZ + (dashStart - (state.playerZ % 80));
+    const endWorldZ = startWorldZ + 40;
+    const p1 = project(-6, 0, startWorldZ);
+    const p2 = project(6, 0, startWorldZ);
+    const p3 = project(6, 0, endWorldZ);
+    const p4 = project(-6, 0, endWorldZ);
+    if (p1 && p2 && p3 && p4) {
+      ctx.fillStyle = '#ffcc33';
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+      ctx.lineTo(p3.x, p3.y); ctx.lineTo(p4.x, p4.y);
+      ctx.closePath(); ctx.fill();
+    }
+  }
+}
+
+function drawLamppost(worldZ, side) {
+  const xPos = side * 175;
+  const base = project(xPos, 0, worldZ);
+  const top  = project(xPos, 90, worldZ);
+  if (!base || !top) return;
+  const scale = base.scale;
+  // Post
+  ctx.fillStyle = '#0a2540';
+  ctx.fillRect(base.x - 2 * scale, top.y, 4 * scale, base.y - top.y);
+  // Lamp head
+  ctx.beginPath();
+  ctx.arc(base.x, top.y - 6 * scale, 10 * scale, 0, Math.PI*2);
+  ctx.fillStyle = '#ffcc33'; ctx.fill();
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = Math.max(1, 2.5 * scale); ctx.stroke();
+  // Glow
+  if (scale > 0.4) {
+    const g = ctx.createRadialGradient(base.x, top.y - 6 * scale, 2, base.x, top.y - 6 * scale, 30 * scale);
+    g.addColorStop(0, 'rgba(255,204,51,0.5)');
+    g.addColorStop(1, 'rgba(255,204,51,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(base.x, top.y - 6 * scale, 30 * scale, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function drawTree(worldX, worldZ) {
+  const base = project(worldX, 0, worldZ);
+  if (!base) return;
+  const scale = base.scale;
+  const h = 80 * scale;
+  const trunkW = 12 * scale;
+  // Trunk
+  ctx.fillStyle = '#7a4a2a';
+  ctx.fillRect(base.x - trunkW/2, base.y - h * 0.4, trunkW, h * 0.4);
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = Math.max(1, 2.5 * scale);
+  ctx.strokeRect(base.x - trunkW/2, base.y - h * 0.4, trunkW, h * 0.4);
+  // Foliage
+  ctx.fillStyle = '#5cc06d';
+  const fy = base.y - h * 0.55;
+  ctx.beginPath();
+  ctx.arc(base.x - h * 0.22, fy, h * 0.3, 0, Math.PI*2);
+  ctx.arc(base.x + h * 0.22, fy, h * 0.3, 0, Math.PI*2);
+  ctx.arc(base.x, fy - h * 0.3, h * 0.32, 0, Math.PI*2);
+  ctx.fill();
+  ctx.lineWidth = Math.max(1, 3 * scale); ctx.stroke();
+}
+
+// =================================================================================
+// BUILDINGS WITH PERSPECTIVE
+// =================================================================================
+
+// Compute screen bounding box for a building (for hit-testing and overlays)
+function buildingScreenBox(b) {
+  const base = project(b.worldX, 0, b.worldZ);
+  if (!base) return null;
+  const scale = base.scale;
+  // Buildings are roughly 220 wide, 250 tall in world units (matches drawing)
+  const halfW = 110 * scale;
+  const fullH = 260 * scale;
+  return {
+    left: base.x - halfW,
+    right: base.x + halfW,
+    bottom: base.y,
+    top: base.y - fullH,
+    scale: scale,
+    zRel: base.zRel,
+    center: { x: base.x, y: base.y }
+  };
+}
+
+function drawBuildingsAndScenery() {
+  // Collect all drawable items with their depth, sort back-to-front
+  const items = [];
+
+  // Lampposts at intervals along the road (both sides)
+  for (let z = 0; z <= END_Z + 200; z += 200) {
+    if (z > state.playerZ - 50) {
+      items.push({ worldZ: z, draw: () => drawLamppost(z, -1) });
+      items.push({ worldZ: z + 5, draw: () => drawLamppost(z, 1) });
+    }
+  }
+
+  // Trees between buildings (filling the gaps)
+  for (let i = 0; i < state.buildings.length - 1; i++) {
+    const b = state.buildings[i];
+    const next = state.buildings[i + 1];
+    const midZ = (b.worldZ + next.worldZ) / 2;
+    // Tree on opposite side of pavement
+    const treeSide = b.side === 'left' ? 1 : -1;
+    items.push({ worldZ: midZ, draw: () => drawTree(treeSide * 320, midZ) });
+  }
+
+  // Buildings
   state.buildings.forEach(b => {
-    const sx = b.x - state.cameraX;
-    // Skip if off-screen
-    if (sx + b.w < -50 || sx > W + 50) return;
+    items.push({ worldZ: b.worldZ, draw: () => drawOneBuilding(b) });
+  });
 
-    // Bouncy hover effect
-    let bounce = 0;
-    if (state.hoverId === b.id && !b.revealed) {
-      bounce = Math.sin(state.time * 0.15) * 4 - 4;
-    }
+  // Sort: farthest (highest worldZ) first
+  items.sort((a, b) => b.worldZ - a.worldZ);
+  items.forEach(item => item.draw());
+}
+
+function drawOneBuilding(b) {
+  const proj = project(b.worldX, 0, b.worldZ);
+  if (!proj) return;
+  const scale = proj.scale;
+  if (scale < 0.05) return;
+
+  ctx.save();
+  ctx.translate(proj.x, proj.y);
+  ctx.scale(scale, scale);
+
+  // Hover bob
+  if (state.hoverId === b.id && !b.revealed) {
+    const bob = Math.sin(state.time * 0.15) * 4 - 4;
+    ctx.translate(0, bob);
+  }
+
+  drawFns[b.drawFn]();
+
+  // Reveal stamp on the building
+  if (b.revealed) {
     ctx.save();
-    ctx.translate(0, bounce);
+    ctx.translate(0, -150);
+    ctx.rotate(-0.15);
+    const correct = b.judgedCorrect;
+    rrect(-60, -28, 120, 56, 12, correct ? '#6dd47e' : '#ff6b6b');
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 22px Bungee';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(correct ? '✓ +100' : '✗ −50', 0, 2);
+    ctx.restore();
+  }
 
-    drawFns[b.drawFn](sx, b.w);
+  ctx.restore();
 
-    // Reveal stamp
-    if (b.revealed) {
-      const cx = sx + b.w/2, cy = BUILD_BASE - 200;
+  // Hover indicator (drawn at screen scale, not building scale, for readability)
+  if (state.hoverId === b.id && !b.revealed) {
+    const box = buildingScreenBox(b);
+    if (box) {
+      const cx = box.center.x;
+      const cy = box.top - 24;
       ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(-0.15);
-      const good = b.revealedType === 'good';
-      ctx.fillStyle = good ? 'rgba(109, 212, 126, 0.92)' : 'rgba(255, 107, 107, 0.92)';
-      rrect(-60, -28, 120, 56, 12, good ? '#6dd47e' : '#ff6b6b');
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 24px Bungee';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(good ? '✓ STRONG' : '✗ WEAK', 0, 2);
-      ctx.restore();
-    }
-
-    // Hover prompt above building
-    if (state.hoverId === b.id && !b.revealed) {
-      const cx = sx + b.w/2, cy = BUILD_BASE - 320;
-      ctx.save();
-      const text = '? INSPECT';
-      ctx.font = 'bold 20px Bungee';
+      const text = 'TAP!';
+      ctx.font = 'bold 22px Bungee';
       const tw = ctx.measureText(text).width;
-      const pw = tw + 24, ph = 32;
+      const pw = tw + 22, ph = 32;
       rrect(cx - pw/2, cy - ph/2, pw, ph, 8, '#ffcc33');
       ctx.fillStyle = '#0a2540';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(text, cx, cy + 2);
-      // Pointer
+      // pointer
       ctx.beginPath();
       ctx.moveTo(cx - 8, cy + ph/2);
       ctx.lineTo(cx + 8, cy + ph/2);
@@ -1103,78 +1232,79 @@ function drawBuildings() {
       ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
       ctx.restore();
     }
-    ctx.restore();
-  });
+  }
 }
 
 // =================================================================================
 // MAIN DRAW
 // =================================================================================
 function draw() {
-  ctx.save();
-  ctx.translate(0, state.walkBob);
-
+  // Background
   drawSky();
   drawSun();
-  drawClouds(state.cameraX * 0.15);
-  drawHills(state.cameraX * 0.4);
+  drawClouds();
+  drawHills();
+
+  // Walk-bob applied to ground+buildings (not sky)
+  ctx.save();
+  ctx.translate(0, state.walkBob);
   drawGround();
-
-  // Lampposts every 600px
-  for (let lx = 200; lx < WORLD_WIDTH; lx += 600) {
-    const sx = lx - state.cameraX;
-    if (sx > -50 && sx < W + 50) drawLamppost(sx);
-  }
-
-  drawForegroundTrees();
-  drawBuildings();
-
-  // End-of-street marker (optional)
-  if (state.cameraX >= WORLD_WIDTH - W - 50) {
-    const sx = WORLD_WIDTH - state.cameraX;
-    if (sx < W + 100) {
-      ctx.fillStyle = '#0a2540';
-      ctx.font = 'bold 24px Bungee';
-      ctx.textAlign = 'center';
-      ctx.fillText('END OF TOWN', sx - 100, BUILD_BASE - 30);
-    }
-  }
-
-  // Start-of-street marker
-  if (state.cameraX < 100) {
-    const sx = 50 - state.cameraX;
-    ctx.fillStyle = '#0a2540';
-    ctx.font = 'bold 20px Bungee';
-    ctx.textAlign = 'left';
-    ctx.fillText('← PRICEBURY', sx, BUILD_BASE - 30);
-  }
-
+  drawBuildingsAndScenery();
   ctx.restore();
+
+  // Edge progress bar (visual sense of "where on the street am I")
+  drawProgressBar();
+}
+
+function drawProgressBar() {
+  const barY = H - 88;
+  const barH = 12;
+  const padding = 280;
+  const barW = W - padding * 2;
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  rrect(padding, barY, barW, barH, barH/2, 'rgba(255,255,255,0.9)');
+  const pct = Math.min(1, state.playerZ / END_Z);
+  rrect(padding + 3, barY + 3, (barW - 6) * pct, barH - 6, (barH - 6)/2, '#ffcc33', null);
+  // Building markers
+  state.buildings.forEach(b => {
+    const x = padding + 3 + (barW - 6) * (b.worldZ / END_Z);
+    ctx.beginPath();
+    ctx.arc(x, barY + barH/2, 5, 0, Math.PI*2);
+    ctx.fillStyle = b.revealed ? (b.judgedCorrect ? '#6dd47e' : '#ff6b6b') : '#0a2540';
+    ctx.fill();
+    ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
+  });
 }
 
 // =================================================================================
-// UPDATE
+// UPDATE LOOP
 // =================================================================================
 function update() {
   state.time++;
 
-  // Walking: update target camera position
-  const walkSpeed = 12;
-  if (state.walking !== 0) {
-    state.targetCameraX += state.walking * walkSpeed;
-    state.targetCameraX = Math.max(0, Math.min(WORLD_WIDTH - W, state.targetCameraX));
-    // Walk bob
-    state.walkBob = Math.sin(state.time * 0.25) * 2;
+  // Walking
+  if (state.walking) {
+    const walkSpeed = 2.5;
+    state.targetPlayerZ = Math.min(END_Z, state.targetPlayerZ + walkSpeed);
+    state.walkBob = Math.sin(state.time * 0.22) * 2.5;
+
+    // Footstep sounds
+    if (state.targetPlayerZ - state.lastFootstepZ > 28) {
+      Audio.sfxFootstep();
+      state.lastFootstepZ = state.targetPlayerZ;
+    }
   } else {
     state.walkBob *= 0.9;
   }
 
-  // Smooth camera lerp
-  state.cameraX += (state.targetCameraX - state.cameraX) * 0.18;
+  // Smooth interpolate playerZ
+  state.playerZ += (state.targetPlayerZ - state.playerZ) * 0.18;
 
-  // Update walk button availability
-  document.getElementById('walk-left').disabled = state.targetCameraX <= 0;
-  document.getElementById('walk-right').disabled = state.targetCameraX >= WORLD_WIDTH - W;
+  // End game when player reaches END_Z and all buildings are inspected (or near-end)
+  if (!state.finishing && state.targetPlayerZ >= END_Z && state.inspectedCount >= BUILDINGS.length) {
+    state.finishing = true;
+    setTimeout(showGameOver, 800);
+  }
 }
 
 function loop() {
@@ -1188,29 +1318,38 @@ function loop() {
 // =================================================================================
 // INPUT
 // =================================================================================
-function getCanvasMouse(evt) {
-  const rect = canvas.getBoundingClientRect();
-  const sx = (evt.clientX - rect.left) / rect.width * W;
-  const sy = (evt.clientY - rect.top) / rect.height * H;
-  return { x: sx, y: sy };
+function canvasMouse(evt) {
+  const r = canvas.getBoundingClientRect();
+  return {
+    x: (evt.clientX - r.left) / r.width * W,
+    y: (evt.clientY - r.top) / r.height * H
+  };
 }
 
-function getBuildingAt(canvasX, canvasY) {
-  // canvasY is in 0-720 space, buildings sit roughly between BUILD_BASE - h and BUILD_BASE
-  for (const b of state.buildings) {
-    const sx = b.x - state.cameraX;
-    if (canvasX >= sx - 10 && canvasX <= sx + b.w + 10 && canvasY >= 200 && canvasY <= BUILD_BASE) {
-      return b;
+function hitTest(cx, cy) {
+  // Get all visible un-revealed buildings, sort closest first
+  const candidates = state.buildings
+    .filter(b => !b.revealed)
+    .map(b => ({ b, box: buildingScreenBox(b) }))
+    .filter(x => x.box && x.box.scale > 0.15)
+    .sort((a, b) => a.box.zRel - b.box.zRel);
+
+  for (const c of candidates) {
+    const box = c.box;
+    // Add a bit of padding to make small/far buildings easier to click
+    const pad = Math.max(0, 25 - box.scale * 20);
+    if (cx >= box.left - pad && cx <= box.right + pad &&
+        cy >= box.top - pad && cy <= box.bottom + pad) {
+      return c.b;
     }
   }
   return null;
 }
 
 canvas.addEventListener('mousemove', (evt) => {
-  const { x, y } = getCanvasMouse(evt);
-  state.mouseX = x; state.mouseY = y;
-  const b = getBuildingAt(x, y);
-  const newHover = (b && !b.revealed) ? b.id : null;
+  const { x, y } = canvasMouse(evt);
+  const b = hitTest(x, y);
+  const newHover = b ? b.id : null;
   if (newHover !== state.hoverId) {
     state.hoverId = newHover;
     canvas.style.cursor = newHover ? 'pointer' : 'default';
@@ -1223,53 +1362,64 @@ canvas.addEventListener('mouseleave', () => {
 });
 
 canvas.addEventListener('click', (evt) => {
-  const { x, y } = getCanvasMouse(evt);
-  const b = getBuildingAt(x, y);
-  if (b && !b.revealed) openModal(b.id);
+  const { x, y } = canvasMouse(evt);
+  const b = hitTest(x, y);
+  if (b) { Audio.sfxClick(); openModal(b.id); }
 });
 
-// Touch support
 canvas.addEventListener('touchstart', (evt) => {
   if (evt.touches.length === 0) return;
-  const rect = canvas.getBoundingClientRect();
+  const r = canvas.getBoundingClientRect();
   const t = evt.touches[0];
-  const x = (t.clientX - rect.left) / rect.width * W;
-  const y = (t.clientY - rect.top) / rect.height * H;
-  const b = getBuildingAt(x, y);
-  if (b && !b.revealed) {
-    evt.preventDefault();
-    openModal(b.id);
-  }
+  const x = (t.clientX - r.left) / r.width * W;
+  const y = (t.clientY - r.top) / r.height * H;
+  const b = hitTest(x, y);
+  if (b) { evt.preventDefault(); Audio.sfxClick(); openModal(b.id); }
 }, { passive: false });
 
-// Walking controls
-function setWalk(dir) { state.walking = dir; }
+// Walk-forward button (hold)
+const walkBtn = document.getElementById('walk-forward');
+function setWalking(w) { state.walking = w; }
+walkBtn.addEventListener('mousedown', () => { Audio.resume(); setWalking(true); });
+walkBtn.addEventListener('mouseup', () => setWalking(false));
+walkBtn.addEventListener('mouseleave', () => setWalking(false));
+walkBtn.addEventListener('touchstart', (e) => { e.preventDefault(); Audio.resume(); setWalking(true); }, { passive: false });
+walkBtn.addEventListener('touchend', () => setWalking(false));
+walkBtn.addEventListener('touchcancel', () => setWalking(false));
 
-const wLeft = document.getElementById('walk-left');
-const wRight = document.getElementById('walk-right');
-
-const bindHold = (el, dir) => {
-  el.addEventListener('mousedown', () => setWalk(dir));
-  el.addEventListener('mouseup', () => setWalk(0));
-  el.addEventListener('mouseleave', () => setWalk(0));
-  el.addEventListener('touchstart', (e) => { e.preventDefault(); setWalk(dir); }, { passive: false });
-  el.addEventListener('touchend', () => setWalk(0));
-  el.addEventListener('touchcancel', () => setWalk(0));
-};
-bindHold(wLeft, -1);
-bindHold(wRight, 1);
-
-// Keyboard
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowLeft' || e.key === 'a') setWalk(-1);
-  if (e.key === 'ArrowRight' || e.key === 'd') setWalk(1);
+  if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') { Audio.resume(); setWalking(true); }
 });
 window.addEventListener('keyup', (e) => {
-  if (['ArrowLeft','ArrowRight','a','d'].includes(e.key)) setWalk(0);
+  if (['ArrowUp','w',' '].includes(e.key)) setWalking(false);
 });
 
 // =================================================================================
-// MODAL & GAME FLOW
+// MUTE BUTTONS
+// =================================================================================
+function setupMuteButton(btnId, onIconId, offIconId) {
+  const btn = document.getElementById(btnId);
+  btn.addEventListener('click', () => {
+    Audio.resume();
+    Audio.setMuted(!Audio.muted);
+    syncMuteIcons();
+  });
+}
+function syncMuteIcons() {
+  const showOff = Audio.muted;
+  ['title','game','over'].forEach(suffix => {
+    const onIcon = document.getElementById('sound-on-' + suffix);
+    const offIcon = document.getElementById('sound-off-' + suffix);
+    if (onIcon) onIcon.style.display = showOff ? 'none' : '';
+    if (offIcon) offIcon.style.display = showOff ? '' : 'none';
+  });
+}
+setupMuteButton('mute-title');
+setupMuteButton('mute-game');
+setupMuteButton('mute-over');
+
+// =================================================================================
+// MODAL & JUDGMENT FLOW
 // =================================================================================
 const modal = document.getElementById('modal');
 
@@ -1279,6 +1429,8 @@ function openModal(buildingId) {
   const scen = data.scenarios[b.type];
 
   state.currentBuildingId = buildingId;
+  // Pause walking when modal opens
+  setWalking(false);
 
   document.getElementById('m-title').textContent = data.name;
   document.getElementById('m-scenario').textContent = scen.scenario;
@@ -1296,61 +1448,85 @@ function closeModal() {
   state.currentBuildingId = null;
 }
 
-document.getElementById('btn-inspect').addEventListener('click', () => {
-  const b = state.buildings.find(x => x.id === state.currentBuildingId);
-  if (!b) return;
-  b.revealed = true;
-  b.revealedType = b.type;
-  const isGood = b.type === 'good';
-  state.score += isGood ? 100 : -50;
-  state.inspectedCount += 1;
+// Judge buttons
+document.querySelectorAll('.judge-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const judgment = btn.dataset.judge; // 'good' or 'bad'
+    const b = state.buildings.find(x => x.id === state.currentBuildingId);
+    if (!b) return;
+    Audio.sfxClick();
 
-  const banner   = document.getElementById('m-banner');
-  const bIcon    = document.getElementById('m-banner-icon');
-  const verdict  = document.getElementById('m-verdict');
-  const pointsEl = document.getElementById('m-points');
-  const stamp    = document.getElementById('m-stamp');
+    const correct = (judgment === b.type);
+    b.revealed = true;
+    b.judgedCorrect = correct;
+    b.playerJudgment = judgment;
+    state.score += correct ? 100 : -50;
+    state.inspectedCount += 1;
 
-  if (isGood) {
-    banner.style.background = '#e8fbed';
-    bIcon.innerHTML = '<div class="w-14 h-14 rounded-full bg-[#6dd47e] border-4 border-[#0a2540] flex items-center justify-center" style="box-shadow: 0 3px 0 #0a2540;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>';
-    verdict.textContent = 'STRONG CONTROL!';
-    verdict.style.color = '#1d6f33';
-    pointsEl.textContent = '+100 points';
-    pointsEl.style.color = '#1d6f33';
-    stamp.textContent = '+100';
-    stamp.style.background = '#6dd47e';
-    stamp.style.color = 'white';
-    stamp.style.boxShadow = '0 3px 0 #0a2540';
-  } else {
-    banner.style.background = '#ffeaea';
-    bIcon.innerHTML = '<div class="w-14 h-14 rounded-full bg-[#ff6b6b] border-4 border-[#0a2540] flex items-center justify-center" style="box-shadow: 0 3px 0 #0a2540;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>';
-    verdict.textContent = 'WEAK CONTROL!';
-    verdict.style.color = '#a62121';
-    pointsEl.textContent = '−50 points';
-    pointsEl.style.color = '#a62121';
-    stamp.textContent = '−50';
-    stamp.style.background = '#ff6b6b';
-    stamp.style.color = 'white';
-    stamp.style.boxShadow = '0 3px 0 #0a2540';
-  }
-  // Restart stamp animation
-  stamp.classList.remove('stamp'); void stamp.offsetWidth; stamp.classList.add('stamp');
+    // Sound after a beat
+    setTimeout(() => correct ? Audio.sfxCorrect() : Audio.sfxWrong(), 100);
 
-  document.getElementById('m-pre').classList.add('hidden');
-  document.getElementById('m-result').classList.remove('hidden');
+    // Result UI
+    const banner   = document.getElementById('m-banner');
+    const bIcon    = document.getElementById('m-banner-icon');
+    const verdict  = document.getElementById('m-verdict');
+    const pointsEl = document.getElementById('m-points');
+    const stamp    = document.getElementById('m-stamp');
+    const truth    = document.getElementById('m-truth');
 
-  updateHUD();
+    if (correct) {
+      banner.style.background = '#e8fbed';
+      bIcon.innerHTML = '<div class="w-14 h-14 rounded-full bg-[#6dd47e] border-4 border-[#0a2540] flex items-center justify-center" style="box-shadow: 0 3px 0 #0a2540;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>';
+      verdict.textContent = 'CORRECT CALL!';
+      verdict.style.color = '#1d6f33';
+      pointsEl.textContent = '+100 points';
+      pointsEl.style.color = '#1d6f33';
+      stamp.textContent = '+100';
+      stamp.style.background = '#6dd47e';
+      stamp.style.color = 'white';
+      stamp.style.borderColor = '#0a2540';
+      stamp.style.boxShadow = '0 3px 0 #0a2540';
+    } else {
+      banner.style.background = '#ffeaea';
+      bIcon.innerHTML = '<div class="w-14 h-14 rounded-full bg-[#ff6b6b] border-4 border-[#0a2540] flex items-center justify-center" style="box-shadow: 0 3px 0 #0a2540;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>';
+      verdict.textContent = 'WRONG CALL!';
+      verdict.style.color = '#a62121';
+      pointsEl.textContent = '−50 points';
+      pointsEl.style.color = '#a62121';
+      stamp.textContent = '−50';
+      stamp.style.background = '#ff6b6b';
+      stamp.style.color = 'white';
+      stamp.style.borderColor = '#0a2540';
+      stamp.style.boxShadow = '0 3px 0 #0a2540';
+    }
+
+    // Show truth context
+    const judgedTxt = judgment === 'good' ? 'STRONG' : 'WEAK';
+    const truthTxt = b.type === 'good' ? 'STRONG' : 'WEAK';
+    truth.innerHTML = `You judged: <span style="color:${judgment === 'good' ? '#1d6f33' : '#a62121'}">${judgedTxt}</span> &nbsp;·&nbsp; The truth: <span style="color:${b.type === 'good' ? '#1d6f33' : '#a62121'}">${truthTxt}</span>`;
+
+    stamp.classList.remove('stamp'); void stamp.offsetWidth; stamp.classList.add('stamp');
+
+    document.getElementById('m-pre').classList.add('hidden');
+    document.getElementById('m-result').classList.remove('hidden');
+
+    updateHUD();
+  });
 });
 
 document.getElementById('btn-continue').addEventListener('click', () => {
   closeModal();
+  // Auto-advance check: if last building was inspected AND we're near end, finish
   if (state.inspectedCount >= BUILDINGS.length) {
-    setTimeout(showGameOver, 400);
+    // Auto-walk to end so the player sees the rest of the street
+    state.targetPlayerZ = END_Z;
+    if (!state.finishing) {
+      state.finishing = true;
+      setTimeout(showGameOver, 1500);
+    }
   }
 });
 
-// Backdrop close (only pre-reveal)
 modal.addEventListener('click', (e) => {
   if (e.target.classList.contains('modal-back')) {
     const resultShown = !document.getElementById('m-result').classList.contains('hidden');
@@ -1372,14 +1548,20 @@ function updateHUD() {
 // GAME START / END
 // =================================================================================
 function startGame() {
-  state.cameraX = 0;
-  state.targetCameraX = 0;
+  Audio.resume();
+  Audio.startMusic();
+
+  state.playerZ = 0;
+  state.targetPlayerZ = 0;
+  state.walking = false;
+  state.walkBob = 0;
+  state.lastFootstepZ = 0;
   state.score = 0;
   state.inspectedCount = 0;
-  state.walking = 0;
   state.hoverId = null;
+  state.finishing = false;
 
-  // Shuffle good/bad evenly across buildings (4 good, 4 bad)
+  // 4 good / 4 bad, shuffled
   const types = ['good','good','good','good','bad','bad','bad','bad'];
   for (let i = types.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -1390,19 +1572,23 @@ function startGame() {
     id: b.id,
     name: b.name,
     drawFn: b.drawFn,
-    x: BUILDING_LAYOUT[i].x,
-    w: BUILDING_LAYOUT[i].w,
+    worldX: BUILDING_LAYOUT[i].worldX,
+    worldZ: BUILDING_LAYOUT[i].worldZ,
+    side: BUILDING_LAYOUT[i].side,
     type: types[i],
     revealed: false,
-    revealedType: null
+    judgedCorrect: false,
+    playerJudgment: null
   }));
 
   updateHUD();
   showScreen('screen-game');
-  setTimeout(fitCanvas, 50);
 }
 
 function showGameOver() {
+  Audio.stopMusic();
+  setTimeout(() => Audio.sfxFanfare(), 200);
+
   state.pendingName = { score: state.score, date: new Date().toISOString() };
 
   document.getElementById('final-score').textContent = state.score;
@@ -1410,22 +1596,19 @@ function showGameOver() {
   document.getElementById('final-message').textContent = message;
   document.getElementById('final-flavour').textContent = flavour;
 
-  // Reset name entry UI
   document.getElementById('name-entry').classList.remove('hidden');
   document.getElementById('name-saved').classList.add('hidden');
   document.getElementById('entry-name').value = '';
 
-  // Render leaderboard (no current entry yet)
   renderLeaderboard(Storage.load(), null);
-
   showScreen('screen-over');
 }
 
 function getPerformanceMessage(score) {
-  if (score >= 600) return { message: 'TOTAL CONTROL FREAK!', flavour: 'You uncovered a town full of bulletproof governance. Pricebury is in safe hands — and so are its donors.' };
-  if (score >= 300) return { message: 'SHARP EYE', flavour: 'A mostly healthy control environment — but a few weak spots need shoring up before they bite.' };
-  if (score >= 0)   return { message: 'ROOM FOR IMPROVEMENT', flavour: 'Foundations of governance are there, but key controls are missing or sloppy. A formal controls review would help a lot.' };
-                    return { message: 'YIKES!', flavour: 'Pervasive weaknesses across the town — substantial fraud and regulatory risk. Strengthening internal controls should be urgent.' };
+  if (score >= 600) return { message: 'TOTAL CONTROL FREAK!', flavour: 'You called every control with eagle-eyed precision. Pricebury is in safe hands — and so are its donors.' };
+  if (score >= 300) return { message: 'SHARP EYE', flavour: 'A solid auditor performance. A couple of misses, but mostly bang on the money.' };
+  if (score >= 0)   return { message: 'ROOM FOR IMPROVEMENT', flavour: 'Some good instincts, some shaky calls. A bit more time with the controls framework would sharpen this right up.' };
+                    return { message: 'BACK TO THE BOOKS!', flavour: 'A challenging round — those weak controls were sneakier than they looked. Brush up, then come back and crush it.' };
 }
 
 function renderLeaderboard(leaderboard, justAdded) {
@@ -1443,20 +1626,20 @@ function renderLeaderboard(leaderboard, justAdded) {
   html += '</tbody></table>';
   c.innerHTML = html;
 }
-
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 document.getElementById('btn-save-score').addEventListener('click', () => {
   const name = (document.getElementById('entry-name').value || '').trim() || 'Anonymous';
   const entry = { name, score: state.pendingName.score, date: state.pendingName.date };
+  Audio.sfxClick();
   const lb = Storage.save(entry);
   document.getElementById('name-entry').classList.add('hidden');
   document.getElementById('name-saved').classList.remove('hidden');
   renderLeaderboard(lb, entry);
 });
 
-document.getElementById('btn-play-again').addEventListener('click', startGame);
-document.getElementById('btn-start').addEventListener('click', startGame);
+document.getElementById('btn-play-again').addEventListener('click', () => { Audio.sfxClick(); startGame(); });
+document.getElementById('btn-start').addEventListener('click', () => { Audio.sfxClick(); startGame(); });
 
 // =================================================================================
 // INIT
