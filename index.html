@@ -2,385 +2,380 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Control Freak | Price Bailey</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          'pb-navy': '#0a2540',
-          'pb-navy-light': '#1a3a5c',
-          'pb-gold': '#c9a961',
-          'pb-cream': '#f8f6f1',
-          'pb-slate': '#475569',
-        },
-        fontFamily: {
-          'sans': ['Inter', 'sans-serif'],
-          'display': ['"Playfair Display"', 'serif'],
-        }
-      }
-    }
-  }
-</script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Bungee&display=swap" rel="stylesheet">
 <style>
-  html, body { font-family: 'Inter', sans-serif; background-color: #f8f6f1; }
+  html, body {
+    font-family: 'Fredoka', sans-serif;
+    background: #87ceeb;
+    overflow: hidden;
+    margin: 0;
+    height: 100%;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
   .screen { display: none; }
   .screen.active { display: flex; }
 
-  .map-bg {
-    background-color: #f8f6f1;
-    background-image:
-      linear-gradient(rgba(10, 37, 64, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(10, 37, 64, 0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
+  .font-cartoon { font-family: 'Bungee', sans-serif; }
+
+  /* Title pop */
+  .title-pop {
+    text-shadow:
+      4px 4px 0 #0a2540,
+      -1px -1px 0 #0a2540,
+      1px -1px 0 #0a2540,
+      -1px 1px 0 #0a2540,
+      1px 1px 0 #0a2540;
+    animation: bobTitle 2.5s ease-in-out infinite;
+  }
+  @keyframes bobTitle {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
   }
 
-  .building-card { transition: all 0.2s ease; cursor: pointer; }
-  .building-card:hover:not(.inspected) {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(10, 37, 64, 0.18);
+  .btn-cartoon {
+    background: #ffcc33;
+    color: #0a2540;
+    border: 4px solid #0a2540;
+    border-radius: 16px;
+    box-shadow: 0 6px 0 #0a2540;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    transition: transform 0.1s, box-shadow 0.1s;
+    cursor: pointer;
   }
-  .building-card:focus { outline: 2px solid #c9a961; outline-offset: 2px; }
-  .building-card.inspected { cursor: default; opacity: 0.75; }
+  .btn-cartoon:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #0a2540; }
+  .btn-cartoon:active { transform: translateY(4px); box-shadow: 0 2px 0 #0a2540; }
+  .btn-cartoon.secondary { background: #ffffff; }
+  .btn-cartoon.success { background: #6dd47e; color: white; text-shadow: 1px 1px 0 #0a2540; }
+  .btn-cartoon.danger  { background: #ff6b6b; color: white; text-shadow: 1px 1px 0 #0a2540; }
 
-  .modal-backdrop { animation: fadeIn 0.2s ease; }
-  .modal-content { animation: slideUp 0.3s ease; }
+  .walk-btn {
+    width: 80px; height: 80px;
+    background: rgba(255,255,255,0.9);
+    border: 4px solid #0a2540;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 5px 0 #0a2540;
+    cursor: pointer;
+    transition: transform 0.05s, box-shadow 0.05s;
+    pointer-events: auto;
+  }
+  .walk-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #0a2540; }
+  .walk-btn svg { width: 38px; height: 38px; color: #0a2540; }
+  .walk-btn:disabled { opacity: 0.35; cursor: default; }
+
+  #game-canvas { display: block; image-rendering: auto; }
+
+  .modal-pop { animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes pop {
+    0% { opacity: 0; transform: scale(0.6) rotate(-3deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0); }
+  }
+  .modal-back { animation: fadeIn 0.2s ease; }
   @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(20px) } to { opacity: 1; transform: translateY(0) } }
 
-  .score-flash { animation: flash 0.5s ease; }
-  @keyframes flash { 0%,100% { transform: scale(1) } 50% { transform: scale(1.15) } }
-
-  .custom-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230a2540' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    background-size: 12px;
-    appearance: none;
-    -webkit-appearance: none;
+  .scoreflash { animation: flash 0.5s ease; }
+  @keyframes flash {
+    0%,100% { transform: scale(1); }
+    50%     { transform: scale(1.25); }
   }
 
-  /* Make icon cutouts blend on white backgrounds */
-  .bld-icon .cut { fill: white; }
+  /* Cloud float used in title screen */
+  .cloud-float { animation: cloudFloat 8s ease-in-out infinite; }
+  @keyframes cloudFloat {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(20px); }
+  }
+
+  /* Stamp animation when revealing */
+  .stamp { animation: stamp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes stamp {
+    0%   { opacity: 0; transform: scale(2) rotate(-15deg); }
+    100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+  }
 </style>
 </head>
-<body class="min-h-screen">
+<body>
 
-<!-- ============================= SCREEN 1: LEAD CAPTURE ============================= -->
-<div id="screen-form" class="screen active min-h-screen flex-col">
-  <header class="bg-pb-navy text-white py-4 px-6 shadow-lg w-full">
-    <div class="max-w-6xl mx-auto flex items-center justify-between">
-      <!-- ============== BRANDING PLACEHOLDER: replace with <img src="logo.svg"> ============== -->
-      <div class="flex items-center gap-4">
-        <div class="bg-white/10 border border-white/20 rounded px-4 py-2 text-xs uppercase tracking-[0.25em] text-pb-gold font-semibold">
-          [ Price Bailey Logo ]
-        </div>
-      </div>
-      <div class="text-xs uppercase tracking-[0.25em] text-pb-gold/90 hidden sm:block">Exhibition Edition</div>
+<!-- ============================= TITLE SCREEN ============================= -->
+<div id="screen-title" class="screen active fixed inset-0 flex-col items-center justify-center overflow-hidden"
+     style="background: linear-gradient(to bottom, #87ceeb 0%, #b8e3f5 60%, #6dd47e 60%, #5cc06d 100%);">
+
+  <!-- Decorative clouds -->
+  <div class="absolute cloud-float" style="top: 8%; left: 8%;">
+    <svg width="120" height="60" viewBox="0 0 120 60"><ellipse cx="60" cy="40" rx="55" ry="18" fill="white" stroke="#0a2540" stroke-width="3"/><circle cx="40" cy="28" r="18" fill="white" stroke="#0a2540" stroke-width="3"/><circle cx="70" cy="22" r="22" fill="white" stroke="#0a2540" stroke-width="3"/></svg>
+  </div>
+  <div class="absolute cloud-float" style="top: 14%; right: 10%; animation-delay: -2s;">
+    <svg width="100" height="50" viewBox="0 0 120 60"><ellipse cx="60" cy="40" rx="55" ry="18" fill="white" stroke="#0a2540" stroke-width="3"/><circle cx="45" cy="28" r="18" fill="white" stroke="#0a2540" stroke-width="3"/><circle cx="75" cy="25" r="20" fill="white" stroke="#0a2540" stroke-width="3"/></svg>
+  </div>
+
+  <!-- Sun -->
+  <div class="absolute" style="top: 6%; right: 18%;">
+    <svg width="100" height="100" viewBox="0 0 100 100">
+      <g style="transform-origin: 50px 50px; animation: spin 20s linear infinite;">
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+        <g stroke="#0a2540" stroke-width="3" stroke-linecap="round">
+          <line x1="50" y1="5" x2="50" y2="18"/><line x1="50" y1="82" x2="50" y2="95"/>
+          <line x1="5" y1="50" x2="18" y2="50"/><line x1="82" y1="50" x2="95" y2="50"/>
+          <line x1="18" y1="18" x2="27" y2="27"/><line x1="73" y1="73" x2="82" y2="82"/>
+          <line x1="82" y1="18" x2="73" y2="27"/><line x1="18" y1="82" x2="27" y2="73"/>
+        </g>
+      </g>
+      <circle cx="50" cy="50" r="22" fill="#ffcc33" stroke="#0a2540" stroke-width="3"/>
+    </svg>
+  </div>
+
+  <!-- Branding (placeholder) -->
+  <div class="absolute top-6 left-6 bg-white border-4 border-[#0a2540] rounded-xl px-4 py-2 font-bold text-[#0a2540] text-sm" style="box-shadow: 0 4px 0 #0a2540;">
+    [ Price Bailey Logo ]
+  </div>
+
+  <!-- Title block -->
+  <div class="text-center px-6 mt-12 z-10">
+    <div class="title-pop">
+      <h1 class="font-cartoon text-7xl md:text-8xl text-[#ffcc33] mb-2 leading-none">CONTROL</h1>
+      <h1 class="font-cartoon text-7xl md:text-8xl text-[#ffcc33] leading-none">FREAK</h1>
     </div>
-  </header>
 
-  <main class="flex-1 flex items-center justify-center px-6 py-10 w-full">
-    <div class="max-w-2xl w-full">
-      <div class="text-center mb-8">
-        <p class="text-pb-gold uppercase tracking-[0.3em] text-xs font-semibold mb-3">An Interactive Audit Challenge</p>
-        <h1 class="font-display text-5xl md:text-6xl text-pb-navy mb-4">Control Freak</h1>
-        <p class="text-pb-slate text-lg max-w-lg mx-auto leading-relaxed">
-          Step into the shoes of an internal auditor. Inspect a town's organisations and uncover the strength — or weakness — of their financial controls.
-        </p>
-      </div>
+    <p class="mt-8 text-xl md:text-2xl font-semibold text-[#0a2540] max-w-xl mx-auto leading-snug" style="text-shadow: 2px 2px 0 white;">
+      Stroll through town. Inspect the locals' books. Spot the dodgy controls before they cost a fortune.
+    </p>
 
-      <div class="bg-white rounded-lg shadow-xl border border-pb-navy/10 p-8 md:p-10">
-        <h2 class="font-display text-2xl text-pb-navy mb-1">Begin Your Inspection</h2>
-        <p class="text-pb-slate text-sm mb-6">Please provide your details to start.</p>
+    <button id="btn-start" class="btn-cartoon mt-10 px-12 py-5 text-2xl">
+      START WALKING →
+    </button>
 
-        <form id="lead-form" class="space-y-5" autocomplete="on" novalidate>
-          <div>
-            <label for="lead-name" class="block text-sm font-semibold text-pb-navy mb-2">Full Name</label>
-            <input id="lead-name" name="name" type="text" required
-              class="w-full px-4 py-3 border border-pb-navy/20 rounded-md focus:ring-2 focus:ring-pb-gold focus:border-pb-gold outline-none transition text-pb-navy"
-              placeholder="Jane Smith">
-          </div>
+    <p class="mt-6 text-sm text-[#0a2540] font-semibold opacity-80">
+      A financial controls game for Charities &amp; NFPs · Brought to you by Price Bailey
+    </p>
+  </div>
 
-          <div>
-            <label for="lead-email" class="block text-sm font-semibold text-pb-navy mb-2">Email Address</label>
-            <input id="lead-email" name="email" type="email" required
-              class="w-full px-4 py-3 border border-pb-navy/20 rounded-md focus:ring-2 focus:ring-pb-gold focus:border-pb-gold outline-none transition text-pb-navy"
-              placeholder="jane@organisation.org">
-          </div>
-
-          <div>
-            <label for="lead-org" class="block text-sm font-semibold text-pb-navy mb-2">Organisation Type</label>
-            <select id="lead-org" name="org" required
-              class="custom-select w-full px-4 py-3 border border-pb-navy/20 rounded-md focus:ring-2 focus:ring-pb-gold focus:border-pb-gold outline-none transition text-pb-navy bg-white">
-              <option value="">Please select...</option>
-              <option value="Charity/NFP">Charity / Not-for-Profit</option>
-              <option value="Corporate">Corporate</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <div id="form-error" class="hidden text-red-600 text-sm font-medium"></div>
-
-          <button id="start-button" type="submit" disabled
-            class="w-full bg-pb-navy text-white font-semibold py-4 rounded-md hover:bg-pb-navy-light disabled:bg-gray-300 disabled:cursor-not-allowed transition uppercase tracking-[0.15em] text-sm">
-            Start Game
-          </button>
-
-          <p class="text-xs text-pb-slate/70 text-center leading-relaxed pt-2">
-            By starting the game you consent to Price Bailey contacting you about relevant services. We will never share your details with third parties.
-          </p>
-        </form>
-      </div>
-    </div>
-  </main>
+  <!-- Inspector character peeking at bottom -->
+  <div class="absolute bottom-0 right-12" style="transform: translateY(20%);">
+    <svg width="180" height="220" viewBox="0 0 180 220">
+      <!-- Body -->
+      <ellipse cx="90" cy="200" rx="55" ry="20" fill="#0a2540" opacity="0.2"/>
+      <rect x="55" y="110" width="70" height="90" rx="10" fill="#0a2540" stroke="#0a2540" stroke-width="3"/>
+      <!-- Tie -->
+      <polygon points="90,110 80,125 90,180 100,125" fill="#ffcc33" stroke="#0a2540" stroke-width="2"/>
+      <!-- Head -->
+      <circle cx="90" cy="80" r="38" fill="#fde0c1" stroke="#0a2540" stroke-width="3"/>
+      <!-- Hair -->
+      <path d="M52 70 Q55 45 90 42 Q125 45 128 70 Q120 62 90 60 Q60 62 52 70" fill="#5a3825" stroke="#0a2540" stroke-width="3"/>
+      <!-- Eyes -->
+      <circle cx="78" cy="80" r="3" fill="#0a2540"/>
+      <circle cx="102" cy="80" r="3" fill="#0a2540"/>
+      <!-- Smile -->
+      <path d="M78 95 Q90 105 102 95" fill="none" stroke="#0a2540" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Magnifying glass -->
+      <circle cx="140" cy="130" r="22" fill="rgba(173, 216, 230, 0.5)" stroke="#0a2540" stroke-width="3"/>
+      <line x1="155" y1="145" x2="170" y2="160" stroke="#5a3825" stroke-width="6" stroke-linecap="round"/>
+      <line x1="155" y1="145" x2="170" y2="160" stroke="#0a2540" stroke-width="2.5"/>
+      <!-- Arm holding magnifier -->
+      <path d="M125 130 Q135 125 140 130" fill="none" stroke="#0a2540" stroke-width="3"/>
+    </svg>
+  </div>
 </div>
 
-<!-- ============================= SCREEN 2: TOWN MAP ============================= -->
-<div id="screen-game" class="screen min-h-screen flex-col">
-  <header class="bg-pb-navy text-white px-4 md:px-6 py-4 shadow-lg w-full">
-    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-      <div class="flex items-center gap-4">
-        <div class="bg-white/10 border border-white/20 rounded px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-pb-gold font-semibold">
-          [ Price Bailey ]
-        </div>
-        <span class="hidden md:block font-display text-xl">Control Freak</span>
+<!-- ============================= GAME SCREEN ============================= -->
+<div id="screen-game" class="screen fixed inset-0 flex-col items-center justify-center" style="background: #0a2540;">
+
+  <!-- HUD top bar -->
+  <div class="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 py-3 pointer-events-none">
+    <div class="bg-white border-4 border-[#0a2540] rounded-xl px-3 py-1.5 font-bold text-[#0a2540] text-xs pointer-events-auto" style="box-shadow: 0 4px 0 #0a2540;">
+      [ Price Bailey ]
+    </div>
+
+    <div class="flex gap-3">
+      <div class="bg-white border-4 border-[#0a2540] rounded-xl px-4 py-2" style="box-shadow: 0 4px 0 #0a2540;">
+        <div class="text-[10px] uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">Inspected</div>
+        <div id="hud-progress" class="font-cartoon text-lg text-[#0a2540] text-center leading-none">0/8</div>
       </div>
-      <div class="flex items-center gap-4 md:gap-6">
-        <div class="text-right">
-          <div class="text-[10px] md:text-xs uppercase tracking-[0.2em] text-pb-gold/80">Inspected</div>
-          <div id="progress-display" class="font-display text-lg md:text-xl font-semibold">0 / 8</div>
-        </div>
-        <div class="h-10 w-px bg-white/20"></div>
-        <div class="text-right">
-          <div class="text-[10px] md:text-xs uppercase tracking-[0.2em] text-pb-gold/80">Score</div>
-          <div id="score-display" class="font-display text-xl md:text-2xl font-bold">0</div>
-        </div>
+      <div class="bg-[#ffcc33] border-4 border-[#0a2540] rounded-xl px-4 py-2" style="box-shadow: 0 4px 0 #0a2540;">
+        <div class="text-[10px] uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">Score</div>
+        <div id="hud-score" class="font-cartoon text-lg text-[#0a2540] text-center leading-none">0</div>
       </div>
     </div>
-  </header>
+  </div>
 
-  <main class="flex-1 map-bg px-4 md:px-6 py-6 w-full">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center mb-6">
-        <h2 class="font-display text-2xl md:text-3xl text-pb-navy">Town of Pricebury</h2>
-        <p class="text-pb-slate text-sm mt-1">Tap each building to inspect its internal financial controls.</p>
-      </div>
+  <!-- Canvas container -->
+  <div id="canvas-wrap" class="relative w-full h-full flex items-center justify-center">
+    <canvas id="game-canvas" width="1280" height="720"></canvas>
 
-      <div id="buildings-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"></div>
+    <!-- Hover tooltip -->
+    <div id="tooltip" class="absolute hidden pointer-events-none bg-white border-3 border-[#0a2540] rounded-lg px-3 py-1.5 font-bold text-[#0a2540] text-sm whitespace-nowrap"
+         style="border-width: 3px; box-shadow: 0 3px 0 #0a2540; transform: translate(-50%, -130%);">
+      Click to inspect!
+      <div class="absolute left-1/2 bottom-0 w-0 h-0" style="transform: translate(-50%, 100%); border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #0a2540;"></div>
     </div>
-  </main>
+  </div>
+
+  <!-- Walking controls -->
+  <div class="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-between px-6 pointer-events-none">
+    <button id="walk-left" class="walk-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+
+    <div class="bg-white border-4 border-[#0a2540] rounded-xl px-4 py-2 pointer-events-auto" style="box-shadow: 0 4px 0 #0a2540;">
+      <div class="font-cartoon text-sm text-[#0a2540] text-center">Tap a building →</div>
+    </div>
+
+    <button id="walk-right" class="walk-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
 </div>
 
-<!-- ============================= SCREEN 3: LEADERBOARD ============================= -->
-<div id="screen-leaderboard" class="screen min-h-screen flex-col">
-  <header class="bg-pb-navy text-white py-4 px-6 shadow-lg w-full">
-    <div class="max-w-6xl mx-auto flex items-center justify-between">
-      <div class="bg-white/10 border border-white/20 rounded px-4 py-2 text-xs uppercase tracking-[0.25em] text-pb-gold font-semibold">
-        [ Price Bailey Logo ]
-      </div>
-      <div class="text-xs uppercase tracking-[0.25em] text-pb-gold/90 hidden sm:block">Inspection Complete</div>
-    </div>
-  </header>
-
-  <main class="flex-1 px-4 md:px-6 py-10 w-full">
-    <div class="max-w-3xl mx-auto">
-      <div class="bg-white rounded-lg shadow-xl border border-pb-navy/10 p-8 md:p-12 text-center mb-6">
-        <p class="text-pb-gold uppercase tracking-[0.3em] text-xs font-semibold mb-3">Final Score</p>
-        <div id="final-score" class="font-display text-6xl md:text-7xl text-pb-navy mb-3">0</div>
-        <div id="final-message" class="font-display text-xl text-pb-slate mb-4"></div>
-        <p id="final-flavour" class="text-pb-slate max-w-lg mx-auto leading-relaxed mb-6"></p>
-
-        <div class="border-t border-pb-navy/10 pt-6">
-          <p class="text-sm text-pb-slate mb-3">Strong internal controls protect your organisation, your donors, and your beneficiaries.</p>
-          <p class="text-pb-navy font-semibold">Speak with a Price Bailey advisor at our stand to learn more.</p>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-lg shadow-xl border border-pb-navy/10 p-6 md:p-8 mb-6">
-        <h3 class="font-display text-2xl text-pb-navy mb-4">Today's Leaderboard</h3>
-        <div id="leaderboard-table" class="overflow-x-auto"></div>
-      </div>
-
-      <button id="play-again-button" class="w-full bg-pb-navy text-white font-semibold py-4 rounded-md hover:bg-pb-navy-light transition uppercase tracking-[0.15em] text-sm">
-        Play Again
-      </button>
-    </div>
-  </main>
-</div>
-
-<!-- ============================= MODAL ============================= -->
+<!-- ============================= INSPECTION MODAL ============================= -->
 <div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
-  <div class="modal-backdrop absolute inset-0 bg-pb-navy/70"></div>
-  <div class="modal-content relative bg-white rounded-lg shadow-2xl max-w-xl w-full max-h-[92vh] overflow-y-auto">
-    <div class="p-6 border-b border-pb-navy/10">
-      <div class="flex items-start gap-4">
-        <div id="modal-icon" class="text-pb-navy bld-icon flex-shrink-0"></div>
+  <div class="modal-back absolute inset-0" style="background: rgba(10, 37, 64, 0.65);"></div>
+  <div class="modal-pop relative bg-white border-4 border-[#0a2540] rounded-2xl max-w-xl w-full max-h-[88vh] overflow-y-auto"
+       style="box-shadow: 0 10px 0 #0a2540;">
+
+    <!-- Header -->
+    <div class="bg-[#ffcc33] border-b-4 border-[#0a2540] px-5 py-4 rounded-t-2xl">
+      <div class="text-xs uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">On-Site Inspection</div>
+      <h3 id="m-title" class="font-cartoon text-2xl text-[#0a2540] leading-tight"></h3>
+    </div>
+
+    <div class="p-5">
+      <div class="text-xs uppercase font-bold text-[#0a2540] opacity-60 tracking-wider mb-1">What you see</div>
+      <p id="m-scenario" class="text-[#0a2540] text-base leading-relaxed font-medium"></p>
+    </div>
+
+    <div id="m-pre" class="px-5 pb-5">
+      <button id="btn-inspect" class="btn-cartoon w-full py-4 text-lg">🔍 INSPECT THE CONTROLS</button>
+    </div>
+
+    <div id="m-result" class="hidden px-5 pb-5">
+      <div id="m-banner" class="relative rounded-xl border-4 border-[#0a2540] p-4 mb-4 flex items-center gap-3" style="box-shadow: 0 4px 0 #0a2540;">
+        <div id="m-banner-icon"></div>
         <div class="flex-1">
-          <p class="text-xs uppercase tracking-[0.25em] text-pb-gold font-semibold mb-1">On-Site Inspection</p>
-          <h3 id="modal-title" class="font-display text-2xl text-pb-navy leading-tight"></h3>
+          <div id="m-verdict" class="font-cartoon text-lg"></div>
+          <div id="m-points" class="font-bold text-sm"></div>
         </div>
+        <div id="m-stamp" class="stamp absolute -top-2 -right-2 font-cartoon text-xl px-3 py-1 rounded-lg border-3 border-[#0a2540]" style="border-width: 3px; transform: rotate(-8deg);"></div>
+      </div>
+
+      <div class="text-xs uppercase font-bold text-[#0a2540] opacity-60 tracking-wider mb-1">Auditor's Note</div>
+      <p id="m-principle" class="text-[#0a2540] text-sm leading-relaxed mb-4 font-medium"></p>
+
+      <button id="btn-continue" class="btn-cartoon w-full py-4 text-lg">CONTINUE WALKING →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= GAME OVER / LEADERBOARD ============================= -->
+<div id="screen-over" class="screen fixed inset-0 flex-col items-center justify-center overflow-y-auto"
+     style="background: linear-gradient(to bottom, #87ceeb 0%, #b8e3f5 100%);">
+
+  <div class="absolute top-6 left-6 bg-white border-4 border-[#0a2540] rounded-xl px-4 py-2 font-bold text-[#0a2540] text-sm" style="box-shadow: 0 4px 0 #0a2540;">
+    [ Price Bailey ]
+  </div>
+
+  <div class="max-w-2xl w-full px-6 py-12 z-10">
+    <div class="bg-white border-4 border-[#0a2540] rounded-2xl p-8 text-center mb-5" style="box-shadow: 0 10px 0 #0a2540;">
+      <div class="font-cartoon text-3xl text-[#0a2540] mb-2">INSPECTION COMPLETE!</div>
+      <div class="text-sm text-[#0a2540] opacity-70 uppercase tracking-wider font-bold mb-4">Your final score</div>
+      <div id="final-score" class="font-cartoon text-7xl md:text-8xl text-[#ffcc33] mb-3" style="text-shadow: 4px 4px 0 #0a2540;">0</div>
+      <div id="final-message" class="font-cartoon text-xl text-[#0a2540] mb-3"></div>
+      <p id="final-flavour" class="text-[#0a2540] font-medium leading-relaxed mb-5"></p>
+
+      <!-- Name entry for leaderboard -->
+      <div id="name-entry" class="border-t-4 border-dashed border-[#0a2540] pt-5">
+        <p class="text-sm font-bold text-[#0a2540] mb-3">Pop your name on the board (optional):</p>
+        <div class="flex gap-2">
+          <input id="entry-name" type="text" maxlength="20" placeholder="Your name"
+                 class="flex-1 px-4 py-3 border-4 border-[#0a2540] rounded-xl font-bold text-[#0a2540] focus:outline-none focus:bg-[#fffbeb]">
+          <button id="btn-save-score" class="btn-cartoon px-6">SAVE</button>
+        </div>
+      </div>
+
+      <div id="name-saved" class="hidden border-t-4 border-dashed border-[#0a2540] pt-5">
+        <p class="font-cartoon text-lg text-[#6dd47e]">✓ Added to the board!</p>
       </div>
     </div>
 
-    <div class="p-6">
-      <p class="text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold mb-2">Observed Procedure</p>
-      <p id="modal-scenario" class="text-pb-navy leading-relaxed"></p>
+    <div class="bg-white border-4 border-[#0a2540] rounded-2xl p-6 mb-5" style="box-shadow: 0 10px 0 #0a2540;">
+      <h3 class="font-cartoon text-2xl text-[#0a2540] mb-3 text-center">🏆 LEADERBOARD</h3>
+      <div id="leaderboard-table" class="overflow-x-auto"></div>
     </div>
 
-    <div id="modal-pre-action" class="px-6 pb-6">
-      <button id="inspect-button" class="w-full bg-pb-navy text-white font-semibold py-3 rounded-md hover:bg-pb-navy-light transition uppercase tracking-[0.15em] text-sm">
-        Inspect Controls
-      </button>
-    </div>
+    <button id="btn-play-again" class="btn-cartoon w-full py-5 text-2xl">PLAY AGAIN</button>
 
-    <div id="modal-result" class="hidden px-6 pb-6">
-      <div id="result-banner" class="rounded-md p-4 mb-4 flex items-center gap-3">
-        <div id="result-icon" class="flex-shrink-0"></div>
-        <div>
-          <div id="result-verdict" class="font-display text-lg"></div>
-          <div id="result-points" class="text-sm font-semibold"></div>
-        </div>
-      </div>
-
-      <p class="text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold mb-2">Auditor's Note</p>
-      <p id="modal-principle" class="text-pb-slate text-sm leading-relaxed mb-4"></p>
-
-      <button id="continue-button" class="w-full bg-pb-navy text-white font-semibold py-3 rounded-md hover:bg-pb-navy-light transition uppercase tracking-[0.15em] text-sm">
-        Continue Inspection
-      </button>
-    </div>
+    <p class="text-center text-sm font-bold text-[#0a2540] mt-5">
+      Want stronger controls in your organisation? <br/>
+      <span class="text-[#0a2540]">Speak to a Price Bailey advisor at our stand →</span>
+    </p>
   </div>
 </div>
 
 <script>
 // =================================================================================
-// GAME DATA — Buildings & Scenarios
+// BUILDING DATA — financial controls scenarios (Charity / NFP focus)
 // =================================================================================
 const BUILDINGS = [
   {
-    id: 'charity-hq',
-    name: 'Hopebridge Charity HQ',
-    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 26L32 12L56 26V30H8V26Z" fill="currentColor"/><rect x="12" y="32" width="6" height="20" fill="currentColor"/><rect x="22" y="32" width="6" height="20" fill="currentColor"/><rect x="36" y="32" width="6" height="20" fill="currentColor"/><rect x="46" y="32" width="6" height="20" fill="currentColor"/><rect x="6" y="52" width="52" height="4" fill="currentColor"/></svg>`,
+    id: 'charity-hq', name: 'Hopebridge Charity HQ', signColor: '#c8e8ff', drawFn: 'drawCharityHQ',
     scenarios: {
-      good: {
-        scenario: "The trustees meet quarterly to review management accounts, with documented minutes circulated to all board members. Financial KPIs are tracked against the annual budget, and significant variances trigger formal investigation by the Finance Committee.",
-        principle: "Active trustee oversight ensures strategic financial decisions are scrutinised and accountable, meeting Charity Commission expectations for proper governance."
-      },
-      bad: {
-        scenario: "The trustees haven't formally reviewed management accounts in over 18 months. The Chair signs off figures during a brief phone call with the Finance Director, with no documented discussion, minutes, or board challenge.",
-        principle: "Absence of trustee oversight undermines governance, breaches Charity Commission expectations, and creates conditions in which financial irregularities can go undetected for extended periods."
-      }
+      good: { scenario: "Trustees meet quarterly to review management accounts. Minutes are circulated and KPIs are tracked against budget, with formal investigation of any variances.", principle: "Active trustee oversight ensures financial decisions are scrutinised and accountable — a Charity Commission expectation." },
+      bad:  { scenario: "Trustees haven't formally reviewed management accounts in 18 months. The Chair signs off figures over a quick phone call with the Finance Director. No minutes. No challenge.", principle: "Absent trustee oversight breaches governance expectations and lets irregularities fester unseen for long periods." }
     }
   },
   {
-    id: 'bank',
-    name: 'Pricebury High Street Bank',
-    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none"><path d="M6 22L32 8L58 22V26H6V22Z" fill="currentColor"/><rect x="10" y="28" width="4" height="22" fill="currentColor"/><rect x="20" y="28" width="4" height="22" fill="currentColor"/><rect x="30" y="28" width="4" height="22" fill="currentColor"/><rect x="40" y="28" width="4" height="22" fill="currentColor"/><rect x="50" y="28" width="4" height="22" fill="currentColor"/><rect x="6" y="52" width="52" height="4" fill="currentColor"/></svg>`,
+    id: 'bank', name: 'Pricebury High Street Bank', signColor: '#ffe5a3', drawFn: 'drawBank',
     scenarios: {
-      good: {
-        scenario: "All outgoing payments above £500 require dual authorisation by two designated signatories from separate functions. The bank mandate is up to date, and signatories are reviewed annually against current trustees and staff.",
-        principle: "Dual authorisation enforces segregation of duties and eliminates single points of failure. It is one of the most effective controls against payment fraud and error."
-      },
-      bad: {
-        scenario: "A single staff member holds sole online banking access and can authorise payments of any amount. The bank mandate hasn't been updated for three years, and two former trustees remain listed as signatories.",
-        principle: "Sole banking authority is a critical control failure. Combined with an out-of-date mandate, it exposes the organisation to large unauthorised payments and significant reputational damage."
-      }
+      good: { scenario: "All payments above £500 require dual authorisation by two signatories from separate functions. The bank mandate is reviewed annually against current staff.", principle: "Dual authorisation enforces segregation of duties and is one of the most effective controls against payment fraud." },
+      bad:  { scenario: "One staff member has sole online banking access and can authorise payments of any size. The bank mandate is three years out of date — two ex-trustees are still listed.", principle: "Sole banking authority plus a stale mandate is a critical failure — large unauthorised payments become easy and reputational damage is severe." }
     }
   },
   {
-    id: 'community',
-    name: "St Mary's Community Hall",
-    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><path d="M32 8L8 26V56H56V26L32 8Z" fill="currentColor"/><rect x="26" y="36" width="12" height="20" class="cut"/><rect x="14" y="32" width="8" height="8" class="cut"/><rect x="42" y="32" width="8" height="8" class="cut"/></svg>`,
+    id: 'community', name: "St Mary's Community Hall", signColor: '#ffd6c4', drawFn: 'drawCommunity',
     scenarios: {
-      good: {
-        scenario: "Cash donations from community events are counted by two unrelated volunteers immediately after each event. A signed counting sheet is retained, and the total is banked intact within two working days.",
-        principle: "Dual counting and prompt, intact banking minimise opportunities for misappropriation and create a robust audit trail for cash income — a known area of charity sector risk."
-      },
-      bad: {
-        scenario: "One volunteer takes the donation tin home after events and brings the cash to the bank 'when convenient'. Counts are recorded informally on scraps of paper, sometimes weeks after collection.",
-        principle: "Single-person cash handling combined with delayed banking is a classic high-risk weakness identified in the majority of charity cash fraud cases."
-      }
+      good: { scenario: "Cash donations from events are counted by two unrelated volunteers immediately. A signed counting sheet is retained and the cash banked intact within two working days.", principle: "Dual counting and prompt intact banking minimise misappropriation and create a robust audit trail for cash income." },
+      bad:  { scenario: "One volunteer takes the donation tin home after events and banks the cash 'when convenient'. Counts are scribbled on scraps of paper, sometimes weeks later.", principle: "Single-person cash handling with delayed banking is the classic high-risk weakness behind most charity cash fraud cases." }
     }
   },
   {
-    id: 'shop',
-    name: 'Hopebridge Charity Shop',
-    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><rect x="8" y="22" width="48" height="34" fill="currentColor"/><path d="M6 22L32 12L58 22H6Z" fill="currentColor"/><rect x="14" y="30" width="8" height="8" class="cut"/><rect x="26" y="30" width="12" height="22" class="cut"/><rect x="42" y="30" width="8" height="8" class="cut"/></svg>`,
+    id: 'shop', name: 'Hopebridge Charity Shop', signColor: '#ffc4d6', drawFn: 'drawShop',
     scenarios: {
-      good: {
-        scenario: "Till readings are reconciled to physical cash at the end of every shift by the duty manager, with discrepancies investigated and signed off. Weekly stock counts are performed by a member of staff who does not handle the till.",
-        principle: "Daily reconciliation paired with segregated stock counts provides early detection of errors, theft, or systemic issues at the operational level."
-      },
-      bad: {
-        scenario: "The till float and takings are reconciled 'when there's time', often days later. The shop manager personally handles all cash, banking, sales recording, stock receipts, and donation valuations.",
-        principle: "Absence of timely reconciliation combined with one individual holding incompatible duties creates significant fraud risk and material misstatement exposure."
-      }
+      good: { scenario: "Till readings are reconciled to physical cash at the end of every shift, with discrepancies investigated and signed off. Weekly stock counts are done by someone who doesn't handle the till.", principle: "Daily reconciliation with segregated stock counts catches errors, theft, and systemic issues at the operational level." },
+      bad:  { scenario: "The till is reconciled 'when there's time' — often days late. The shop manager personally handles all cash, banking, sales recording, stock, and donation valuations.", principle: "No reconciliation plus one person holding all duties is a textbook recipe for fraud and material misstatement." }
     }
   },
   {
-    id: 'solicitor',
-    name: 'Hartley & Co. Solicitors',
-    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><rect x="10" y="22" width="44" height="34" fill="currentColor"/><path d="M8 22L32 10L56 22H8Z" fill="currentColor"/><rect x="28" y="34" width="8" height="22" class="cut"/><rect x="16" y="30" width="6" height="6" class="cut"/><rect x="42" y="30" width="6" height="6" class="cut"/></svg>`,
+    id: 'solicitor', name: 'Hartley & Co. Solicitors', signColor: '#d4c4a3', drawFn: 'drawSolicitor',
     scenarios: {
-      good: {
-        scenario: "The organisation maintains a formal whistleblowing policy supported by an external independent reporting hotline. All staff complete annual training, and the policy is published openly on the public website.",
-        principle: "Independent reporting channels are critical for surfacing fraud, misconduct, or control failures that internal hierarchies may suppress or obscure."
-      },
-      bad: {
-        scenario: "There is no formal whistleblowing policy. Staff are expected to raise concerns verbally with their line manager, who reports up to the Chief Executive. There is no anonymous or independent route.",
-        principle: "Without independent reporting channels, concerns about senior management or systemic failures are unlikely to surface — allowing problems to escalate undetected."
-      }
+      good: { scenario: "A formal whistleblowing policy is in place with an independent external hotline. All staff complete annual training and the policy is published on the public website.", principle: "Independent reporting channels surface fraud and misconduct that internal hierarchies might otherwise suppress." },
+      bad:  { scenario: "No formal whistleblowing policy. Staff raise concerns verbally with their line manager, who reports up to the Chief Executive. No anonymous or independent route exists.", principle: "Without independent channels, concerns about senior management or systemic failures rarely surface — allowing problems to escalate." }
     }
   },
   {
-    id: 'accountancy',
-    name: 'Pricebury Audit Chambers',
-    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><rect x="12" y="8" width="40" height="48" fill="currentColor"/><rect x="18" y="14" width="6" height="6" class="cut"/><rect x="28" y="14" width="6" height="6" class="cut"/><rect x="38" y="14" width="6" height="6" class="cut"/><rect x="18" y="24" width="6" height="6" class="cut"/><rect x="28" y="24" width="6" height="6" class="cut"/><rect x="38" y="24" width="6" height="6" class="cut"/><rect x="18" y="34" width="6" height="6" class="cut"/><rect x="28" y="34" width="6" height="6" class="cut"/><rect x="38" y="34" width="6" height="6" class="cut"/><rect x="26" y="44" width="10" height="12" class="cut"/></svg>`,
+    id: 'accountancy', name: 'Pricebury Audit Chambers', signColor: '#c4e0ff', drawFn: 'drawAccountancy',
     scenarios: {
-      good: {
-        scenario: "Year-end accounts are prepared by the in-house finance team and independently reviewed by an external auditor. All audit adjustments are documented and formally approved by the Audit Committee before sign-off.",
-        principle: "Independent external review provides assurance and applies professional scepticism beyond the limits of internal controls — particularly important for material financial statements."
-      },
-      bad: {
-        scenario: "The Finance Director prepares the year-end accounts, reviews them personally, presents them to the trustees, and liaises with the external auditor — with no other staff or trustee meaningfully involved at any stage.",
-        principle: "When a single individual controls preparation, review, and audit liaison, segregation of duties collapses and any errors, omissions, or misstatements can be concealed unchecked."
-      }
+      good: { scenario: "Year-end accounts are prepared in-house then independently reviewed by an external auditor. Adjustments are documented and formally approved by the Audit Committee.", principle: "Independent external review applies professional scepticism beyond internal controls — vital for material financial statements." },
+      bad:  { scenario: "The Finance Director prepares the accounts, reviews them personally, presents them to trustees, and liaises with the auditor — with nobody else meaningfully involved at any stage.", principle: "When one person controls preparation, review, and audit liaison, segregation collapses and errors can be quietly concealed." }
     }
   },
   {
-    id: 'warehouse',
-    name: 'Hopebridge Distribution Centre',
-    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><path d="M6 26L32 12L58 26V56H6V26Z" fill="currentColor"/><rect x="12" y="34" width="14" height="22" class="cut"/><rect x="30" y="34" width="10" height="10" class="cut"/><rect x="44" y="34" width="10" height="10" class="cut"/><rect x="30" y="48" width="10" height="8" class="cut"/><rect x="44" y="48" width="10" height="8" class="cut"/></svg>`,
+    id: 'warehouse', name: 'Hopebridge Distribution', signColor: '#c4eac4', drawFn: 'drawWarehouse',
     scenarios: {
-      good: {
-        scenario: "A fixed asset register is maintained and reconciled to physical inventory annually. Disposals require documented authorisation from a senior manager, and any donations of goods are independently valued before being recorded.",
-        principle: "Asset registers and physical verification protect against loss and theft, and ensure the balance sheet accurately reflects the organisation's resources."
-      },
-      bad: {
-        scenario: "No fixed asset register exists. Donations-in-kind are estimated informally by the warehouse manager without supporting documentation, and equipment occasionally 'disappears' without any formal write-off process.",
-        principle: "Without an asset register, organisations cannot detect or evidence asset misappropriation, and accounts may be materially misstated — a significant red flag for auditors and regulators."
-      }
+      good: { scenario: "A fixed asset register is maintained and reconciled to physical inventory annually. Disposals require documented senior authorisation, and donations-in-kind are independently valued.", principle: "Asset registers and physical verification protect against loss and theft, and keep the balance sheet honest." },
+      bad:  { scenario: "No fixed asset register exists. Donations-in-kind are estimated by the warehouse manager off the cuff, and kit sometimes 'disappears' with no formal write-off process.", principle: "Without an asset register, asset misappropriation can't be detected or evidenced — a major red flag for auditors and regulators." }
     }
   },
   {
-    id: 'it',
-    name: 'Pricebury Data Centre',
-    iconSvg: `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" class="bld-icon"><rect x="10" y="10" width="44" height="46" fill="currentColor"/><rect x="16" y="16" width="32" height="8" class="cut"/><rect x="16" y="28" width="32" height="8" class="cut"/><rect x="16" y="40" width="32" height="8" class="cut"/><circle cx="42" cy="20" r="1.5" fill="currentColor"/><circle cx="42" cy="32" r="1.5" fill="currentColor"/><circle cx="42" cy="44" r="1.5" fill="currentColor"/></svg>`,
+    id: 'datacentre', name: 'Pricebury Data Centre', signColor: '#d6c4ff', drawFn: 'drawDataCentre',
     scenarios: {
-      good: {
-        scenario: "User access to finance systems is granted on a least-privilege basis with documented approvals. Admin passwords rotate quarterly, multi-factor authentication is enforced for all users, and leavers' access is revoked within 24 hours of departure.",
-        principle: "Robust access controls protect against both external cyber threats and internal misuse — a critical part of any modern financial control framework."
-      },
-      bad: {
-        scenario: "Several staff share a single common admin password for the finance system, which hasn't been changed in over two years. A former employee's login was still active six months after they left the organisation.",
-        principle: "Shared credentials and unmanaged access create unauditable trails, breach data protection obligations, and represent one of the most exploited weaknesses in fraud cases."
-      }
+      good: { scenario: "User access is least-privilege with documented approvals. Admin passwords rotate quarterly, MFA is enforced for all users, and leavers' access is revoked within 24 hours.", principle: "Robust access controls protect against both external cyber threats and internal misuse — a cornerstone of modern financial control." },
+      bad:  { scenario: "Several staff share a single admin password for the finance system that hasn't been changed in two years. A former employee's login was still active six months after they left.", principle: "Shared credentials and unmanaged access create unauditable trails, breach data protection law, and rank among the most-exploited fraud vectors." }
     }
   }
 ];
@@ -388,201 +383,908 @@ const BUILDINGS = [
 // =================================================================================
 // STATE
 // =================================================================================
+const W = 1280, H = 720;
+const WORLD_WIDTH = 5400;
+const STREET_Y = 560;  // ground line
+const BUILD_BASE = STREET_Y; // building baselines
+
 const state = {
-  player: null,
+  cameraX: 0,
+  targetCameraX: 0,
+  walking: 0,        // -1, 0, or 1
+  time: 0,
+  walkBob: 0,
   score: 0,
   inspectedCount: 0,
-  buildingStates: {}, // { buildingId: { type: 'good'|'bad', revealed: bool } }
-  currentBuildingId: null
+  buildings: [],     // populated at game start with positions + revealed status
+  hoverId: null,
+  currentBuildingId: null,
+  mouseX: 0,
+  mouseY: 0,
+  pendingName: null
 };
 
+// Building positions along the world
+const BUILDING_LAYOUT = [
+  { x: 240,  w: 380 },
+  { x: 880,  w: 360 },
+  { x: 1480, w: 380 },
+  { x: 2120, w: 380 },
+  { x: 2760, w: 360 },
+  { x: 3380, w: 400 },
+  { x: 4040, w: 420 },
+  { x: 4720, w: 380 }
+];
+
 // =================================================================================
-// STORAGE — localStorage with graceful in-memory fallback
-// (Works on GitHub Pages; falls back silently if storage is blocked.)
+// STORAGE
 // =================================================================================
 const Storage = {
   KEY: 'controlFreakLeaderboard',
-  memoryCache: [],
-
+  cache: [],
   load() {
-    try {
-      const raw = localStorage.getItem(this.KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      this.memoryCache = Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-      // localStorage unavailable; continue with memory only
-    }
-    return this.memoryCache;
+    try { const raw = localStorage.getItem(this.KEY); this.cache = raw ? (JSON.parse(raw) || []) : []; }
+    catch(e) {}
+    return this.cache;
   },
-
   save(entry) {
-    this.memoryCache.push(entry);
-    this.memoryCache.sort((a, b) => b.score - a.score);
-    this.memoryCache = this.memoryCache.slice(0, 10);
-    try {
-      localStorage.setItem(this.KEY, JSON.stringify(this.memoryCache));
-    } catch (e) {
-      // Silent fallback
-    }
-    return this.memoryCache;
+    this.cache.push(entry);
+    this.cache.sort((a,b) => b.score - a.score);
+    this.cache = this.cache.slice(0, 10);
+    try { localStorage.setItem(this.KEY, JSON.stringify(this.cache)); } catch(e){}
+    return this.cache;
   }
 };
 
 // =================================================================================
-// SCREEN MANAGEMENT
+// CANVAS SETUP
+// =================================================================================
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+
+function fitCanvas() {
+  const wrap = document.getElementById('canvas-wrap');
+  const cw = wrap.clientWidth;
+  const ch = wrap.clientHeight;
+  const targetRatio = W / H;
+  const containerRatio = cw / ch;
+  if (containerRatio > targetRatio) {
+    canvas.style.height = ch + 'px';
+    canvas.style.width = (ch * targetRatio) + 'px';
+  } else {
+    canvas.style.width = cw + 'px';
+    canvas.style.height = (cw / targetRatio) + 'px';
+  }
+}
+window.addEventListener('resize', fitCanvas);
+
+// =================================================================================
+// SCREEN MGMT
 // =================================================================================
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
+  if (id === 'screen-game') { fitCanvas(); }
 }
 
 // =================================================================================
-// FORM HANDLING
+// DRAWING — Scenery
 // =================================================================================
-const leadForm    = document.getElementById('lead-form');
-const nameInput   = document.getElementById('lead-name');
-const emailInput  = document.getElementById('lead-email');
-const orgInput    = document.getElementById('lead-org');
-const startButton = document.getElementById('start-button');
-const formError   = document.getElementById('form-error');
-
-function validateForm() {
-  const name  = nameInput.value.trim();
-  const email = emailInput.value.trim();
-  const org   = orgInput.value;
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const valid = name.length >= 2 && emailValid && !!org;
-  startButton.disabled = !valid;
-  return valid;
+function drawSky() {
+  const g = ctx.createLinearGradient(0, 0, 0, STREET_Y);
+  g.addColorStop(0, '#87ceeb');
+  g.addColorStop(1, '#d4ecf7');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, STREET_Y);
 }
 
-[nameInput, emailInput, orgInput].forEach(el => {
-  el.addEventListener('input', validateForm);
-  el.addEventListener('change', validateForm);
-});
-
-leadForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  if (!validateForm()) {
-    formError.textContent = 'Please complete all fields correctly.';
-    formError.classList.remove('hidden');
-    return;
+function drawSun() {
+  const sx = W - 180, sy = 110;
+  ctx.save();
+  ctx.translate(sx, sy);
+  ctx.rotate(state.time * 0.005);
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+  for (let i = 0; i < 8; i++) {
+    ctx.save();
+    ctx.rotate(i * Math.PI / 4);
+    ctx.beginPath(); ctx.moveTo(48, 0); ctx.lineTo(64, 0); ctx.stroke();
+    ctx.restore();
   }
-  formError.classList.add('hidden');
-  state.player = {
-    name:  nameInput.value.trim(),
-    email: emailInput.value.trim(),
-    org:   orgInput.value
-  };
-  startGame();
-});
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(sx, sy, 38, 0, Math.PI*2);
+  ctx.fillStyle = '#ffcc33'; ctx.fill();
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3.5; ctx.stroke();
+  // smile
+  ctx.beginPath(); ctx.arc(sx, sy + 4, 14, 0.2 * Math.PI, 0.8 * Math.PI);
+  ctx.lineWidth = 2.5; ctx.stroke();
+  // eyes
+  ctx.beginPath(); ctx.arc(sx-12, sy-6, 2.5, 0, Math.PI*2); ctx.arc(sx+12, sy-6, 2.5, 0, Math.PI*2);
+  ctx.fillStyle = '#0a2540'; ctx.fill();
+}
 
-// =================================================================================
-// GAME LOGIC
-// =================================================================================
-function startGame() {
-  state.score = 0;
-  state.inspectedCount = 0;
-  state.buildingStates = {};
+function drawCloud(x, y, scale=1) {
+  ctx.save();
+  ctx.translate(x, y); ctx.scale(scale, scale);
+  ctx.fillStyle = 'white';
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 50, 18, 0, 0, Math.PI*2);
+  ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(-20, -12, 18, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(10, -18, 22, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
 
-  // Randomly assign each building a good or bad scenario for replayability.
-  // We force roughly balanced distribution: ensure at least 3 of each type
-  // so the game isn't trivially all-good or all-bad.
-  const types = [];
-  for (let i = 0; i < BUILDINGS.length; i++) {
-    types.push(i < BUILDINGS.length / 2 ? 'good' : 'bad');
-  }
-  // Fisher-Yates shuffle
-  for (let i = types.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [types[i], types[j]] = [types[j], types[i]];
-  }
-  BUILDINGS.forEach((b, i) => {
-    state.buildingStates[b.id] = { type: types[i], revealed: false };
+function drawClouds(offset) {
+  const clouds = [
+    { x: 100, y: 90 }, { x: 380, y: 60 }, { x: 700, y: 110 },
+    { x: 1000, y: 80 }, { x: 1320, y: 130 }, { x: 1640, y: 70 }
+  ];
+  clouds.forEach(c => {
+    const cx = ((c.x - offset) % 1800 + 1800) % 1800 - 200;
+    drawCloud(cx, c.y, 1);
   });
-
-  renderBuildings();
-  updateHUD();
-  showScreen('screen-game');
 }
 
-function renderBuildings() {
-  const grid = document.getElementById('buildings-grid');
-  grid.innerHTML = '';
-  BUILDINGS.forEach(b => {
-    const bs = state.buildingStates[b.id];
-    const isInspected = bs.revealed;
-    const verdict = isInspected ? bs.type : null;
+function drawHills(offset) {
+  ctx.fillStyle = '#a8d8a8';
+  ctx.beginPath();
+  ctx.moveTo(0, STREET_Y);
+  for (let x = -200; x <= W + 200; x += 50) {
+    const wx = x + offset;
+    const y = STREET_Y - 60 - Math.sin(wx * 0.005) * 40 - Math.sin(wx * 0.012) * 15;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, STREET_Y);
+  ctx.closePath(); ctx.fill();
 
-    const card = document.createElement('div');
-    card.setAttribute('role', 'button');
-    card.setAttribute('tabindex', isInspected ? '-1' : '0');
-    card.className = `building-card bg-white rounded-lg shadow-md border-2 p-4 md:p-5 flex flex-col items-center text-center ${isInspected ? 'inspected ' : ''}${
-      verdict === 'good' ? 'border-green-500' :
-      verdict === 'bad'  ? 'border-red-500' :
-      'border-pb-navy/10'
-    }`;
+  // Far hills darker
+  ctx.fillStyle = '#86c486';
+  ctx.beginPath();
+  ctx.moveTo(0, STREET_Y);
+  for (let x = -200; x <= W + 200; x += 50) {
+    const wx = x + offset * 0.6;
+    const y = STREET_Y - 30 - Math.sin(wx * 0.008 + 1) * 25;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, STREET_Y); ctx.closePath(); ctx.fill();
+}
 
-    const verdictBadge = isInspected ? `
-      <div class="absolute -top-2 -right-2 w-7 h-7 rounded-full ${verdict === 'good' ? 'bg-green-500' : 'bg-red-500'} flex items-center justify-center shadow-md">
-        ${verdict === 'good'
-          ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-          : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'}
-      </div>` : '';
+function drawTree(x, y, h=80) {
+  const trunkW = h * 0.18;
+  ctx.fillStyle = '#7a4a2a';
+  ctx.fillRect(x - trunkW/2, y - h*0.4, trunkW, h*0.4);
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 2.5;
+  ctx.strokeRect(x - trunkW/2, y - h*0.4, trunkW, h*0.4);
 
-    card.innerHTML = `
-      <div class="text-pb-navy mb-3 relative bld-icon">
-        ${b.iconSvg}
-        ${verdictBadge}
-      </div>
-      <h3 class="font-display text-sm md:text-base text-pb-navy leading-tight">${b.name}</h3>
-      ${isInspected
-        ? `<div class="mt-2 text-xs uppercase tracking-wider font-semibold ${verdict === 'good' ? 'text-green-700' : 'text-red-700'}">${verdict === 'good' ? '+100 pts' : '−50 pts'}</div>`
-        : '<div class="mt-2 text-xs text-pb-slate/60 uppercase tracking-wider">Tap to inspect</div>'}
-    `;
+  // Foliage (cloud-like puffs)
+  ctx.fillStyle = '#5cc06d';
+  ctx.beginPath();
+  ctx.arc(x - h*0.25, y - h*0.55, h*0.32, 0, Math.PI*2);
+  ctx.arc(x + h*0.25, y - h*0.55, h*0.32, 0, Math.PI*2);
+  ctx.arc(x, y - h*0.85, h*0.36, 0, Math.PI*2);
+  ctx.fill();
+  ctx.lineWidth = 3; ctx.stroke();
+}
 
-    if (!isInspected) {
-      const handler = () => openModal(b.id);
-      card.addEventListener('click', handler);
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); }
-      });
+function drawGround() {
+  // Pavement
+  ctx.fillStyle = '#d4c8b8';
+  ctx.fillRect(0, STREET_Y, W, 60);
+  // Pavement edge
+  ctx.fillStyle = '#0a2540';
+  ctx.fillRect(0, STREET_Y, W, 4);
+
+  // Road
+  ctx.fillStyle = '#4a4a52';
+  ctx.fillRect(0, STREET_Y + 60, W, H - STREET_Y - 60);
+  ctx.fillStyle = '#0a2540';
+  ctx.fillRect(0, STREET_Y + 56, W, 4);
+
+  // Pavement cracks (move with camera)
+  ctx.strokeStyle = 'rgba(10, 37, 64, 0.15)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 14; i++) {
+    const x = ((i * 120 - state.cameraX) % 1440 + 1440) % 1440;
+    ctx.beginPath();
+    ctx.moveTo(x, STREET_Y + 8); ctx.lineTo(x, STREET_Y + 56);
+    ctx.stroke();
+  }
+
+  // Road dashes
+  ctx.strokeStyle = '#ffcc33';
+  ctx.lineWidth = 5;
+  ctx.setLineDash([40, 30]);
+  ctx.lineDashOffset = state.cameraX * 0.6;
+  ctx.beginPath();
+  ctx.moveTo(0, STREET_Y + 120); ctx.lineTo(W, STREET_Y + 120);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawForegroundTrees() {
+  // Scatter a few cartoon trees between buildings
+  state.buildings.forEach((b, i) => {
+    if (i < state.buildings.length - 1) {
+      const nextB = state.buildings[i + 1];
+      const midX = (b.x + b.w + nextB.x) / 2 - state.cameraX;
+      if (midX > -100 && midX < W + 100) {
+        drawTree(midX, STREET_Y, 100);
+      }
+    }
+  });
+  // Trees on either end
+  const startTree = 100 - state.cameraX;
+  if (startTree > -100 && startTree < W + 100) drawTree(startTree, STREET_Y, 110);
+  const endTree = WORLD_WIDTH - 100 - state.cameraX;
+  if (endTree > -100 && endTree < W + 100) drawTree(endTree, STREET_Y, 110);
+}
+
+function drawLamppost(x) {
+  ctx.fillStyle = '#0a2540';
+  ctx.fillRect(x - 3, STREET_Y - 130, 6, 130);
+  // Lamp
+  ctx.beginPath();
+  ctx.arc(x, STREET_Y - 138, 12, 0, Math.PI*2);
+  ctx.fillStyle = '#ffcc33'; ctx.fill();
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3; ctx.stroke();
+  // Glow
+  const grd = ctx.createRadialGradient(x, STREET_Y - 138, 5, x, STREET_Y - 138, 30);
+  grd.addColorStop(0, 'rgba(255,204,51,0.5)');
+  grd.addColorStop(1, 'rgba(255,204,51,0)');
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.arc(x, STREET_Y - 138, 30, 0, Math.PI*2); ctx.fill();
+}
+
+// =================================================================================
+// DRAWING — Buildings (cartoony, each unique)
+// =================================================================================
+
+// Helper: outline rect
+function rect(x, y, w, h, fill, stroke = '#0a2540', strokeW = 4) {
+  ctx.fillStyle = fill;
+  ctx.fillRect(x, y, w, h);
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = strokeW; ctx.strokeRect(x, y, w, h); }
+}
+
+// Helper: rounded rect
+function rrect(x, y, w, h, r, fill, stroke = '#0a2540', strokeW = 4) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = strokeW; ctx.stroke(); }
+}
+
+// Helper: cartoon sign on a post
+function drawSign(x, y, text, color) {
+  ctx.font = 'bold 18px Fredoka';
+  const tw = ctx.measureText(text).width;
+  const sw = tw + 24, sh = 30;
+  // post
+  ctx.fillStyle = '#7a4a2a';
+  ctx.fillRect(x - 3, y, 6, 36);
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 2; ctx.strokeRect(x - 3, y, 6, 36);
+  // sign
+  rrect(x - sw/2, y - sh, sw, sh, 6, color);
+  ctx.fillStyle = '#0a2540';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y - sh/2 + 1);
+}
+
+function drawCharityHQ(x, w) {
+  const h = 320;
+  const top = BUILD_BASE - h;
+  // Steps
+  rect(x - 20, BUILD_BASE - 24, w + 40, 24, '#d4cab8');
+  // Body
+  rect(x, top + 80, w, h - 80, '#fdf6e3');
+  // Roof (triangle)
+  ctx.beginPath();
+  ctx.moveTo(x - 28, top + 80);
+  ctx.lineTo(x + w/2, top + 10);
+  ctx.lineTo(x + w + 28, top + 80);
+  ctx.closePath();
+  ctx.fillStyle = '#e8d8b8'; ctx.fill();
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
+  // Pediment circle
+  ctx.beginPath(); ctx.arc(x + w/2, top + 55, 14, 0, Math.PI*2);
+  ctx.fillStyle = '#ff6b6b'; ctx.fill(); ctx.stroke();
+  // Heart in pediment
+  ctx.fillStyle = 'white';
+  ctx.font = '20px Fredoka'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('♥', x + w/2, top + 56);
+  // Columns (4)
+  const colCount = 4;
+  const colW = 28, colSpace = (w - colCount*colW) / (colCount + 1);
+  for (let i = 0; i < colCount; i++) {
+    const cx = x + colSpace*(i+1) + colW*i;
+    rect(cx, top + 100, colW, h - 120, '#fff9ec');
+    // Capital
+    rect(cx - 4, top + 90, colW + 8, 12, '#e8d8b8');
+  }
+  // Door
+  const doorW = 50, doorH = 80;
+  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, 8, '#7a4a2a');
+  // Door knob
+  ctx.beginPath(); ctx.arc(x + w/2 + 12, BUILD_BASE - 40, 3, 0, Math.PI*2);
+  ctx.fillStyle = '#ffcc33'; ctx.fill();
+  // Sign
+  drawSign(x + w/2, top - 4, 'CHARITY HQ', '#c8e8ff');
+}
+
+function drawBank(x, w) {
+  const h = 340;
+  const top = BUILD_BASE - h;
+  // Steps
+  rect(x - 16, BUILD_BASE - 20, w + 32, 20, '#bfb09a');
+  // Body
+  rect(x, top + 70, w, h - 70, '#f0e4c2');
+  // Roof - flat with cornice
+  rect(x - 16, top + 60, w + 32, 20, '#d4c290');
+  // Columns (5)
+  const colCount = 5;
+  const colW = 22, colSpace = (w - colCount*colW) / (colCount + 1);
+  for (let i = 0; i < colCount; i++) {
+    const cx = x + colSpace*(i+1) + colW*i;
+    rect(cx, top + 95, colW, h - 115, '#faf3dd');
+    rect(cx - 3, top + 85, colW + 6, 12, '#d4c290');
+  }
+  // Big £ symbol on top
+  ctx.fillStyle = '#0a2540';
+  ctx.font = 'bold 60px Bungee';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('£', x + w/2, top + 36);
+  // Door
+  const doorW = 60, doorH = 90;
+  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, 6, '#8b5a3c');
+  // Vault wheel detail on door
+  ctx.beginPath(); ctx.arc(x + w/2, BUILD_BASE - doorH/2, 12, 0, Math.PI*2);
+  ctx.strokeStyle = '#ffcc33'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.beginPath(); ctx.arc(x + w/2, BUILD_BASE - doorH/2, 4, 0, Math.PI*2);
+  ctx.fillStyle = '#ffcc33'; ctx.fill();
+  // Sign
+  drawSign(x + w/2, top - 8, 'BANK', '#ffe5a3');
+}
+
+function drawCommunity(x, w) {
+  const h = 280;
+  const top = BUILD_BASE - h;
+  // Body
+  rect(x, top + 110, w, h - 110, '#ffb088');
+  // Pitched roof
+  ctx.beginPath();
+  ctx.moveTo(x - 20, top + 110);
+  ctx.lineTo(x + w/2, top + 30);
+  ctx.lineTo(x + w + 20, top + 110);
+  ctx.closePath();
+  ctx.fillStyle = '#c44848'; ctx.fill();
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
+  // Bell tower
+  rect(x + w/2 - 22, top - 30, 44, 60, '#e8a070');
+  // Bell tower roof (small triangle)
+  ctx.beginPath();
+  ctx.moveTo(x + w/2 - 28, top - 30);
+  ctx.lineTo(x + w/2, top - 70);
+  ctx.lineTo(x + w/2 + 28, top - 30);
+  ctx.closePath();
+  ctx.fillStyle = '#c44848'; ctx.fill(); ctx.stroke();
+  // Bell
+  ctx.beginPath(); ctx.arc(x + w/2, top - 5, 10, 0, Math.PI);
+  ctx.fillStyle = '#ffcc33'; ctx.fill(); ctx.stroke();
+  // Round windows
+  ctx.beginPath(); ctx.arc(x + w*0.25, top + 160, 20, 0, Math.PI*2);
+  ctx.fillStyle = '#a3d4f0'; ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x + w*0.75, top + 160, 20, 0, Math.PI*2);
+  ctx.fill(); ctx.stroke();
+  // Cross window detail
+  ctx.beginPath();
+  ctx.moveTo(x + w*0.25 - 20, top + 160); ctx.lineTo(x + w*0.25 + 20, top + 160);
+  ctx.moveTo(x + w*0.25, top + 140); ctx.lineTo(x + w*0.25, top + 180);
+  ctx.moveTo(x + w*0.75 - 20, top + 160); ctx.lineTo(x + w*0.75 + 20, top + 160);
+  ctx.moveTo(x + w*0.75, top + 140); ctx.lineTo(x + w*0.75, top + 180);
+  ctx.lineWidth = 2; ctx.stroke();
+  ctx.lineWidth = 4;
+  // Door
+  const doorW = 60, doorH = 90;
+  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, doorW/2, '#7a4a2a');
+  ctx.beginPath(); ctx.arc(x + w/2 + 14, BUILD_BASE - 40, 3, 0, Math.PI*2);
+  ctx.fillStyle = '#ffcc33'; ctx.fill();
+  // Sign
+  drawSign(x + w/2, BUILD_BASE - doorH - 30, 'COMMUNITY HALL', '#ffd6c4');
+}
+
+function drawShop(x, w) {
+  const h = 260;
+  const top = BUILD_BASE - h;
+  // Body
+  rect(x, top + 50, w, h - 50, '#ff9ec0');
+  // Flat roof with sign band
+  rect(x - 6, top + 30, w + 12, 30, '#ffcc33');
+  // Awning (striped)
+  const awnY = top + 100;
+  const awnH = 35;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x - 6, awnY, w + 12, awnH);
+  ctx.fillStyle = '#ff6b6b';
+  const stripeW = (w + 12) / 8;
+  for (let i = 0; i < 8; i += 2) {
+    ctx.fillRect(x - 6 + i*stripeW, awnY, stripeW, awnH);
+  }
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4;
+  ctx.strokeRect(x - 6, awnY, w + 12, awnH);
+  // Scallop edge
+  ctx.fillStyle = '#ff6b6b';
+  for (let i = 0; i < 8; i++) {
+    const cx = x - 6 + (i + 0.5) * stripeW;
+    ctx.beginPath();
+    ctx.arc(cx, awnY + awnH, stripeW/2, 0, Math.PI);
+    ctx.fill();
+  }
+  ctx.beginPath();
+  for (let i = 0; i < 8; i++) {
+    const cx = x - 6 + (i + 0.5) * stripeW;
+    ctx.moveTo(cx + stripeW/2, awnY + awnH);
+    ctx.arc(cx, awnY + awnH, stripeW/2, 0, Math.PI);
+  }
+  ctx.lineWidth = 3; ctx.stroke();
+  // Shop window
+  const wY = awnY + awnH + 8;
+  rect(x + 12, wY, w - 24, 80, '#cfeaf7');
+  // Items in window
+  ctx.fillStyle = '#ff6b6b'; rect(x + 30, wY + 30, 20, 50, '#ff6b6b');
+  ctx.fillStyle = '#6dd47e'; rect(x + 60, wY + 40, 18, 40, '#6dd47e');
+  // SALE tag
+  ctx.save();
+  ctx.translate(x + w - 50, wY + 30);
+  ctx.rotate(-0.2);
+  rrect(-22, -12, 44, 24, 4, '#ffcc33');
+  ctx.fillStyle = '#0a2540';
+  ctx.font = 'bold 14px Bungee'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('SALE', 0, 1);
+  ctx.restore();
+  // Door
+  const doorW = 50, doorH = 80;
+  rrect(x + w/2 - doorW/2 + 25, BUILD_BASE - doorH, doorW, doorH, 4, '#a3d4f0');
+  // Door cross-bar
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x + w/2 - doorW/2 + 25, BUILD_BASE - doorH/2);
+  ctx.lineTo(x + w/2 + doorW/2 + 25, BUILD_BASE - doorH/2);
+  ctx.stroke();
+  // Sign text on band
+  ctx.fillStyle = '#0a2540';
+  ctx.font = 'bold 22px Bungee'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('CHARITY SHOP', x + w/2, top + 45);
+  // Tag sign
+  drawSign(x + w/2, top - 4, 'OPEN!', '#ffc4d6');
+}
+
+function drawSolicitor(x, w) {
+  const h = 310;
+  const top = BUILD_BASE - h;
+  // Body - brick texture
+  rect(x, top + 50, w, h - 50, '#c44848');
+  // Brick lines
+  ctx.strokeStyle = 'rgba(10,37,64,0.2)'; ctx.lineWidth = 1.5;
+  for (let r = 0; r < 6; r++) {
+    const ry = top + 80 + r * 40;
+    ctx.beginPath(); ctx.moveTo(x, ry); ctx.lineTo(x + w, ry); ctx.stroke();
+    for (let c = 0; c < 5; c++) {
+      const cx = x + (c + (r % 2 ? 0.5 : 0)) * (w/5);
+      ctx.beginPath(); ctx.moveTo(cx, ry); ctx.lineTo(cx, ry + 40); ctx.stroke();
+    }
+  }
+  // Flat roof with capping
+  rect(x - 10, top + 30, w + 20, 30, '#3a3a4a');
+  // Chimney
+  rect(x + w - 60, top - 30, 30, 60, '#a83838');
+  rect(x + w - 65, top - 38, 40, 10, '#3a3a4a');
+  // Windows (sash style, 4 windows in 2 rows)
+  for (let row = 0; row < 2; row++) {
+    for (let col = 0; col < 3; col++) {
+      const wx = x + 30 + col * (w/3 - 5);
+      const wy = top + 100 + row * 90;
+      rect(wx, wy, 50, 70, '#a3d4f0');
+      ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(wx + 25, wy); ctx.lineTo(wx + 25, wy + 70);
+      ctx.moveTo(wx, wy + 35); ctx.lineTo(wx + 50, wy + 35);
+      ctx.stroke();
+      ctx.lineWidth = 4;
+    }
+  }
+  // Door
+  const doorW = 50, doorH = 95;
+  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, 4, '#1a1a2e');
+  // Brass plaque
+  rect(x + w/2 - 30, BUILD_BASE - doorH - 18, 60, 14, '#ffcc33');
+  ctx.fillStyle = '#0a2540'; ctx.font = 'bold 9px Fredoka';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('SOLICITORS', x + w/2, BUILD_BASE - doorH - 10);
+  // Lamppost outside
+  // (handled by sign post)
+  drawSign(x + w/2, top - 8, '⚖ HARTLEY & CO', '#d4c4a3');
+}
+
+function drawAccountancy(x, w) {
+  const h = 380;
+  const top = BUILD_BASE - h;
+  // Body - blueish modern
+  rect(x, top + 40, w, h - 40, '#4a90c4');
+  // Roof - flat with antenna
+  rect(x - 6, top + 30, w + 12, 14, '#2a5a80');
+  // Top sign block
+  rect(x + 10, top + 50, w - 20, 36, '#ffcc33');
+  ctx.fillStyle = '#0a2540'; ctx.font = 'bold 16px Bungee';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('AUDIT CO.', x + w/2, top + 68);
+  // Grid of windows (4 cols x 4 rows)
+  const cols = 4, rows = 4;
+  const gw = (w - 40) / cols, gh = (h - 130) / rows;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const wx = x + 20 + c * gw + 4;
+      const wy = top + 100 + r * gh + 4;
+      rect(wx, wy, gw - 8, gh - 8, '#cfeaf7');
+      // Light on in some windows
+      if (Math.sin((r * 7 + c * 3 + state.time * 0.01)) > 0.3) {
+        rect(wx + 4, wy + 4, gw - 16, gh - 16, '#ffe88a', null);
+      }
+    }
+  }
+  // Door (revolving style)
+  const doorW = 60, doorH = 80;
+  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, 4, '#2a5a80');
+  ctx.beginPath();
+  ctx.moveTo(x + w/2 - doorW/2, BUILD_BASE - doorH/2);
+  ctx.lineTo(x + w/2 + doorW/2, BUILD_BASE - doorH/2);
+  ctx.lineWidth = 3; ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x + w/2, BUILD_BASE - doorH);
+  ctx.lineTo(x + w/2, BUILD_BASE);
+  ctx.stroke();
+  ctx.lineWidth = 4;
+}
+
+function drawWarehouse(x, w) {
+  const h = 240;
+  const top = BUILD_BASE - h;
+  // Body
+  rect(x, top + 60, w, h - 60, '#b0b8c0');
+  // Sawtooth roof
+  const teeth = 4;
+  const tw = w / teeth;
+  ctx.fillStyle = '#8a9098';
+  ctx.beginPath();
+  ctx.moveTo(x, top + 60);
+  for (let i = 0; i < teeth; i++) {
+    ctx.lineTo(x + i * tw, top + 20);
+    ctx.lineTo(x + (i + 1) * tw, top + 60);
+  }
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
+  // Corrugated lines on body
+  ctx.strokeStyle = 'rgba(10,37,64,0.2)'; ctx.lineWidth = 1.5;
+  for (let i = 1; i < 10; i++) {
+    const lx = x + (i * w / 10);
+    ctx.beginPath(); ctx.moveTo(lx, top + 60); ctx.lineTo(lx, BUILD_BASE); ctx.stroke();
+  }
+  ctx.lineWidth = 4;
+  // Roll-up door (big)
+  const doorW = w * 0.5, doorH = 130;
+  rect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, '#ffcc33');
+  // Door slats
+  ctx.strokeStyle = '#c79a1c'; ctx.lineWidth = 2;
+  for (let i = 1; i < 10; i++) {
+    const sy = BUILD_BASE - doorH + i * (doorH/10);
+    ctx.beginPath();
+    ctx.moveTo(x + w/2 - doorW/2, sy);
+    ctx.lineTo(x + w/2 + doorW/2, sy); ctx.stroke();
+  }
+  ctx.lineWidth = 4;
+  // Side window
+  rect(x + 20, top + 80, 40, 40, '#cfeaf7');
+  // Sign
+  drawSign(x + w/2, top - 8, '📦 DISTRIBUTION', '#c4eac4');
+}
+
+function drawDataCentre(x, w) {
+  const h = 320;
+  const top = BUILD_BASE - h;
+  // Body - dark modern
+  rect(x, top + 50, w, h - 50, '#3a3a52');
+  // Roof
+  rect(x - 6, top + 40, w + 12, 14, '#1a1a2a');
+  // Server rack windows (slim horizontal slits)
+  for (let r = 0; r < 6; r++) {
+    const sy = top + 80 + r * 32;
+    // Window pane
+    rect(x + 20, sy, w - 40, 22, '#0a2540');
+    // LEDs
+    for (let i = 0; i < 8; i++) {
+      const lx = x + 30 + i * ((w - 60) / 8);
+      const on = Math.sin(state.time * 0.04 + r * 2 + i) > 0;
+      ctx.fillStyle = on ? '#6dd47e' : '#ff6b6b';
+      ctx.fillRect(lx, sy + 8, 4, 6);
+    }
+    // Stripes
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + 20, sy + 15); ctx.lineTo(x + w - 20, sy + 15); ctx.stroke();
+    ctx.lineWidth = 4;
+  }
+  // Antennas
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x + w*0.25, top + 40); ctx.lineTo(x + w*0.25, top - 30);
+  ctx.moveTo(x + w*0.75, top + 40); ctx.lineTo(x + w*0.75, top - 50);
+  ctx.stroke();
+  ctx.fillStyle = '#ff6b6b';
+  ctx.beginPath(); ctx.arc(x + w*0.25, top - 30, 4, 0, Math.PI*2);
+  ctx.arc(x + w*0.75, top - 50, 4, 0, Math.PI*2);
+  ctx.fill();
+  // Door
+  const doorW = 50, doorH = 80;
+  rrect(x + w/2 - doorW/2, BUILD_BASE - doorH, doorW, doorH, 4, '#1a1a2a');
+  // Keypad
+  rect(x + w/2 + doorW/2 + 6, BUILD_BASE - 50, 14, 20, '#ffcc33');
+  // Sign
+  drawSign(x + w/2, top - 8, '💻 DATA CENTRE', '#d6c4ff');
+}
+
+const drawFns = {
+  drawCharityHQ, drawBank, drawCommunity, drawShop,
+  drawSolicitor, drawAccountancy, drawWarehouse, drawDataCentre
+};
+
+// =================================================================================
+// DRAW THE WORLD
+// =================================================================================
+function drawBuildings() {
+  state.buildings.forEach(b => {
+    const sx = b.x - state.cameraX;
+    // Skip if off-screen
+    if (sx + b.w < -50 || sx > W + 50) return;
+
+    // Bouncy hover effect
+    let bounce = 0;
+    if (state.hoverId === b.id && !b.revealed) {
+      bounce = Math.sin(state.time * 0.15) * 4 - 4;
+    }
+    ctx.save();
+    ctx.translate(0, bounce);
+
+    drawFns[b.drawFn](sx, b.w);
+
+    // Reveal stamp
+    if (b.revealed) {
+      const cx = sx + b.w/2, cy = BUILD_BASE - 200;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-0.15);
+      const good = b.revealedType === 'good';
+      ctx.fillStyle = good ? 'rgba(109, 212, 126, 0.92)' : 'rgba(255, 107, 107, 0.92)';
+      rrect(-60, -28, 120, 56, 12, good ? '#6dd47e' : '#ff6b6b');
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 24px Bungee';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(good ? '✓ STRONG' : '✗ WEAK', 0, 2);
+      ctx.restore();
     }
 
-    grid.appendChild(card);
+    // Hover prompt above building
+    if (state.hoverId === b.id && !b.revealed) {
+      const cx = sx + b.w/2, cy = BUILD_BASE - 320;
+      ctx.save();
+      const text = '? INSPECT';
+      ctx.font = 'bold 20px Bungee';
+      const tw = ctx.measureText(text).width;
+      const pw = tw + 24, ph = 32;
+      rrect(cx - pw/2, cy - ph/2, pw, ph, 8, '#ffcc33');
+      ctx.fillStyle = '#0a2540';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(text, cx, cy + 2);
+      // Pointer
+      ctx.beginPath();
+      ctx.moveTo(cx - 8, cy + ph/2);
+      ctx.lineTo(cx + 8, cy + ph/2);
+      ctx.lineTo(cx, cy + ph/2 + 10);
+      ctx.closePath();
+      ctx.fillStyle = '#ffcc33'; ctx.fill();
+      ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
   });
 }
 
-function updateHUD() {
-  document.getElementById('progress-display').textContent = `${state.inspectedCount} / ${BUILDINGS.length}`;
-  const scoreEl = document.getElementById('score-display');
-  scoreEl.textContent = state.score;
-  scoreEl.classList.remove('score-flash');
-  // Force reflow to restart animation
-  void scoreEl.offsetWidth;
-  scoreEl.classList.add('score-flash');
+// =================================================================================
+// MAIN DRAW
+// =================================================================================
+function draw() {
+  ctx.save();
+  ctx.translate(0, state.walkBob);
+
+  drawSky();
+  drawSun();
+  drawClouds(state.cameraX * 0.15);
+  drawHills(state.cameraX * 0.4);
+  drawGround();
+
+  // Lampposts every 600px
+  for (let lx = 200; lx < WORLD_WIDTH; lx += 600) {
+    const sx = lx - state.cameraX;
+    if (sx > -50 && sx < W + 50) drawLamppost(sx);
+  }
+
+  drawForegroundTrees();
+  drawBuildings();
+
+  // End-of-street marker (optional)
+  if (state.cameraX >= WORLD_WIDTH - W - 50) {
+    const sx = WORLD_WIDTH - state.cameraX;
+    if (sx < W + 100) {
+      ctx.fillStyle = '#0a2540';
+      ctx.font = 'bold 24px Bungee';
+      ctx.textAlign = 'center';
+      ctx.fillText('END OF TOWN', sx - 100, BUILD_BASE - 30);
+    }
+  }
+
+  // Start-of-street marker
+  if (state.cameraX < 100) {
+    const sx = 50 - state.cameraX;
+    ctx.fillStyle = '#0a2540';
+    ctx.font = 'bold 20px Bungee';
+    ctx.textAlign = 'left';
+    ctx.fillText('← PRICEBURY', sx, BUILD_BASE - 30);
+  }
+
+  ctx.restore();
 }
 
 // =================================================================================
-// MODAL
+// UPDATE
+// =================================================================================
+function update() {
+  state.time++;
+
+  // Walking: update target camera position
+  const walkSpeed = 12;
+  if (state.walking !== 0) {
+    state.targetCameraX += state.walking * walkSpeed;
+    state.targetCameraX = Math.max(0, Math.min(WORLD_WIDTH - W, state.targetCameraX));
+    // Walk bob
+    state.walkBob = Math.sin(state.time * 0.25) * 2;
+  } else {
+    state.walkBob *= 0.9;
+  }
+
+  // Smooth camera lerp
+  state.cameraX += (state.targetCameraX - state.cameraX) * 0.18;
+
+  // Update walk button availability
+  document.getElementById('walk-left').disabled = state.targetCameraX <= 0;
+  document.getElementById('walk-right').disabled = state.targetCameraX >= WORLD_WIDTH - W;
+}
+
+function loop() {
+  if (document.getElementById('screen-game').classList.contains('active')) {
+    update();
+    draw();
+  }
+  requestAnimationFrame(loop);
+}
+
+// =================================================================================
+// INPUT
+// =================================================================================
+function getCanvasMouse(evt) {
+  const rect = canvas.getBoundingClientRect();
+  const sx = (evt.clientX - rect.left) / rect.width * W;
+  const sy = (evt.clientY - rect.top) / rect.height * H;
+  return { x: sx, y: sy };
+}
+
+function getBuildingAt(canvasX, canvasY) {
+  // canvasY is in 0-720 space, buildings sit roughly between BUILD_BASE - h and BUILD_BASE
+  for (const b of state.buildings) {
+    const sx = b.x - state.cameraX;
+    if (canvasX >= sx - 10 && canvasX <= sx + b.w + 10 && canvasY >= 200 && canvasY <= BUILD_BASE) {
+      return b;
+    }
+  }
+  return null;
+}
+
+canvas.addEventListener('mousemove', (evt) => {
+  const { x, y } = getCanvasMouse(evt);
+  state.mouseX = x; state.mouseY = y;
+  const b = getBuildingAt(x, y);
+  const newHover = (b && !b.revealed) ? b.id : null;
+  if (newHover !== state.hoverId) {
+    state.hoverId = newHover;
+    canvas.style.cursor = newHover ? 'pointer' : 'default';
+  }
+});
+
+canvas.addEventListener('mouseleave', () => {
+  state.hoverId = null;
+  canvas.style.cursor = 'default';
+});
+
+canvas.addEventListener('click', (evt) => {
+  const { x, y } = getCanvasMouse(evt);
+  const b = getBuildingAt(x, y);
+  if (b && !b.revealed) openModal(b.id);
+});
+
+// Touch support
+canvas.addEventListener('touchstart', (evt) => {
+  if (evt.touches.length === 0) return;
+  const rect = canvas.getBoundingClientRect();
+  const t = evt.touches[0];
+  const x = (t.clientX - rect.left) / rect.width * W;
+  const y = (t.clientY - rect.top) / rect.height * H;
+  const b = getBuildingAt(x, y);
+  if (b && !b.revealed) {
+    evt.preventDefault();
+    openModal(b.id);
+  }
+}, { passive: false });
+
+// Walking controls
+function setWalk(dir) { state.walking = dir; }
+
+const wLeft = document.getElementById('walk-left');
+const wRight = document.getElementById('walk-right');
+
+const bindHold = (el, dir) => {
+  el.addEventListener('mousedown', () => setWalk(dir));
+  el.addEventListener('mouseup', () => setWalk(0));
+  el.addEventListener('mouseleave', () => setWalk(0));
+  el.addEventListener('touchstart', (e) => { e.preventDefault(); setWalk(dir); }, { passive: false });
+  el.addEventListener('touchend', () => setWalk(0));
+  el.addEventListener('touchcancel', () => setWalk(0));
+};
+bindHold(wLeft, -1);
+bindHold(wRight, 1);
+
+// Keyboard
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'a') setWalk(-1);
+  if (e.key === 'ArrowRight' || e.key === 'd') setWalk(1);
+});
+window.addEventListener('keyup', (e) => {
+  if (['ArrowLeft','ArrowRight','a','d'].includes(e.key)) setWalk(0);
+});
+
+// =================================================================================
+// MODAL & GAME FLOW
 // =================================================================================
 const modal = document.getElementById('modal');
 
 function openModal(buildingId) {
-  const building = BUILDINGS.find(b => b.id === buildingId);
-  const bs = state.buildingStates[buildingId];
-  const scenarioData = building.scenarios[bs.type];
+  const b = state.buildings.find(x => x.id === buildingId);
+  const data = BUILDINGS.find(x => x.id === buildingId);
+  const scen = data.scenarios[b.type];
 
   state.currentBuildingId = buildingId;
 
-  document.getElementById('modal-icon').innerHTML = building.iconSvg;
-  document.getElementById('modal-title').textContent = building.name;
-  document.getElementById('modal-scenario').textContent = scenarioData.scenario;
-  document.getElementById('modal-principle').textContent = scenarioData.principle;
-
-  document.getElementById('modal-pre-action').classList.remove('hidden');
-  document.getElementById('modal-result').classList.add('hidden');
+  document.getElementById('m-title').textContent = data.name;
+  document.getElementById('m-scenario').textContent = scen.scenario;
+  document.getElementById('m-principle').textContent = scen.principle;
+  document.getElementById('m-pre').classList.remove('hidden');
+  document.getElementById('m-result').classList.add('hidden');
 
   modal.classList.remove('hidden');
   modal.classList.add('flex');
@@ -594,157 +1296,173 @@ function closeModal() {
   state.currentBuildingId = null;
 }
 
-document.getElementById('inspect-button').addEventListener('click', () => {
-  const buildingId = state.currentBuildingId;
-  if (!buildingId) return;
-
-  const bs = state.buildingStates[buildingId];
-  bs.revealed = true;
-
-  const isGood = bs.type === 'good';
+document.getElementById('btn-inspect').addEventListener('click', () => {
+  const b = state.buildings.find(x => x.id === state.currentBuildingId);
+  if (!b) return;
+  b.revealed = true;
+  b.revealedType = b.type;
+  const isGood = b.type === 'good';
   state.score += isGood ? 100 : -50;
   state.inspectedCount += 1;
 
-  // Update result panel
-  const banner   = document.getElementById('result-banner');
-  const resIcon  = document.getElementById('result-icon');
-  const verdict  = document.getElementById('result-verdict');
-  const pointsEl = document.getElementById('result-points');
+  const banner   = document.getElementById('m-banner');
+  const bIcon    = document.getElementById('m-banner-icon');
+  const verdict  = document.getElementById('m-verdict');
+  const pointsEl = document.getElementById('m-points');
+  const stamp    = document.getElementById('m-stamp');
 
   if (isGood) {
-    banner.className = 'rounded-md p-4 mb-4 flex items-center gap-3 bg-green-50 border border-green-200';
-    resIcon.innerHTML = '<div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>';
-    verdict.textContent = 'Strong Internal Control';
-    verdict.className = 'font-display text-lg text-green-800';
+    banner.style.background = '#e8fbed';
+    bIcon.innerHTML = '<div class="w-14 h-14 rounded-full bg-[#6dd47e] border-4 border-[#0a2540] flex items-center justify-center" style="box-shadow: 0 3px 0 #0a2540;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>';
+    verdict.textContent = 'STRONG CONTROL!';
+    verdict.style.color = '#1d6f33';
     pointsEl.textContent = '+100 points';
-    pointsEl.className = 'text-sm font-semibold text-green-700';
+    pointsEl.style.color = '#1d6f33';
+    stamp.textContent = '+100';
+    stamp.style.background = '#6dd47e';
+    stamp.style.color = 'white';
+    stamp.style.boxShadow = '0 3px 0 #0a2540';
   } else {
-    banner.className = 'rounded-md p-4 mb-4 flex items-center gap-3 bg-red-50 border border-red-200';
-    resIcon.innerHTML = '<div class="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>';
-    verdict.textContent = 'Weak Internal Control';
-    verdict.className = 'font-display text-lg text-red-800';
+    banner.style.background = '#ffeaea';
+    bIcon.innerHTML = '<div class="w-14 h-14 rounded-full bg-[#ff6b6b] border-4 border-[#0a2540] flex items-center justify-center" style="box-shadow: 0 3px 0 #0a2540;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>';
+    verdict.textContent = 'WEAK CONTROL!';
+    verdict.style.color = '#a62121';
     pointsEl.textContent = '−50 points';
-    pointsEl.className = 'text-sm font-semibold text-red-700';
+    pointsEl.style.color = '#a62121';
+    stamp.textContent = '−50';
+    stamp.style.background = '#ff6b6b';
+    stamp.style.color = 'white';
+    stamp.style.boxShadow = '0 3px 0 #0a2540';
   }
+  // Restart stamp animation
+  stamp.classList.remove('stamp'); void stamp.offsetWidth; stamp.classList.add('stamp');
 
-  document.getElementById('modal-pre-action').classList.add('hidden');
-  document.getElementById('modal-result').classList.remove('hidden');
+  document.getElementById('m-pre').classList.add('hidden');
+  document.getElementById('m-result').classList.remove('hidden');
 
-  renderBuildings();
   updateHUD();
 });
 
-document.getElementById('continue-button').addEventListener('click', () => {
+document.getElementById('btn-continue').addEventListener('click', () => {
   closeModal();
   if (state.inspectedCount >= BUILDINGS.length) {
     setTimeout(showGameOver, 400);
   }
 });
 
-// Backdrop click closes only BEFORE reveal (after reveal, force Continue)
+// Backdrop close (only pre-reveal)
 modal.addEventListener('click', (e) => {
-  if (e.target === modal || e.target.classList.contains('modal-backdrop')) {
-    const resultShown = !document.getElementById('modal-result').classList.contains('hidden');
+  if (e.target.classList.contains('modal-back')) {
+    const resultShown = !document.getElementById('m-result').classList.contains('hidden');
     if (!resultShown) closeModal();
   }
 });
 
 // =================================================================================
-// GAME OVER / LEADERBOARD
+// HUD
 // =================================================================================
+function updateHUD() {
+  document.getElementById('hud-progress').textContent = `${state.inspectedCount}/${BUILDINGS.length}`;
+  const scoreEl = document.getElementById('hud-score');
+  scoreEl.textContent = state.score;
+  scoreEl.classList.remove('scoreflash'); void scoreEl.offsetWidth; scoreEl.classList.add('scoreflash');
+}
+
+// =================================================================================
+// GAME START / END
+// =================================================================================
+function startGame() {
+  state.cameraX = 0;
+  state.targetCameraX = 0;
+  state.score = 0;
+  state.inspectedCount = 0;
+  state.walking = 0;
+  state.hoverId = null;
+
+  // Shuffle good/bad evenly across buildings (4 good, 4 bad)
+  const types = ['good','good','good','good','bad','bad','bad','bad'];
+  for (let i = types.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [types[i], types[j]] = [types[j], types[i]];
+  }
+
+  state.buildings = BUILDINGS.map((b, i) => ({
+    id: b.id,
+    name: b.name,
+    drawFn: b.drawFn,
+    x: BUILDING_LAYOUT[i].x,
+    w: BUILDING_LAYOUT[i].w,
+    type: types[i],
+    revealed: false,
+    revealedType: null
+  }));
+
+  updateHUD();
+  showScreen('screen-game');
+  setTimeout(fitCanvas, 50);
+}
+
 function showGameOver() {
-  const entry = {
-    name:  state.player.name,
-    org:   state.player.org,
-    score: state.score,
-    date:  new Date().toISOString()
-  };
-  const leaderboard = Storage.save(entry);
+  state.pendingName = { score: state.score, date: new Date().toISOString() };
 
   document.getElementById('final-score').textContent = state.score;
-
   const { message, flavour } = getPerformanceMessage(state.score);
   document.getElementById('final-message').textContent = message;
   document.getElementById('final-flavour').textContent = flavour;
 
-  renderLeaderboard(leaderboard, entry);
-  showScreen('screen-leaderboard');
+  // Reset name entry UI
+  document.getElementById('name-entry').classList.remove('hidden');
+  document.getElementById('name-saved').classList.add('hidden');
+  document.getElementById('entry-name').value = '';
+
+  // Render leaderboard (no current entry yet)
+  renderLeaderboard(Storage.load(), null);
+
+  showScreen('screen-over');
 }
 
 function getPerformanceMessage(score) {
-  if (score >= 600) return {
-    message: 'Exemplary control framework',
-    flavour: 'You uncovered a town of robust governance and best-practice controls. Organisations like these protect their stakeholders, their reputation, and their mission.'
-  };
-  if (score >= 300) return {
-    message: 'A generally healthy control environment',
-    flavour: 'You found a mostly well-controlled town, but some weaknesses remain that could expose organisations to fraud, error, or regulatory risk. Targeted improvements would lift this materially.'
-  };
-  if (score >= 0) return {
-    message: 'Significant control improvements needed',
-    flavour: 'You uncovered a worrying mix of practices. The town has the foundations of governance, but key controls are missing or weakly applied. A formal controls review is highly recommended.'
-  };
-  return {
-    message: 'Major governance concerns identified',
-    flavour: 'You found pervasive weaknesses across the town. Without intervention, organisations like these face substantial risk of fraud, regulatory action, and stakeholder harm. Strengthening internal controls should be an urgent priority.'
-  };
+  if (score >= 600) return { message: 'TOTAL CONTROL FREAK!', flavour: 'You uncovered a town full of bulletproof governance. Pricebury is in safe hands — and so are its donors.' };
+  if (score >= 300) return { message: 'SHARP EYE', flavour: 'A mostly healthy control environment — but a few weak spots need shoring up before they bite.' };
+  if (score >= 0)   return { message: 'ROOM FOR IMPROVEMENT', flavour: 'Foundations of governance are there, but key controls are missing or sloppy. A formal controls review would help a lot.' };
+                    return { message: 'YIKES!', flavour: 'Pervasive weaknesses across the town — substantial fraud and regulatory risk. Strengthening internal controls should be urgent.' };
 }
 
 function renderLeaderboard(leaderboard, justAdded) {
-  const container = document.getElementById('leaderboard-table');
+  const c = document.getElementById('leaderboard-table');
   if (!leaderboard.length) {
-    container.innerHTML = '<p class="text-pb-slate text-center py-6">No scores yet — be the first!</p>';
+    c.innerHTML = '<p class="text-[#0a2540] text-center py-4 font-bold">No scores yet — be the first!</p>';
     return;
   }
-
-  let html = `
-    <table class="w-full">
-      <thead>
-        <tr class="border-b-2 border-pb-navy/10">
-          <th class="text-left py-2 px-2 text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold">#</th>
-          <th class="text-left py-2 px-2 text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold">Auditor</th>
-          <th class="text-left py-2 px-2 text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold hidden md:table-cell">Organisation</th>
-          <th class="text-right py-2 px-2 text-xs uppercase tracking-[0.2em] text-pb-slate font-semibold">Score</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  leaderboard.forEach((entry, i) => {
-    const isMe = entry.name === justAdded.name && entry.date === justAdded.date;
-    const rowClass = isMe ? 'bg-pb-gold/10 font-semibold' : '';
-    html += `
-      <tr class="border-b border-pb-navy/5 ${rowClass}">
-        <td class="py-3 px-2 text-pb-navy">${i + 1}</td>
-        <td class="py-3 px-2 text-pb-navy">${escapeHtml(entry.name)}${isMe ? ' <span class="text-pb-gold text-xs uppercase tracking-wider ml-2">You</span>' : ''}</td>
-        <td class="py-3 px-2 text-pb-slate hidden md:table-cell">${escapeHtml(entry.org)}</td>
-        <td class="py-3 px-2 text-right font-display text-lg text-pb-navy">${entry.score}</td>
-      </tr>
-    `;
+  let html = '<table class="w-full"><thead><tr class="border-b-3 border-[#0a2540]"><th class="text-left py-2 px-2 font-cartoon text-sm text-[#0a2540]">#</th><th class="text-left py-2 px-2 font-cartoon text-sm text-[#0a2540]">Auditor</th><th class="text-right py-2 px-2 font-cartoon text-sm text-[#0a2540]">Score</th></tr></thead><tbody>';
+  leaderboard.forEach((e, i) => {
+    const isMe = justAdded && e.name === justAdded.name && e.date === justAdded.date;
+    const rowClass = isMe ? 'bg-[#fff3c4] font-bold' : '';
+    html += `<tr class="border-b border-[#0a2540]/15 ${rowClass}"><td class="py-2 px-2 font-cartoon text-[#0a2540]">${i+1}</td><td class="py-2 px-2 text-[#0a2540] font-bold">${escapeHtml(e.name)}${isMe ? ' ⭐' : ''}</td><td class="py-2 px-2 text-right font-cartoon text-lg text-[#0a2540]">${e.score}</td></tr>`;
   });
-
   html += '</tbody></table>';
-  container.innerHTML = html;
+  c.innerHTML = html;
 }
 
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
-}
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-document.getElementById('play-again-button').addEventListener('click', () => {
-  // Reset to lead capture for the next visitor at the stand
-  leadForm.reset();
-  validateForm();
-  showScreen('screen-form');
+document.getElementById('btn-save-score').addEventListener('click', () => {
+  const name = (document.getElementById('entry-name').value || '').trim() || 'Anonymous';
+  const entry = { name, score: state.pendingName.score, date: state.pendingName.date };
+  const lb = Storage.save(entry);
+  document.getElementById('name-entry').classList.add('hidden');
+  document.getElementById('name-saved').classList.remove('hidden');
+  renderLeaderboard(lb, entry);
 });
+
+document.getElementById('btn-play-again').addEventListener('click', startGame);
+document.getElementById('btn-start').addEventListener('click', startGame);
 
 // =================================================================================
 // INIT
 // =================================================================================
 Storage.load();
-validateForm();
+loop();
 </script>
 
 </body>
