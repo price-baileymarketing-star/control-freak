@@ -52,9 +52,9 @@
   }
   .mute-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #0a2540; }
 
-  /* Walk-forward button */
+  /* Walk + lateral buttons */
   .walk-btn {
-    width: 100px; height: 100px;
+    width: 90px; height: 90px;
     background: #ffcc33; color: #0a2540;
     border: 4px solid #0a2540; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
@@ -63,7 +63,9 @@
     transition: transform 0.05s, box-shadow 0.05s;
   }
   .walk-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #0a2540; }
-  .walk-btn svg { width: 50px; height: 50px; }
+  .walk-btn svg { width: 44px; height: 44px; }
+  .walk-btn.big { width: 110px; height: 110px; }
+  .walk-btn.big svg { width: 54px; height: 54px; }
   .walk-btn.nudge { animation: nudge 1.6s ease-in-out infinite; }
   @keyframes nudge {
     0%, 100% { transform: scale(1); }
@@ -118,6 +120,16 @@
   #m-timer-bar.danger { background: #ff6b6b; animation: pulseRed 0.3s ease-in-out infinite alternate; }
   @keyframes pulseRed { from { opacity: 0.7; } to { opacity: 1; } }
 
+  .time-low { color: #ff6b6b !important; }
+  .time-critical {
+    color: #ff6b6b !important;
+    animation: timeFlash 0.45s ease-in-out infinite;
+  }
+  @keyframes timeFlash {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.18); }
+  }
+
   .countdown-num {
     animation: countdownPop 1s ease-out forwards;
     font-family: 'Bungee', sans-serif;
@@ -154,6 +166,12 @@
   @keyframes stampDown {
     0% { opacity: 0; transform: scale(3) rotate(-12deg); }
     100% { opacity: 1; transform: scale(1) rotate(-6deg); }
+  }
+
+  .cta-card { animation: ctaWiggle 3s ease-in-out infinite; }
+  @keyframes ctaWiggle {
+    0%, 100% { transform: rotate(-1deg); }
+    50% { transform: rotate(1deg); }
   }
 </style>
 </head>
@@ -199,7 +217,8 @@
     </div>
 
     <p class="mt-8 text-xl md:text-2xl font-semibold text-[#0a2540] max-w-xl mx-auto leading-snug" style="text-shadow: 2px 2px 0 white;">
-      8 buildings. 1 audit. <br/>Spot GOOD vs BAD controls — and grab those golden coins!
+      90 seconds. 10 buildings. Spot GOOD vs BAD controls<br/>
+      and grab the coins as you walk!
     </p>
 
     <button id="btn-start" class="btn-cartoon mt-10 px-12 py-5 text-2xl">
@@ -242,14 +261,18 @@
       </button>
     </div>
 
-    <div class="flex gap-3">
-      <div class="bg-white border-4 border-[#0a2540] rounded-xl px-4 py-2" style="box-shadow: 0 4px 0 #0a2540;">
-        <div class="text-[10px] uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">Inspected</div>
-        <div id="hud-progress" class="font-cartoon text-lg text-[#0a2540] text-center leading-none">0/8</div>
+    <div class="flex gap-2">
+      <div class="bg-white border-4 border-[#0a2540] rounded-xl px-3 py-2" style="box-shadow: 0 4px 0 #0a2540;">
+        <div class="text-[10px] uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">Done</div>
+        <div id="hud-progress" class="font-cartoon text-lg text-[#0a2540] text-center leading-none">0/10</div>
       </div>
-      <div class="bg-[#ffcc33] border-4 border-[#0a2540] rounded-xl px-4 py-2" style="box-shadow: 0 4px 0 #0a2540;">
+      <div class="bg-[#ffcc33] border-4 border-[#0a2540] rounded-xl px-3 py-2" style="box-shadow: 0 4px 0 #0a2540;">
         <div class="text-[10px] uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">Score</div>
         <div id="hud-score" class="font-cartoon text-lg text-[#0a2540] text-center leading-none">0</div>
+      </div>
+      <div class="bg-white border-4 border-[#0a2540] rounded-xl px-3 py-2" style="box-shadow: 0 4px 0 #0a2540;">
+        <div class="text-[10px] uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">Time</div>
+        <div id="hud-time" class="font-cartoon text-lg text-[#0a2540] text-center leading-none">90s</div>
       </div>
     </div>
   </div>
@@ -258,13 +281,16 @@
     <canvas id="game-canvas" width="1280" height="720"></canvas>
   </div>
 
-  <!-- Bottom: hint + walk button -->
-  <div class="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center gap-4 pointer-events-none">
-    <div id="bottom-hint" class="bg-white border-4 border-[#0a2540] rounded-xl px-4 py-3 pointer-events-auto" style="box-shadow: 0 4px 0 #0a2540;">
-      <div class="font-cartoon text-sm text-[#0a2540] text-center leading-tight">HOLD TO WALK<br><span class="text-xs opacity-70">💰 Grab coins · 🏛️ Judge controls</span></div>
-    </div>
-    <button id="walk-forward" class="walk-btn nudge" aria-label="Walk forward">
+  <!-- Bottom controls: left, forward, right -->
+  <div class="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center gap-3 pointer-events-none">
+    <button id="walk-left" class="walk-btn pointer-events-auto" aria-label="Move left">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button id="walk-forward" class="walk-btn big nudge pointer-events-auto" aria-label="Walk forward">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+    <button id="walk-right" class="walk-btn pointer-events-auto" aria-label="Move right">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
   </div>
 
@@ -290,7 +316,6 @@
       <p id="m-scenario" class="text-[#0a2540] text-lg leading-snug font-semibold text-center"></p>
     </div>
 
-    <!-- Pre-judgment buttons -->
     <div id="m-pre" class="px-5 pb-5">
       <div class="flex gap-3">
         <button class="judge-btn strong" data-judge="good">
@@ -304,7 +329,6 @@
       </div>
     </div>
 
-    <!-- Result (auto-closes) -->
     <div id="m-result" class="hidden px-5 pb-5">
       <div id="m-banner" class="relative rounded-xl border-4 border-[#0a2540] p-3 mb-3 flex items-center gap-3" style="box-shadow: 0 4px 0 #0a2540;">
         <div id="m-banner-icon"></div>
@@ -340,9 +364,10 @@
       <div class="text-sm text-[#0a2540] opacity-70 uppercase tracking-wider font-bold mb-4">Your final score</div>
       <div id="final-score" class="font-cartoon text-7xl md:text-8xl text-[#ffcc33] mb-3 score-wobble" style="text-shadow: 4px 4px 0 #0a2540;">0</div>
 
-      <div class="flex justify-center gap-6 mb-4 text-sm">
-        <div class="text-[#0a2540] font-bold"><span class="opacity-60">JUDGMENTS:</span> <span id="bd-judge">0</span></div>
-        <div class="text-[#0a2540] font-bold"><span class="opacity-60">COINS:</span> <span id="bd-coins">0</span></div>
+      <div class="grid grid-cols-3 gap-3 mb-4 text-xs md:text-sm">
+        <div class="text-[#0a2540] font-bold"><span class="opacity-60 block">JUDGMENTS</span> <span id="bd-judge">0</span></div>
+        <div class="text-[#0a2540] font-bold"><span class="opacity-60 block">COINS</span> <span id="bd-coins">0</span></div>
+        <div class="text-[#0a2540] font-bold"><span class="opacity-60 block">TIME BONUS</span> <span id="bd-time">0</span></div>
       </div>
 
       <div id="final-message" class="font-cartoon text-xl text-[#0a2540] mb-3"></div>
@@ -369,12 +394,13 @@
       <div id="leaderboard-table" class="overflow-x-auto"></div>
     </div>
 
-    <button id="btn-play-again" class="btn-cartoon w-full py-5 text-2xl">PLAY AGAIN</button>
+    <button id="btn-play-again" class="btn-cartoon w-full py-5 text-2xl mb-6">PLAY AGAIN</button>
 
-    <p class="text-center text-sm font-bold text-[#0a2540] mt-5">
-      Want stronger controls in your organisation? <br/>
-      <span class="text-[#0a2540]">Speak to a Price Bailey advisor at our stand →</span>
-    </p>
+    <!-- BIG CTA -->
+    <div class="cta-card bg-[#ffcc33] border-4 border-[#0a2540] rounded-2xl p-6 text-center" style="box-shadow: 0 10px 0 #0a2540;">
+      <div class="font-cartoon text-2xl md:text-3xl text-[#0a2540] mb-3 leading-tight">👋 NEED HELP WITH YOUR INTERNAL CONTROLS?</div>
+      <div class="text-lg md:text-xl font-bold text-[#0a2540] leading-snug">Speak to one of our team at the<br/>Price Bailey stand!</div>
+    </div>
   </div>
 </div>
 
@@ -395,7 +421,7 @@ const Audio = {
       this.masterGain.gain.value = 0.5;
       this.masterGain.connect(this.ctx.destination);
       this.musicGain = this.ctx.createGain();
-      this.musicGain.gain.value = 0.25;
+      this.musicGain.gain.value = 0.22;
       this.musicGain.connect(this.masterGain);
       this.sfxGain = this.ctx.createGain();
       this.sfxGain.gain.value = 0.8;
@@ -425,11 +451,13 @@ const Audio = {
     this.tone(660, t, 0.08, 'square', 0.12);
     this.tone(880, t + 0.04, 0.08, 'square', 0.10);
   },
+  // Sonic-ring style: bright ascending sparkle
   sfxCoin() {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
-    this.tone(987.77, t, 0.08, 'square', 0.15);
-    this.tone(1318.51, t + 0.06, 0.18, 'square', 0.15);
+    this.tone(880, t, 0.05, 'square', 0.12);
+    this.tone(1318.51, t + 0.04, 0.06, 'square', 0.14);
+    this.tone(1760, t + 0.09, 0.16, 'sine', 0.16);
   },
   sfxCorrect() {
     if (!this.ctx) return;
@@ -462,7 +490,7 @@ const Audio = {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(110, t);
     osc.frequency.exponentialRampToValueAtTime(45, t + 0.1);
-    g.gain.setValueAtTime(0.08, t);
+    g.gain.setValueAtTime(0.07, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
     osc.connect(g).connect(this.sfxGain);
     osc.start(t); osc.stop(t + 0.12);
@@ -484,6 +512,13 @@ const Audio = {
       osc.start(t + d); osc.stop(t + d + 0.2);
     });
   },
+  sfxTimeOut() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.tone(440, t, 0.2, 'sawtooth', 0.15);
+    this.tone(330, t + 0.18, 0.25, 'sawtooth', 0.15);
+    this.tone(220, t + 0.4, 0.4, 'sawtooth', 0.18);
+  },
 
   MELODY: [
     523.25, 659.25, 783.99, 1046.50, 880.00, 1046.50, 1318.51, 1046.50,
@@ -493,7 +528,7 @@ const Audio = {
     130.81, 164.81, 196.00, 261.63, 110.00, 130.81, 164.81, 220.00,
     87.31, 110.00, 130.81, 174.61, 98.00, 123.47, 146.83, 196.00
   ],
-  BEAT_DUR: 0.36,
+  BEAT_DUR: 0.30,
 
   startMusic() {
     if (!this.ctx || this.musicPlaying) return;
@@ -521,49 +556,129 @@ const Audio = {
 };
 
 // =================================================================================
-// BUILDING DATA
+// BUILDING DATA — multi-variant scenarios
 // =================================================================================
 const BUILDINGS = [
-  { id: 'charity-hq',   name: 'Hopebridge Charity HQ',     drawFn: 'drawCharityHQ',
-    scenarios: {
-      good: { scenario: "Monthly accounts. Trustees get them two weeks before each board meeting. Variances challenged in writing.", principle: "Timely management reporting is the foundation of good charity governance." },
-      bad:  { scenario: "Trustees haven't seen any accounts for four months. Decisions are being made on gut feel.", principle: "Delayed financial reporting means trustees can't fulfil their statutory duties." }
-    }},
-  { id: 'bank',         name: 'Pricebury High Street Bank', drawFn: 'drawBank',
-    scenarios: {
-      good: { scenario: "Bank reconciled to the cashbook every month. Payments over £500 need two signatures from separate teams.", principle: "Monthly reconciliation plus dual authorisation makes fraud almost impossible." },
-      bad:  { scenario: "Bank statements unopened. Nobody's reconciled anything for eight months. True cash position: unknown.", principle: "Unreconciled accounts are the biggest red flag in any audit." }
-    }},
-  { id: 'community',    name: "St Mary's Community Hall",   drawFn: 'drawCommunity',
-    scenarios: {
-      good: { scenario: "Two volunteers count cash, sign the sheet, bank it that week. Restricted donations clearly tagged.", principle: "Accurate donation recording and fund tagging satisfies the Charity Commission." },
-      bad:  { scenario: "Donations sit in a tin for weeks. Restricted grants mixed in with general funds. No separation.", principle: "Mixing restricted and unrestricted funds breaches donor terms — fast route to regulatory trouble." }
-    }},
-  { id: 'shop',         name: 'Hopebridge Charity Shop',    drawFn: 'drawShop',
-    scenarios: {
-      good: { scenario: "Till reconciled every shift, discrepancies signed off. Stock counted weekly by someone who doesn't handle the till.", principle: "Till reconciliations plus segregated stock counts catch issues early." },
-      bad:  { scenario: "One manager handles cash, banking, sales, stock, AND donation valuations. No independent review.", principle: "Poor segregation of duties is the textbook setup for charity fraud." }
-    }},
-  { id: 'solicitor',    name: 'Hartley & Co. Solicitors',   drawFn: 'drawSolicitor',
-    scenarios: {
-      good: { scenario: "Dedicated legacy tracker. Every notification, probate stage, and expected date logged and reviewed monthly.", principle: "A proper legacy tracker prevents forgotten bequests worth significant income." },
-      bad:  { scenario: "Procedures manual last updated 2014. Half the policies reference systems and roles that don't exist.", principle: "Outdated policies leave staff making it up — no defensible standard when things go wrong." }
-    }},
-  { id: 'accountancy',  name: 'Pricebury Audit Chambers',   drawFn: 'drawAccountancy',
-    scenarios: {
-      good: { scenario: "Every journal reviewed and approved by a second qualified accountant before it hits the ledger.", principle: "Independent journal approval is the strongest control against management override." },
-      bad:  { scenario: "Budgets set in March, never looked at again. £180k over budget by November — nobody noticed.", principle: "Inadequate budget monitoring means variances compound silently until it's too late." }
-    }},
-  { id: 'warehouse',    name: 'Hopebridge Distribution',    drawFn: 'drawWarehouse',
-    scenarios: {
-      good: { scenario: "Asset register reconciled to physical stock annually. Donations valued independently. Disposals require senior sign-off.", principle: "A reconciled asset register keeps the balance sheet honest." },
-      bad:  { scenario: "Receipts unscanned. Half the ledger has no paperwork. Expense claims processed with no authorisation.", principle: "Incomplete documentation means auditors qualify the accounts and HMRC disallows expenses." }
-    }},
-  { id: 'datacentre',   name: 'Pricebury Data Centre',      drawFn: 'drawDataCentre',
-    scenarios: {
-      good: { scenario: "Least-privilege access. MFA enforced. Quarterly password rotation. Nightly off-site backups.", principle: "These are the modern baseline — anything less is a cyber and data protection breach waiting to happen." },
-      bad:  { scenario: "Shared admin password, two years old. Backups stopped in March. An ex-employee's login still works.", principle: "Weak data security: each of these breaches UK data protection law on its own." }
-    }}
+  { id: 'charity-hq', name: 'Hopebridge Charity HQ', drawFn: 'drawCharityHQ',
+    good: [
+      { scenario: "Monthly accounts to trustees, two weeks before each board meeting. Variances challenged in writing.", principle: "Timely management reporting is the foundation of good charity governance." },
+      { scenario: "Risk register reviewed at every trustee meeting. Action owners and deadlines tracked.", principle: "Active risk management keeps the board ahead of issues, not chasing them." },
+      { scenario: "Annual budget approved by trustees. Quarterly reforecasts presented with explanation.", principle: "Budget discipline turns strategic planning into a measurable framework." }
+    ],
+    bad: [
+      { scenario: "Trustees haven't seen any accounts for four months. Decisions made on gut feel.", principle: "Delayed financial reporting means trustees can't fulfil their statutory duties." },
+      { scenario: "Last board meeting was nine months ago. The Chair signs everything off via email.", principle: "Email-only sign-off without proper meetings undermines the governance framework." },
+      { scenario: "No annual budget exists. Spending happens ad-hoc with no approval framework.", principle: "Without a budget, there's no benchmark for what 'over-spend' even means." }
+    ]
+  },
+  { id: 'bank', name: 'Pricebury High Street Bank', drawFn: 'drawBank',
+    good: [
+      { scenario: "Bank reconciled to the cashbook monthly. Payments over £500 need two signatures from separate teams.", principle: "Monthly reconciliation plus dual authorisation makes fraud almost impossible." },
+      { scenario: "Three trustees on the bank mandate. Standing order schedule reviewed quarterly.", principle: "Active mandate management catches stale instructions before they cost the charity money." },
+      { scenario: "All BACS payments require dual authorisation. Statements reviewed monthly by the Treasurer.", principle: "Independent monthly review is the cheapest fraud-detection control there is." }
+    ],
+    bad: [
+      { scenario: "Bank statements unopened. Nobody's reconciled anything for eight months. Cash position: unknown.", principle: "Unreconciled accounts are the biggest red flag in any audit." },
+      { scenario: "The Finance Director has sole signing authority. Mandate last updated five years ago.", principle: "Sole banking authority plus a stale mandate is a critical control failure." },
+      { scenario: "Standing orders still running to suppliers who left two years ago. No one's checked.", principle: "Unreviewed payment instructions are quiet money-drains — sometimes for years." }
+    ]
+  },
+  { id: 'community', name: "St Mary's Community Hall", drawFn: 'drawCommunity',
+    good: [
+      { scenario: "Two volunteers count cash, sign the sheet, bank it that week. Restricted donations tagged.", principle: "Dual counting and clear fund tagging satisfies the Charity Commission." },
+      { scenario: "All cash from raffles and bake sales banked within 48 hours. Always counted with a witness.", principle: "Prompt intact banking minimises misappropriation and creates an audit trail." },
+      { scenario: "Donation envelopes opened in pairs. Cash and pledge totals reconciled before recording.", principle: "Dual-handling on opening is the single best control against envelope skimming." }
+    ],
+    bad: [
+      { scenario: "Donations sit in a tin for weeks. Restricted grants mixed in with general funds.", principle: "Mixing restricted and unrestricted funds breaches donor terms and risks regulatory action." },
+      { scenario: "The treasurer takes cash home 'for safekeeping'. Banking happens when convenient.", principle: "Single-person cash handling is the textbook risk behind most charity cash fraud." },
+      { scenario: "Petty cash not reconciled in 18 months. Receipts missing for half the entries.", principle: "An unreconciled petty cash float is a slow-motion fraud waiting to happen." }
+    ]
+  },
+  { id: 'shop', name: 'Hopebridge Charity Shop', drawFn: 'drawShop',
+    good: [
+      { scenario: "Till reconciled every shift, discrepancies signed off. Stock counted weekly by someone else.", principle: "Daily reconciliation plus segregated stock counts catches issues early." },
+      { scenario: "Daily Z-readings filed. Stock movements logged. Donations valued by a second person.", principle: "Independent valuation prevents the most common stock-related misstatements." },
+      { scenario: "Cash banked daily. Voids and refunds need manager sign-off. CCTV reviewed weekly.", principle: "Layered controls on cash handling are cheap and incredibly effective." }
+    ],
+    bad: [
+      { scenario: "One manager handles cash, banking, sales, stock AND donation valuations. No review.", principle: "Poor segregation of duties is the textbook setup for charity fraud." },
+      { scenario: "Till keys left in the lock. Cash kept in a drawer overnight. Manager 'trusts the team'.", principle: "Trust isn't a control — physical security and process are." },
+      { scenario: "Stock arrives and disappears with no documentation. Sales recorded on a notepad.", principle: "Without documentation, there's literally nothing for an auditor to verify." }
+    ]
+  },
+  { id: 'solicitor', name: 'Hartley & Co. Solicitors', drawFn: 'drawSolicitor',
+    good: [
+      { scenario: "Dedicated legacy tracker. Every notification, probate stage, and expected date logged.", principle: "A proper legacy tracker prevents forgotten bequests worth significant income." },
+      { scenario: "All legacy correspondence filed centrally. Quarterly review with the executors' solicitors.", principle: "Central filing turns scattered correspondence into a defensible audit trail." },
+      { scenario: "Estate accounts reviewed line-by-line before legacy income is recognised.", principle: "Pre-recognition review prevents both overstatement and forgotten entitlements." }
+    ],
+    bad: [
+      { scenario: "Procedures manual last updated 2014. Half the policies reference systems that don't exist.", principle: "Outdated policies leave staff guessing — no defensible standard when things go wrong." },
+      { scenario: "Legacy notifications stored in personal email inboxes. Nobody knows what's outstanding.", principle: "Personal-inbox 'systems' fail every time someone leaves or goes on holiday." },
+      { scenario: "Expected legacies not recorded until cash arrives. Multi-year gaps go unnoticed.", principle: "Delayed recognition hides forgotten bequests — sometimes worth six-figure sums." }
+    ]
+  },
+  { id: 'accountancy', name: 'Pricebury Audit Chambers', drawFn: 'drawAccountancy',
+    good: [
+      { scenario: "Every journal reviewed and approved by a second qualified accountant before posting.", principle: "Independent journal approval is the strongest control against management override." },
+      { scenario: "Budget vs actual reviewed monthly. Variances over 10% escalated with written explanation.", principle: "Regular review catches drift early — before it becomes unfixable." },
+      { scenario: "Year-end adjusting entries reviewed by external auditor before posting.", principle: "External review applies professional scepticism beyond the limits of internal controls." }
+    ],
+    bad: [
+      { scenario: "Budgets set in March, never looked at again. £180k over budget by November — nobody noticed.", principle: "Inadequate budget monitoring means variances compound silently until it's too late." },
+      { scenario: "Anyone with system access can post journals. No review, no approval, no segregation.", principle: "Open journal access is a textbook management-override risk." },
+      { scenario: "VAT returns submitted three months late. Penalty interest piling up at HMRC.", principle: "Incorrect or late VAT handling burns cash and triggers heightened HMRC scrutiny." }
+    ]
+  },
+  { id: 'warehouse', name: 'Hopebridge Distribution', drawFn: 'drawWarehouse',
+    good: [
+      { scenario: "Asset register reconciled to physical stock annually. Donations valued independently.", principle: "A reconciled asset register keeps the balance sheet honest." },
+      { scenario: "All deliveries logged on arrival. Invoices matched to delivery notes before payment.", principle: "Three-way matching (PO, delivery, invoice) is the single best control against supplier fraud." },
+      { scenario: "Stock takes performed quarterly. Variances investigated and adjusted with approval.", principle: "Regular stock takes catch shrinkage early — before patterns become systemic." }
+    ],
+    bad: [
+      { scenario: "Receipts unscanned. Half the ledger has no paperwork. Expense claims processed unauthorised.", principle: "Incomplete documentation means auditors qualify the accounts and HMRC disallows expenses." },
+      { scenario: "Assets 'disappear' regularly. No one tracks the laptop fleet. Disposals undocumented.", principle: "Without an asset register, theft and loss are invisible — until the auditor arrives." },
+      { scenario: "Suppliers paid without invoices. Payments matched to verbal agreements only.", principle: "Paying without invoices makes both fraud and HMRC challenge trivially easy." }
+    ]
+  },
+  { id: 'datacentre', name: 'Pricebury Data Centre', drawFn: 'drawDataCentre',
+    good: [
+      { scenario: "Least-privilege access. MFA enforced. Quarterly password rotation. Nightly off-site backups.", principle: "These are the modern cyber and data protection baseline — nothing less is acceptable." },
+      { scenario: "Joiners and leavers process triggers same-day access change. Audit logs reviewed monthly.", principle: "Same-day access management closes the single biggest insider-threat window." },
+      { scenario: "Backups tested quarterly with full restore. Cyber insurance reviewed yearly.", principle: "Untested backups are just 'hopes' — a real restore test proves they work." }
+    ],
+    bad: [
+      { scenario: "Shared admin password, two years old. Backups stopped in March. An ex-employee's login still works.", principle: "Weak data security: each of these breaches UK data protection law on its own." },
+      { scenario: "Finance system on a 2008 server. No backups in 18 months. 'It's never broken before.'", principle: "End-of-life infrastructure is a question of when — not if — disaster hits." },
+      { scenario: "Staff use personal Gmail for donor correspondence. No retention policy. No encryption.", principle: "Personal email channels create unmanageable data-protection and FOI nightmares." }
+    ]
+  },
+  { id: 'townhall', name: 'Pricebury Town Hall', drawFn: 'drawTownHall',
+    good: [
+      { scenario: "Annual return filed on time. Trustees' report SORP-compliant and published openly.", principle: "Timely, transparent filing builds public trust and demonstrates regulatory competence." },
+      { scenario: "Conflict of interest register reviewed at every trustee meeting. Declarations refreshed yearly.", principle: "Active conflict management is one of the Charity Commission's clearest expectations." },
+      { scenario: "Statutory accounts filed early with Companies House and Charity Commission. No reminders.", principle: "Filing early demonstrates control and confidence in the figures." }
+    ],
+    bad: [
+      { scenario: "Annual return three years overdue. Charity Commission has issued a formal warning.", principle: "Persistent regulatory non-compliance can trigger investigation and trustee disqualification." },
+      { scenario: "Conflicts of interest never declared. A trustee's partner won the catering contract uncontested.", principle: "Undeclared conflicts undermine governance and expose trustees to personal liability." },
+      { scenario: "Trustees' report missing for two years. Beneficiaries can't see how money was spent.", principle: "Without a trustees' report, charities fail their accountability duties to donors and the public." }
+    ]
+  },
+  { id: 'cafe', name: 'Cosy Corner Café', drawFn: 'drawCafe',
+    good: [
+      { scenario: "Daily Z-readings filed. Supplier invoices matched to deliveries. Petty cash reconciled weekly.", principle: "Tight daily routines are how small operations stay clean and audit-ready." },
+      { scenario: "Card and cash takings reconciled separately. Tips logged in a dedicated book.", principle: "Separating cash and card removes the most common 'lost in the float' confusion." },
+      { scenario: "Stock loss tracked daily. Wastage and staff meals logged with manager sign-off.", principle: "Logging wastage formally turns 'shrinkage' into a managed cost, not a mystery." }
+    ],
+    bad: [
+      { scenario: "Cash slipped into the till to balance shortfalls. No supplier receipts kept. Staff 'borrow' floats.", principle: "Topping up tills to hide shortfalls is the start of nearly every embezzlement case." },
+      { scenario: "Petty cash tin half-empty with no IOUs. Receipts thrown away. £40 missing every week.", principle: "Unreconciled petty cash bleeds money invisibly — and is impossible to prove either way." },
+      { scenario: "Free meals to friends not declared. No staff log. Stock loss 'just happens'.", principle: "Undocumented giveaways are a benefit-in-kind and tax issue — even at café scale." }
+    ]
+  }
 ];
 
 // =================================================================================
@@ -574,25 +689,35 @@ const HORIZON_Y = 350;
 const CAMERA_HEIGHT = 110;
 const FOCAL = 520;
 
+// 10 buildings, alternating sides, ~160 units apart
 const BUILDING_LAYOUT = [
   { side: 'left',  worldX: -240, worldZ: 280 },
-  { side: 'right', worldX:  240, worldZ: 460 },
-  { side: 'left',  worldX: -240, worldZ: 640 },
-  { side: 'right', worldX:  240, worldZ: 820 },
-  { side: 'left',  worldX: -240, worldZ: 1000 },
-  { side: 'right', worldX:  240, worldZ: 1180 },
-  { side: 'left',  worldX: -240, worldZ: 1360 },
-  { side: 'right', worldX:  240, worldZ: 1540 }
+  { side: 'right', worldX:  240, worldZ: 440 },
+  { side: 'left',  worldX: -240, worldZ: 600 },
+  { side: 'right', worldX:  240, worldZ: 760 },
+  { side: 'left',  worldX: -240, worldZ: 920 },
+  { side: 'right', worldX:  240, worldZ: 1080 },
+  { side: 'left',  worldX: -240, worldZ: 1240 },
+  { side: 'right', worldX:  240, worldZ: 1400 },
+  { side: 'left',  worldX: -240, worldZ: 1560 },
+  { side: 'right', worldX:  240, worldZ: 1720 }
 ];
-const FINISH_Z = 1740;
-const END_Z = 1820;
-const TRIGGER_ZREL = 200;
-const MODAL_TIME_MS = 9000;
-const WALK_SPEED = 1.5;
+const FINISH_Z = 1920;
+const END_Z = 2020;
+
+const WALK_SPEED = 2.5;
+const LATERAL_SPEED = 3.5;
+const LATERAL_LIMIT = 80;
+const MODAL_TIME_MS = 7000;
+const TIME_LIMIT_S = 90;
+const COIN_COLLECT_LATERAL = 38;
 
 const state = {
   playerZ: 0,
+  playerX: 0,
   walking: false,
+  lateralLeft: false,
+  lateralRight: false,
   walkBob: 0,
   time: 0,
   lastFootstepZ: 0,
@@ -608,17 +733,22 @@ const state = {
   modalOpen: false,
   modalStartTime: 0,
   modalEndTime: 0,
+  timeLeft: TIME_LIMIT_S,
+  gameStartTime: 0,
   finishCrossed: false,
+  endReason: null,  // 'finish' | 'timeout'
   ended: false,
-  walkEnabled: false   // gated by countdown
+  walkEnabled: false,
+  timeBonus: 0
 };
 
+// Project (worldX, worldY, worldZ) to screen — accounts for playerX & playerZ
 function project(worldX, worldY, worldZ) {
   const zRel = worldZ - state.playerZ;
   if (zRel <= 5) return null;
   const scale = FOCAL / zRel;
   return {
-    x: W/2 + worldX * scale,
+    x: W/2 + (worldX - state.playerX) * scale,
     y: HORIZON_Y + (CAMERA_HEIGHT - worldY) * scale,
     scale: scale,
     zRel: zRel
@@ -694,7 +824,6 @@ function rrect(x, y, w, h, r, fill, stroke = '#0a2540', strokeW = 4) {
   if (fill) { ctx.fillStyle = fill; ctx.fill(); }
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = strokeW; ctx.stroke(); }
 }
-
 function drawSign(x, y, text, color, fontSize = 18) {
   ctx.font = `bold ${fontSize}px Fredoka`;
   const tw = ctx.measureText(text).width;
@@ -931,7 +1060,128 @@ function drawDataCentre() {
   rect(28, -42, 12, 16, '#ffcc33');
   drawSign(0, -h - 6, '💻 DATA CENTRE', '#d6c4ff', 14);
 }
-const drawFns = { drawCharityHQ, drawBank, drawCommunity, drawShop, drawSolicitor, drawAccountancy, drawWarehouse, drawDataCentre };
+function drawTownHall() {
+  const w = 220, h = 280;
+  // Base/steps
+  rect(-w/2 - 18, -18, w + 36, 18, '#b8b0a0');
+  // Main building
+  rect(-w/2, -h + 70, w, h - 88, '#ece8d8');
+  // Cornice
+  rect(-w/2 - 12, -h + 58, w + 24, 14, '#a89c80');
+  // Triangular pediment
+  ctx.beginPath();
+  ctx.moveTo(-w/2 - 18, -h + 58); ctx.lineTo(0, -h + 18); ctx.lineTo(w/2 + 18, -h + 58);
+  ctx.closePath();
+  ctx.fillStyle = '#d4cab0'; ctx.fill();
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
+  // Columns (4)
+  for (let i = 0; i < 4; i++) {
+    const cx = -w/2 + 18 + i * 56;
+    rect(cx, -h + 88, 28, h - 108, '#f4f0e0');
+    rect(cx - 4, -h + 78, 36, 12, '#a89c80');
+  }
+  // Door
+  rrect(-28, -75, 56, 75, 8, '#7a4a2a');
+  ctx.beginPath(); ctx.arc(16, -38, 3, 0, Math.PI*2);
+  ctx.fillStyle = '#ffcc33'; ctx.fill();
+  // Clock tower
+  rect(-26, -h - 56, 52, 60, '#d4cab0');
+  // Clock face
+  ctx.beginPath(); ctx.arc(0, -h - 26, 18, 0, Math.PI*2);
+  ctx.fillStyle = 'white'; ctx.fill();
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3; ctx.stroke();
+  // Numbers (dots at 12/3/6/9)
+  ctx.fillStyle = '#0a2540';
+  ctx.beginPath();
+  ctx.arc(0, -h - 38, 1.5, 0, Math.PI*2);
+  ctx.arc(12, -h - 26, 1.5, 0, Math.PI*2);
+  ctx.arc(0, -h - 14, 1.5, 0, Math.PI*2);
+  ctx.arc(-12, -h - 26, 1.5, 0, Math.PI*2);
+  ctx.fill();
+  // Hands
+  ctx.lineWidth = 2.5; ctx.strokeStyle = '#0a2540';
+  ctx.beginPath();
+  ctx.moveTo(0, -h - 26); ctx.lineTo(0, -h - 36);
+  ctx.moveTo(0, -h - 26); ctx.lineTo(9, -h - 22);
+  ctx.stroke();
+  // Pointed roof
+  ctx.beginPath();
+  ctx.moveTo(-28, -h - 56); ctx.lineTo(0, -h - 86); ctx.lineTo(28, -h - 56);
+  ctx.closePath();
+  ctx.fillStyle = '#c44848'; ctx.fill();
+  ctx.lineWidth = 4; ctx.strokeStyle = '#0a2540'; ctx.stroke();
+  // Tower flag
+  ctx.beginPath();
+  ctx.moveTo(0, -h - 86); ctx.lineTo(0, -h - 100);
+  ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.fillStyle = '#ffcc33';
+  ctx.beginPath();
+  ctx.moveTo(0, -h - 100); ctx.lineTo(12, -h - 96); ctx.lineTo(0, -h - 92);
+  ctx.closePath();
+  ctx.fill(); ctx.lineWidth = 2; ctx.stroke();
+  drawSign(0, -h - 110, '🏛 TOWN HALL', '#e0d4b0', 14);
+}
+function drawCafe() {
+  const w = 190, h = 210;
+  // Body
+  rect(-w/2, -h + 60, w, h - 78, '#f4d098');
+  // Pitched roof
+  ctx.beginPath();
+  ctx.moveTo(-w/2 - 14, -h + 60); ctx.lineTo(0, -h + 16); ctx.lineTo(w/2 + 14, -h + 60);
+  ctx.closePath();
+  ctx.fillStyle = '#8a4838'; ctx.fill();
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
+  // Chimney
+  rect(w/2 - 50, -h - 18, 20, 38, '#a83838');
+  rect(w/2 - 54, -h - 24, 28, 8, '#3a3a4a');
+  // Smoke puffs
+  ctx.fillStyle = 'rgba(220, 220, 220, 0.85)';
+  const sphase = state.time * 0.04;
+  for (let i = 0; i < 3; i++) {
+    const sx = w/2 - 40 + Math.sin(sphase + i) * 4;
+    const sy = -h - 28 - i * 14 - (sphase * 4 % 14);
+    ctx.beginPath();
+    ctx.arc(sx, sy, 6 + i * 2, 0, Math.PI*2);
+    ctx.fill();
+  }
+  // Awning
+  const awnY = -h + 88;
+  ctx.fillStyle = '#6dd47e';
+  ctx.fillRect(-w/2 - 6, awnY, w + 12, 22);
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
+  ctx.strokeRect(-w/2 - 6, awnY, w + 12, 22);
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 14px Bungee';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('CAFÉ', 0, awnY + 11);
+  // Window
+  rect(-w/2 + 14, -h + 120, w - 80, 52, '#cfeaf7');
+  // Tables in window (silhouettes)
+  rect(-w/2 + 22, -h + 152, 12, 14, '#8b5a3c');
+  rect(-w/2 + 40, -h + 148, 12, 18, '#8b5a3c');
+  rect(-w/2 + 60, -h + 154, 12, 12, '#8b5a3c');
+  // Door
+  rrect(w/4 - 12, -75, 44, 75, 5, '#a3d4f0');
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(w/4 - 12, -38); ctx.lineTo(w/4 + 32, -38); ctx.stroke();
+  // Sandwich board outside
+  ctx.save();
+  ctx.translate(-w/4 + 8, -16);
+  ctx.rotate(-0.12);
+  rrect(-18, -34, 36, 34, 4, '#ffcc33');
+  ctx.fillStyle = '#0a2540';
+  ctx.font = 'bold 9px Fredoka';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('OPEN', 0, -23);
+  ctx.fillText('☕ £2', 0, -10);
+  ctx.restore();
+  drawSign(0, -h - 26, '☕ CAFÉ', '#f4d098', 14);
+}
+
+const drawFns = {
+  drawCharityHQ, drawBank, drawCommunity, drawShop, drawSolicitor,
+  drawAccountancy, drawWarehouse, drawDataCentre, drawTownHall, drawCafe
+};
 
 // =================================================================================
 // SCENERY
@@ -1007,12 +1257,16 @@ function drawGround() {
   const farPavR = project(PAV_X, 0, farZ + state.playerZ);
   const farRoadL = project(-ROAD_X, 0, farZ + state.playerZ);
   const farRoadR = project(ROAD_X, 0, farZ + state.playerZ);
+
+  // Near edges drawn via straight extrapolation from far perspective points
+  // through the actual edge x-positions on the player's local frame
   const nearZ = 30;
   const nearScale = FOCAL / nearZ;
-  const nearPavLX = W/2 - PAV_X * nearScale;
-  const nearPavRX = W/2 + PAV_X * nearScale;
-  const nearRoadLX = W/2 - ROAD_X * nearScale;
-  const nearRoadRX = W/2 + ROAD_X * nearScale;
+  // Account for playerX so road shifts when player moves laterally
+  const nearPavLX = W/2 + (-PAV_X - state.playerX) * nearScale;
+  const nearPavRX = W/2 + (PAV_X - state.playerX) * nearScale;
+  const nearRoadLX = W/2 + (-ROAD_X - state.playerX) * nearScale;
+  const nearRoadRX = W/2 + (ROAD_X - state.playerX) * nearScale;
   const nearY = HORIZON_Y + CAMERA_HEIGHT * nearScale;
 
   ctx.fillStyle = '#d4c8b8';
@@ -1097,26 +1351,26 @@ function drawTree(worldX, worldZ) {
 }
 
 // =================================================================================
-// COINS
+// COINS — Sonic-ring style, auto-collect on pass-through
 // =================================================================================
 function drawCoin(coin) {
   if (coin.collected) return;
   const proj = project(coin.worldX, coin.worldY, coin.worldZ);
-  if (!proj || proj.scale < 0.1) return;
+  if (!proj || proj.scale < 0.08) return;
 
   const r = 22 * proj.scale;
   const bob = Math.sin(state.time * 0.1 + coin.phase) * 4 * proj.scale;
   const cy = proj.y - 40 * proj.scale + bob;
 
-  const spin = Math.cos(state.time * 0.1 + coin.phase * 2);
+  const spin = Math.cos(state.time * 0.15 + coin.phase * 2);
   const rx = Math.max(0.2, Math.abs(spin)) * r;
 
   if (proj.scale > 0.5) {
-    const g = ctx.createRadialGradient(proj.x, cy, r * 0.3, proj.x, cy, r * 2);
-    g.addColorStop(0, 'rgba(255, 204, 51, 0.6)');
+    const g = ctx.createRadialGradient(proj.x, cy, r * 0.3, proj.x, cy, r * 2.2);
+    g.addColorStop(0, 'rgba(255, 204, 51, 0.7)');
     g.addColorStop(1, 'rgba(255, 204, 51, 0)');
     ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(proj.x, cy, r * 2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(proj.x, cy, r * 2.2, 0, Math.PI*2); ctx.fill();
   }
 
   ctx.beginPath();
@@ -1133,26 +1387,9 @@ function drawCoin(coin) {
   }
 }
 
-function hitCoin(canvasX, canvasY) {
-  const list = state.coins
-    .filter(c => !c.collected)
-    .map(c => ({ c, proj: project(c.worldX, c.worldY, c.worldZ) }))
-    .filter(x => x.proj && x.proj.scale > 0.15)
-    .sort((a, b) => a.proj.zRel - b.proj.zRel);
-
-  for (const item of list) {
-    const proj = item.proj;
-    const r = 22 * proj.scale;
-    const bob = Math.sin(state.time * 0.1 + item.c.phase) * 4 * proj.scale;
-    const cy = proj.y - 40 * proj.scale + bob;
-    const pad = Math.max(20, 14);
-    const dx = canvasX - proj.x;
-    const dy = canvasY - cy;
-    if (Math.sqrt(dx*dx + dy*dy) <= r + pad) return item.c;
-  }
-  return null;
-}
-
+// =================================================================================
+// BUILDING HIT-TESTING (for clicks)
+// =================================================================================
 function buildingScreenBox(b) {
   const base = project(b.worldX, 0, b.worldZ);
   if (!base) return null;
@@ -1161,7 +1398,7 @@ function buildingScreenBox(b) {
     left: base.x - 110 * scale,
     right: base.x + 110 * scale,
     bottom: base.y,
-    top: base.y - 260 * scale,
+    top: base.y - 280 * scale,
     scale: scale,
     zRel: base.zRel,
     center: { x: base.x, y: base.y }
@@ -1172,12 +1409,12 @@ function hitBuilding(canvasX, canvasY) {
   const candidates = state.buildings
     .filter(b => !b.revealed)
     .map(b => ({ b, box: buildingScreenBox(b) }))
-    .filter(x => x.box && x.box.scale > 0.15)
+    .filter(x => x.box && x.box.scale > 0.13)
     .sort((a, b) => a.box.zRel - b.box.zRel);
 
   for (const c of candidates) {
     const box = c.box;
-    const pad = Math.max(0, 25 - box.scale * 20);
+    const pad = Math.max(0, 30 - box.scale * 20);
     if (canvasX >= box.left - pad && canvasX <= box.right + pad &&
         canvasY >= box.top - pad && canvasY <= box.bottom + pad) {
       return c.b;
@@ -1292,11 +1529,21 @@ function drawOneBuilding(b) {
   ctx.translate(proj.x, proj.y);
   ctx.scale(proj.scale, proj.scale);
 
+  // Pulsing yellow halo behind un-inspected buildings
+  if (!b.revealed) {
+    const pulse = 0.25 + 0.3 * (0.5 + 0.5 * Math.sin(state.time * 0.08 + b.worldZ * 0.01));
+    const g = ctx.createRadialGradient(0, -130, 30, 0, -130, 220);
+    g.addColorStop(0, `rgba(255, 204, 51, ${pulse * 0.7})`);
+    g.addColorStop(1, 'rgba(255, 204, 51, 0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(-220, -320, 440, 330);
+  }
+
   drawFns[b.drawFn]();
 
   if (b.revealed) {
     ctx.save();
-    ctx.translate(0, -160);
+    ctx.translate(0, -180);
     ctx.rotate(-0.18);
     let label, color;
     if (b.outcome === 'correct') { label = '✓ +100'; color = '#6dd47e'; }
@@ -1310,6 +1557,27 @@ function drawOneBuilding(b) {
     ctx.restore();
   }
   ctx.restore();
+
+  // Bouncing yellow arrow above un-inspected buildings (in screen pixel space)
+  if (!b.revealed && proj.scale > 0.2) {
+    const box = buildingScreenBox(b);
+    if (box) {
+      const bob = Math.sin(state.time * 0.14 + b.worldZ * 0.01) * 6;
+      const ay = box.top - 24 + bob;
+      const ax = box.center.x;
+      ctx.save();
+      ctx.fillStyle = '#ffcc33';
+      ctx.strokeStyle = '#0a2540';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(ax - 14, ay - 4);
+      ctx.lineTo(ax + 14, ay - 4);
+      ctx.lineTo(ax, ay + 16);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
+  }
 }
 
 // =================================================================================
@@ -1328,611 +1596,4 @@ function draw() {
   ctx.restore();
 
   drawProgressBar();
-  drawApproachWarning();
-}
-
-function drawApproachWarning() {
-  if (state.modalOpen || state.ended) return;
-  const next = state.buildings.find(b => !b.revealed);
-  if (!next) return;
-  const box = buildingScreenBox(next);
-  if (!box || box.scale < 0.3) return;
-
-  const cx = box.center.x;
-  const cy = box.top - 30;
-  const pulse = 1 + 0.08 * Math.sin(state.time * 0.2);
-
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.scale(pulse, pulse);
-  const text = '👆 TAP!';
-  ctx.font = 'bold 26px Bungee';
-  const tw = ctx.measureText(text).width;
-  const pw = tw + 26, ph = 38;
-  rrect(-pw/2, -ph/2, pw, ph, 10, '#ffcc33');
-  ctx.fillStyle = '#0a2540';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(text, 0, 2);
-  ctx.beginPath();
-  ctx.moveTo(-10, ph/2);
-  ctx.lineTo(10, ph/2);
-  ctx.lineTo(0, ph/2 + 12);
-  ctx.closePath();
-  ctx.fillStyle = '#ffcc33'; ctx.fill();
-  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
-  ctx.restore();
-}
-
-function drawProgressBar() {
-  const barY = H - 88;
-  const barH = 12;
-  const padding = 280;
-  const barW = W - padding * 2;
-  rrect(padding, barY, barW, barH, barH/2, 'rgba(255,255,255,0.9)');
-  const pct = Math.min(1, state.playerZ / FINISH_Z);
-  rrect(padding + 3, barY + 3, (barW - 6) * pct, barH - 6, (barH - 6)/2, '#ffcc33', null);
-  state.buildings.forEach(b => {
-    const x = padding + 3 + (barW - 6) * (b.worldZ / FINISH_Z);
-    ctx.beginPath();
-    ctx.arc(x, barY + barH/2, 5, 0, Math.PI*2);
-    let col = '#0a2540';
-    if (b.revealed) col = b.outcome === 'correct' ? '#6dd47e' : (b.outcome === 'wrong' ? '#ff6b6b' : '#9a9a9a');
-    ctx.fillStyle = col; ctx.fill();
-    ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
-  });
-  const fx = padding + 3 + (barW - 6);
-  ctx.fillStyle = '#ff6b6b';
-  ctx.fillRect(fx - 3, barY - 4, 6, barH + 8);
-  ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5;
-  ctx.strokeRect(fx - 3, barY - 4, 6, barH + 8);
-}
-
-// =================================================================================
-// UPDATE
-// =================================================================================
-function update() {
-  state.time++;
-
-  const canWalk = state.walking && state.walkEnabled && !state.modalOpen && !state.ended;
-
-  if (!canWalk) {
-    state.walkBob *= 0.9;
-  } else {
-    state.playerZ += WALK_SPEED;
-    state.walkBob = Math.sin(state.time * 0.22) * 2.5;
-
-    if (state.playerZ - state.lastFootstepZ > 30) {
-      Audio.sfxFootstep();
-      state.lastFootstepZ = state.playerZ;
-    }
-  }
-
-  // Auto-mark buildings as missed if player walks past them without clicking
-  if (state.walkEnabled && !state.modalOpen && !state.ended) {
-    state.buildings.forEach(b => {
-      if (!b.revealed && b.worldZ < state.playerZ - 40) {
-        b.revealed = true;
-        b.outcome = 'miss';
-        state.inspectedCount += 1;
-        state.judgmentsMissed += 1;
-        Audio.sfxMiss();
-        updateHUD();
-      }
-    });
-
-    // Check finish line crossing
-    if (!state.finishCrossed && state.playerZ >= FINISH_Z) {
-      state.finishCrossed = true;
-      triggerEnd();
-    }
-  }
-
-  if (state.playerZ >= END_Z) state.playerZ = END_Z;
-
-  // Modal timer
-  if (state.modalOpen) {
-    const now = Date.now();
-    const remaining = Math.max(0, state.modalEndTime - now);
-    const pct = remaining / MODAL_TIME_MS;
-    const bar = document.getElementById('m-timer-bar');
-    bar.style.width = (pct * 100) + '%';
-    bar.classList.toggle('warn', pct <= 0.5 && pct > 0.25);
-    bar.classList.toggle('danger', pct <= 0.25);
-
-    if (pct > 0 && pct < 1 && Math.floor(remaining / 1000) !== state._lastTickSec) {
-      state._lastTickSec = Math.floor(remaining / 1000);
-      if (pct <= 0.5) Audio.sfxTick();
-    }
-    if (remaining <= 0) handleTimeout();
-  }
-}
-
-function loop() {
-  if (document.getElementById('screen-game').classList.contains('active')) {
-    update();
-    draw();
-  }
-  requestAnimationFrame(loop);
-}
-
-// =================================================================================
-// INPUT — coin tapping + walk button hold
-// =================================================================================
-function canvasMouse(evt) {
-  const r = canvas.getBoundingClientRect();
-  return {
-    x: (evt.clientX - r.left) / r.width * W,
-    y: (evt.clientY - r.top) / r.height * H
-  };
-}
-
-canvas.addEventListener('mousemove', (evt) => {
-  if (state.modalOpen || state.ended) { canvas.style.cursor = 'default'; return; }
-  const { x, y } = canvasMouse(evt);
-  if (hitCoin(x, y) || hitBuilding(x, y)) canvas.style.cursor = 'pointer';
-  else canvas.style.cursor = 'default';
-});
-
-canvas.addEventListener('click', (evt) => {
-  if (state.modalOpen || state.ended) return;
-  const { x, y } = canvasMouse(evt);
-  const coin = hitCoin(x, y);
-  if (coin) { collectCoin(coin, x, y); return; }
-  const b = hitBuilding(x, y);
-  if (b) { Audio.sfxClick(); openModal(b.id); }
-});
-
-canvas.addEventListener('touchstart', (evt) => {
-  if (state.modalOpen || state.ended) return;
-  if (evt.touches.length === 0) return;
-  const r = canvas.getBoundingClientRect();
-  const t = evt.touches[0];
-  const x = (t.clientX - r.left) / r.width * W;
-  const y = (t.clientY - r.top) / r.height * H;
-  const coin = hitCoin(x, y);
-  if (coin) { evt.preventDefault(); collectCoin(coin, x, y); return; }
-  const b = hitBuilding(x, y);
-  if (b) { evt.preventDefault(); Audio.sfxClick(); openModal(b.id); }
-}, { passive: false });
-
-// Walk-forward button (hold to walk)
-const walkBtn = document.getElementById('walk-forward');
-function setWalking(w) {
-  state.walking = w;
-  if (w) walkBtn.classList.remove('nudge');
-}
-walkBtn.addEventListener('mousedown', () => { Audio.resume(); setWalking(true); });
-walkBtn.addEventListener('mouseup', () => setWalking(false));
-walkBtn.addEventListener('mouseleave', () => setWalking(false));
-walkBtn.addEventListener('touchstart', (e) => { e.preventDefault(); Audio.resume(); setWalking(true); }, { passive: false });
-walkBtn.addEventListener('touchend', () => setWalking(false));
-walkBtn.addEventListener('touchcancel', () => setWalking(false));
-
-window.addEventListener('keydown', (e) => {
-  if (['ArrowUp','w','W',' '].includes(e.key)) { Audio.resume(); setWalking(true); }
-});
-window.addEventListener('keyup', (e) => {
-  if (['ArrowUp','w','W',' '].includes(e.key)) setWalking(false);
-});
-
-function collectCoin(coin, screenX, screenY) {
-  coin.collected = true;
-  state.score += 25;
-  state.coinsCollected++;
-  Audio.sfxCoin();
-  spawnPopup('+25', screenX, screenY, '#ffcc33');
-  updateHUD();
-}
-
-function spawnPopup(text, screenX, screenY, color) {
-  const rect = canvas.getBoundingClientRect();
-  const px = rect.left + (screenX / W) * rect.width;
-  const py = rect.top + (screenY / H) * rect.height;
-  const el = document.createElement('div');
-  el.textContent = text;
-  el.style.cssText = `
-    position: fixed; left: ${px}px; top: ${py}px;
-    font-family: 'Bungee', sans-serif; font-size: 36px;
-    color: ${color}; text-shadow: 3px 3px 0 #0a2540;
-    pointer-events: none; transform: translate(-50%, -50%);
-    transition: transform 1s ease-out, opacity 1s ease-out;
-    z-index: 100;
-  `;
-  document.body.appendChild(el);
-  requestAnimationFrame(() => {
-    el.style.transform = 'translate(-50%, -150px)';
-    el.style.opacity = '0';
-  });
-  setTimeout(() => el.remove(), 1100);
-}
-
-// =================================================================================
-// MUTE
-// =================================================================================
-function setupMuteButton(btnId) {
-  const btn = document.getElementById(btnId);
-  btn.addEventListener('click', () => {
-    Audio.resume();
-    Audio.setMuted(!Audio.muted);
-    syncMuteIcons();
-  });
-}
-function syncMuteIcons() {
-  const showOff = Audio.muted;
-  ['title','game','over'].forEach(suffix => {
-    const onIcon = document.getElementById('sound-on-' + suffix);
-    const offIcon = document.getElementById('sound-off-' + suffix);
-    if (onIcon) onIcon.style.display = showOff ? 'none' : '';
-    if (offIcon) offIcon.style.display = showOff ? '' : 'none';
-  });
-}
-setupMuteButton('mute-title');
-setupMuteButton('mute-game');
-setupMuteButton('mute-over');
-
-// =================================================================================
-// MODAL
-// =================================================================================
-const modal = document.getElementById('modal');
-
-function openModal(buildingId) {
-  if (state.modalOpen) return;
-  const b = state.buildings.find(x => x.id === buildingId);
-  const data = BUILDINGS.find(x => x.id === buildingId);
-  if (!b || !data) return;
-  const scen = data.scenarios[b.type];
-
-  state.currentBuildingId = buildingId;
-  state.modalOpen = true;
-  state.modalStartTime = Date.now();
-  state.modalEndTime = Date.now() + MODAL_TIME_MS;
-  state._lastTickSec = -1;
-  // Stop walking while reading
-  setWalking(false);
-
-  document.getElementById('m-title').textContent = data.name;
-  document.getElementById('m-scenario').textContent = scen.scenario;
-  document.getElementById('m-principle').textContent = scen.principle;
-  document.getElementById('m-pre').classList.remove('hidden');
-  document.getElementById('m-result').classList.add('hidden');
-
-  const bar = document.getElementById('m-timer-bar');
-  bar.style.width = '100%';
-  bar.classList.remove('warn', 'danger');
-  document.getElementById('m-timer-wrap').style.display = '';
-
-  document.querySelectorAll('.judge-btn').forEach(btn => btn.disabled = false);
-
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
-}
-
-function closeModal() {
-  modal.classList.add('hidden');
-  modal.classList.remove('flex');
-  state.modalOpen = false;
-  state.currentBuildingId = null;
-}
-
-document.querySelectorAll('.judge-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (!state.modalOpen) return;
-    const judgment = btn.dataset.judge;
-    const b = state.buildings.find(x => x.id === state.currentBuildingId);
-    if (!b || b.revealed) return;
-
-    Audio.sfxClick();
-
-    const correct = (judgment === b.type);
-    b.revealed = true;
-    b.outcome = correct ? 'correct' : 'wrong';
-    state.score += correct ? 100 : -50;
-    state.inspectedCount += 1;
-    if (correct) state.judgmentsCorrect++; else state.judgmentsWrong++;
-
-    setTimeout(() => correct ? Audio.sfxCorrect() : Audio.sfxWrong(), 80);
-
-    showResult(b, correct ? 'correct' : 'wrong');
-    updateHUD();
-
-    setTimeout(() => { if (state.modalOpen) closeModal(); }, 1800);
-  });
-});
-
-function handleTimeout() {
-  const b = state.buildings.find(x => x.id === state.currentBuildingId);
-  if (!b || b.revealed) return;
-  b.revealed = true;
-  b.outcome = 'miss';
-  state.inspectedCount += 1;
-  state.judgmentsMissed++;
-  Audio.sfxMiss();
-
-  showResult(b, 'miss');
-  updateHUD();
-
-  setTimeout(() => { if (state.modalOpen) closeModal(); }, 1600);
-}
-
-function showResult(b, outcome) {
-  document.querySelectorAll('.judge-btn').forEach(btn => btn.disabled = true);
-  document.getElementById('m-timer-wrap').style.display = 'none';
-
-  const banner   = document.getElementById('m-banner');
-  const bIcon    = document.getElementById('m-banner-icon');
-  const verdict  = document.getElementById('m-verdict');
-  const pointsEl = document.getElementById('m-points');
-  const stamp    = document.getElementById('m-stamp');
-  const truthLabel = b.type === 'good' ? 'GOOD' : 'BAD';
-
-  if (outcome === 'correct') {
-    banner.style.background = '#e8fbed';
-    bIcon.innerHTML = '<div class="w-12 h-12 rounded-full bg-[#6dd47e] border-4 border-[#0a2540] flex items-center justify-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>';
-    verdict.textContent = 'CORRECT!';
-    verdict.style.color = '#1d6f33';
-    pointsEl.textContent = '+100 points';
-    pointsEl.style.color = '#1d6f33';
-    stamp.textContent = '+100'; stamp.style.background = '#6dd47e'; stamp.style.color = 'white';
-  } else if (outcome === 'wrong') {
-    banner.style.background = '#ffeaea';
-    bIcon.innerHTML = '<div class="w-12 h-12 rounded-full bg-[#ff6b6b] border-4 border-[#0a2540] flex items-center justify-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>';
-    verdict.textContent = 'WRONG!';
-    verdict.style.color = '#a62121';
-    pointsEl.textContent = `−50 points  ·  Truth: ${truthLabel}`;
-    pointsEl.style.color = '#a62121';
-    stamp.textContent = '−50'; stamp.style.background = '#ff6b6b'; stamp.style.color = 'white';
-  } else {
-    banner.style.background = '#f0f0f0';
-    bIcon.innerHTML = '<div class="w-12 h-12 rounded-full bg-[#9a9a9a] border-4 border-[#0a2540] flex items-center justify-center font-cartoon text-white text-xl">⌛</div>';
-    verdict.textContent = 'TOO SLOW!';
-    verdict.style.color = '#444';
-    pointsEl.textContent = `0 points  ·  Truth: ${truthLabel}`;
-    pointsEl.style.color = '#444';
-    stamp.textContent = 'MISS'; stamp.style.background = '#9a9a9a'; stamp.style.color = 'white';
-  }
-
-  stamp.classList.remove('stamp'); void stamp.offsetWidth; stamp.classList.add('stamp');
-  document.getElementById('m-pre').classList.add('hidden');
-  document.getElementById('m-result').classList.remove('hidden');
-}
-
-// =================================================================================
-// HUD
-// =================================================================================
-function updateHUD() {
-  document.getElementById('hud-progress').textContent = `${state.inspectedCount}/${BUILDINGS.length}`;
-  const scoreEl = document.getElementById('hud-score');
-  scoreEl.textContent = state.score;
-  scoreEl.classList.remove('scoreflash'); void scoreEl.offsetWidth; scoreEl.classList.add('scoreflash');
-}
-
-// =================================================================================
-// COUNTDOWN
-// =================================================================================
-function runCountdown(callback) {
-  const overlay = document.getElementById('countdown-overlay');
-  const numEl = document.getElementById('countdown-num');
-  overlay.classList.remove('hidden');
-  let n = 3;
-  numEl.textContent = n;
-  numEl.classList.remove('countdown-num'); void numEl.offsetWidth; numEl.classList.add('countdown-num');
-  Audio.sfxClick();
-
-  const step = () => {
-    n--;
-    if (n > 0) {
-      numEl.textContent = n;
-      numEl.classList.remove('countdown-num'); void numEl.offsetWidth; numEl.classList.add('countdown-num');
-      Audio.sfxClick();
-      setTimeout(step, 800);
-    } else if (n === 0) {
-      numEl.textContent = 'GO!';
-      numEl.classList.remove('countdown-num'); void numEl.offsetWidth; numEl.classList.add('countdown-num');
-      Audio.sfxCorrect();
-      setTimeout(() => {
-        overlay.classList.add('hidden');
-        callback();
-      }, 800);
-    }
-  };
-  setTimeout(step, 800);
-}
-
-// =================================================================================
-// GAME START / END
-// =================================================================================
-function startGame() {
-  Audio.resume();
-  Audio.startMusic();
-
-  state.playerZ = 0;
-  state.walking = false;
-  state.walkEnabled = false;
-  state.walkBob = 0;
-  state.lastFootstepZ = 0;
-  state.score = 0;
-  state.coinsCollected = 0;
-  state.judgmentsCorrect = 0;
-  state.judgmentsWrong = 0;
-  state.judgmentsMissed = 0;
-  state.inspectedCount = 0;
-  state.finishCrossed = false;
-  state.ended = false;
-  state.modalOpen = false;
-  state.time = 0;
-
-  const types = ['good','good','good','good','bad','bad','bad','bad'];
-  for (let i = types.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [types[i], types[j]] = [types[j], types[i]];
-  }
-
-  state.buildings = BUILDINGS.map((b, i) => ({
-    id: b.id, name: b.name, drawFn: b.drawFn,
-    worldX: BUILDING_LAYOUT[i].worldX,
-    worldZ: BUILDING_LAYOUT[i].worldZ,
-    side: BUILDING_LAYOUT[i].side,
-    type: types[i],
-    revealed: false,
-    outcome: null
-  }));
-
-  state.coins = [];
-  const coinZones = [];
-  coinZones.push({ from: 100, to: BUILDING_LAYOUT[0].worldZ - 60 });
-  for (let i = 0; i < BUILDING_LAYOUT.length - 1; i++) {
-    coinZones.push({ from: BUILDING_LAYOUT[i].worldZ + 60, to: BUILDING_LAYOUT[i+1].worldZ - 60 });
-  }
-  coinZones.push({ from: BUILDING_LAYOUT[BUILDING_LAYOUT.length-1].worldZ + 60, to: FINISH_Z - 60 });
-
-  coinZones.forEach(z => {
-    if (z.to - z.from < 50) return;
-    const cz = z.from + (z.to - z.from) * (0.3 + Math.random() * 0.4);
-    const cx = (Math.random() - 0.5) * 140;
-    state.coins.push({
-      worldX: cx, worldY: 40, worldZ: cz,
-      collected: false, phase: Math.random() * Math.PI * 2
-    });
-  });
-
-  // Re-enable nudge on walk button (so it pulses to draw attention)
-  walkBtn.classList.add('nudge');
-
-  updateHUD();
-  showScreen('screen-game');
-
-  // Countdown then enable walking (player must hold the button)
-  runCountdown(() => { state.walkEnabled = true; });
-}
-
-function triggerEnd() {
-  state.ended = true;
-  Audio.stopMusic();
-  Audio.sfxFinish();
-  setTimeout(showGameOver, 1200);
-}
-
-function showGameOver() {
-  const judgmentScore = state.judgmentsCorrect * 100 + state.judgmentsWrong * -50;
-  const coinScore = state.coinsCollected * 25;
-  document.getElementById('bd-judge').textContent = judgmentScore;
-  document.getElementById('bd-coins').textContent = `${state.coinsCollected} × £25 = ${coinScore}`;
-
-  const { message, flavour, stamp, stampColor } = getPerformanceData(state.score);
-  document.getElementById('final-message').textContent = message;
-  document.getElementById('final-flavour').textContent = flavour;
-
-  const stampEl = document.getElementById('verdict-stamp');
-  stampEl.textContent = stamp;
-  stampEl.style.background = stampColor;
-  stampEl.style.color = 'white';
-  stampEl.style.textShadow = '2px 2px 0 #0a2540';
-  stampEl.classList.remove('verdict-stamp'); void stampEl.offsetWidth;
-
-  document.getElementById('name-entry').classList.remove('hidden');
-  document.getElementById('name-saved').classList.add('hidden');
-  document.getElementById('entry-name').value = '';
-
-  state.pendingEntry = { score: state.score, date: new Date().toISOString() };
-
-  renderLeaderboard(Storage.load(), null);
-  showScreen('screen-over');
-  spawnConfetti();
-
-  setTimeout(() => {
-    animateScore(state.score, document.getElementById('final-score'));
-    stampEl.classList.add('verdict-stamp');
-  }, 250);
-}
-
-function getPerformanceData(score) {
-  if (score >= 700) return { message: 'TOTAL CONTROL FREAK!', flavour: 'Every call nailed. Pricebury is in safe hands — and so are its donors.', stamp: 'APPROVED', stampColor: '#6dd47e' };
-  if (score >= 400) return { message: 'SHARP EYE', flavour: 'Solid auditor performance. A handful of misses but mostly bang on the money.', stamp: 'PASS', stampColor: '#6dd47e' };
-  if (score >= 100) return { message: 'ROOM FOR IMPROVEMENT', flavour: 'Some good instincts, some shaky calls. Brush up and come back for another round.', stamp: 'NEEDS WORK', stampColor: '#ffcc33' };
-                    return { message: 'BACK TO THE BOOKS!', flavour: 'Those weak controls were sneakier than they looked. The Charity Commission is calling…', stamp: 'QUALIFIED', stampColor: '#ff6b6b' };
-}
-
-function animateScore(target, el, duration = 1800) {
-  const start = Date.now();
-  let lastTicked = 0;
-  const tick = () => {
-    const t = Math.min(1, (Date.now() - start) / duration);
-    const eased = 1 - Math.pow(1 - t, 3);
-    const current = Math.round(target * eased);
-    el.textContent = current;
-    if (Date.now() - lastTicked > 80 && t < 1) {
-      Audio.sfxTick();
-      lastTicked = Date.now();
-    }
-    if (t < 1) requestAnimationFrame(tick);
-  };
-  tick();
-}
-
-function spawnConfetti() {
-  const container = document.getElementById('confetti');
-  if (!container) return;
-  container.innerHTML = '';
-  const colors = ['#ffcc33', '#6dd47e', '#ff6b6b', '#4a90c4', '#c44848', '#ff9ec0', '#a3d4f0'];
-  for (let i = 0; i < 80; i++) {
-    const el = document.createElement('div');
-    el.className = 'confetti-piece';
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    const left = Math.random() * 100;
-    const dur = 2.5 + Math.random() * 3;
-    const delay = Math.random() * 2.5;
-    const size = 8 + Math.random() * 8;
-    el.style.cssText = `
-      left: ${left}%;
-      width: ${size}px; height: ${size * 0.6}px;
-      background: ${color};
-      border: 2px solid #0a2540;
-      animation-duration: ${dur}s;
-      animation-delay: ${delay}s;
-      transform: rotate(${Math.random() * 360}deg);
-      ${Math.random() > 0.5 ? 'border-radius: 50%;' : ''}
-    `;
-    container.appendChild(el);
-  }
-  setTimeout(() => { container.innerHTML = ''; }, 8000);
-}
-
-function renderLeaderboard(leaderboard, justAdded) {
-  const c = document.getElementById('leaderboard-table');
-  if (!leaderboard.length) {
-    c.innerHTML = '<p class="text-[#0a2540] text-center py-4 font-bold">No scores yet — be the first!</p>';
-    return;
-  }
-  let html = '<table class="w-full"><thead><tr class="border-b-3 border-[#0a2540]"><th class="text-left py-2 px-2 font-cartoon text-sm text-[#0a2540]">#</th><th class="text-left py-2 px-2 font-cartoon text-sm text-[#0a2540]">Auditor</th><th class="text-right py-2 px-2 font-cartoon text-sm text-[#0a2540]">Score</th></tr></thead><tbody>';
-  leaderboard.forEach((e, i) => {
-    const isMe = justAdded && e.name === justAdded.name && e.date === justAdded.date;
-    const rowClass = isMe ? 'bg-[#fff3c4] font-bold' : '';
-    html += `<tr class="border-b border-[#0a2540]/15 ${rowClass}"><td class="py-2 px-2 font-cartoon text-[#0a2540]">${i+1}</td><td class="py-2 px-2 text-[#0a2540] font-bold">${escapeHtml(e.name)}${isMe ? ' ⭐' : ''}</td><td class="py-2 px-2 text-right font-cartoon text-lg text-[#0a2540]">${e.score}</td></tr>`;
-  });
-  html += '</tbody></table>';
-  c.innerHTML = html;
-}
-function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-document.getElementById('btn-save-score').addEventListener('click', () => {
-  const name = (document.getElementById('entry-name').value || '').trim() || 'Anonymous';
-  const entry = { name, score: state.pendingEntry.score, date: state.pendingEntry.date };
-  Audio.sfxClick();
-  const lb = Storage.save(entry);
-  document.getElementById('name-entry').classList.add('hidden');
-  document.getElementById('name-saved').classList.remove('hidden');
-  renderLeaderboard(lb, entry);
-});
-
-document.getElementById('btn-play-again').addEventListener('click', () => { Audio.sfxClick(); startGame(); });
-document.getElementById('btn-start').addEventListener('click', () => { Audio.sfxClick(); startGame(); });
-
-// =================================================================================
-// INIT
-// =================================================================================
-Storage.load();
-loop();
-</script>
-
-</body>
-</html>
+  drawNextBu
