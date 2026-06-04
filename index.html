@@ -1583,6 +1583,9 @@ function drawOneBuilding(b) {
 // =================================================================================
 // MAIN DRAW
 // =================================================================================
+// =================================================================================
+// MAIN DRAW
+// =================================================================================
 function draw() {
   drawSky();
   drawSun();
@@ -1596,4 +1599,538 @@ function draw() {
   ctx.restore();
 
   drawProgressBar();
-  drawNextBu
+  drawNextBuildingCallout();
+}
+
+// Slim journey bar across the top-centre, with a dot per building.
+function drawProgressBar() {
+  const frac = Math.min(1, state.playerZ / FINISH_Z);
+  const barW = W * 0.40, x = (W - barW) / 2, y = 108, h = 16;
+  rrect(x - 4, y - 4, barW + 8, h + 8, 12, 'rgba(255,255,255,0.85)', '#0a2540', 3);
+  rrect(x, y, barW, h, 8, '#e8eef3', '#0a2540', 2);
+  rrect(x, y, Math.max(h, barW * frac), h, 8, '#6dd47e', '#0a2540', 2);
+
+  for (const b of state.buildings) {
+    const t = Math.min(1, b.worldZ / FINISH_Z);
+    const tx = x + barW * t;
+    let col = '#ffffff';
+    if (b.outcome === 'correct') col = '#3ca94f';
+    else if (b.outcome === 'wrong') col = '#ff6b6b';
+    else if (b.outcome === 'missed') col = '#9a9a9a';
+    ctx.beginPath(); ctx.arc(tx, y + h / 2, 5, 0, Math.PI * 2);
+    ctx.fillStyle = col; ctx.fill();
+    ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 2; ctx.stroke();
+  }
+
+  // walker marker
+  const wx = x + barW * frac;
+  ctx.beginPath();
+  ctx.moveTo(wx, y - 8); ctx.lineTo(wx - 6, y - 18); ctx.lineTo(wx + 6, y - 18);
+  ctx.closePath();
+  ctx.fillStyle = '#0a2540'; ctx.fill();
+
+  ctx.font = '15px Fredoka'; ctx.fillStyle = '#0a2540';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText('🏁', x + barW + 8, y + h / 2);
+}
+
+// Big bouncing "TAP!" callout on the nearest un-inspected building.
+function drawNextBuildingCallout() {
+  if (state.modalOpen || state.ended || !state.walkEnabled) return;
+  let nearest = null, best = Infinity;
+  for (const b of state.buildings) {
+    if (b.revealed) continue;
+    const zRel = b.worldZ - state.playerZ;
+    if (zRel > 30 && zRel < best) { best = zRel; nearest = b; }
+  }
+  if (!nearest) return;
+  const box = buildingScreenBox(nearest);
+  if (!box || box.scale < 0.22) return;
+
+  const bob = Math.sin(state.time * 0.16) * 6;
+  const cx = box.center.x;
+  const cy = box.top - 46 + bob;
+  const text = '👆 TAP!';
+  ctx.font = 'bold 26px Bungee';
+  const tw = ctx.measureText(text).width;
+  const padX = 16, bw = tw + padX * 2, bh = 42;
+  rrect(cx - bw / 2, cy - bh / 2, bw, bh, 12, '#ffcc33', '#0a2540', 4);
+  ctx.beginPath();
+  ctx.moveTo(cx - 10, cy + bh / 2 - 2);
+  ctx.lineTo(cx + 10, cy + bh / 2 - 2);
+  ctx.lineTo(cx, cy + bh / 2 + 12);
+  ctx.closePath();
+  ctx.fillStyle = '#ffcc33'; ctx.fill();
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
+  ctx.fillStyle = '#0a2540'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, cx, cy + 1);
+}
+
+// =================================================================================
+// LEVEL SETUP
+// =================================================================================
+function setupLevel() {
+  const defs = [...BUILDINGS];
+  for (let i = defs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [defs[i], defs[j]] = [defs[j], defs[i]];
+  }
+  state.buildings = BUILDING_LAYOUT.map((lay, i) => {
+    const d = defs[i % defs.length];
+    return {
+      id: d.id, name: d.name, drawFn: d.drawFn, good: d.good, bad: d.bad,
+      side: lay.side, worldX: lay.worldX, worldZ: lay.worldZ,
+      revealed: false, inspected: false, outcome: null, isGood: null, curPrinciple: ''
+    };
+  });
+
+  state.coins = [];
+  for (let z = 150; z < FINISH_Z - 50; z += 68) {
+    const lane = [-50, 0, 50, 0][Math.floor(Math.random() * 4)];
+    state.coins.push({ worldX: lane, worldY: 0, worldZ: z, collected: false, phase: Math.random() * Math.PI * 2 });
+  }
+}
+
+function resetState() {
+  Object.assign(state, {
+    playerZ: 0, playerX: 0, walking: false, lateralLeft: false, lateralRight: false,
+    walkBob: 0, time: 0, lastFootstepZ: 0, score: 0, coinsCollected: 0,
+    judgmentsCorrect: 0, judgmentsWrong: 0, judgmentsMissed: 0, inspectedCount: 0,
+    currentBuildingId: null, modalOpen: false, modalResolved: false, modalEndTime: 0,
+    timeLeft: TIME_LIMIT_S, finishCrossed: false, endReason: null, ended: false,
+    walkEnabled: false, timeBonus: 0, judgePts: 0, activeBuilding: null
+  });
+}
+
+// =================================================================================
+// HUD
+// =================================================================================
+function updateHUD() {
+  document.getElementById('hud-progress').textContent = state.inspectedCount + '/10';
+  document.getElementById('hud-score').textContent = Math.max(0, state.score);
+  updateTimeHUD();
+}
+function updateTimeHUD() {
+  const t = document.getElementById('hud-time');
+  const s = Math.max(0, Math.ceil(state.timeLeft));
+  t.textContent = s + 's';
+  t.classList.toggle('time-low', s <= 15 && s > 6);
+  t.classList.toggle('time-critical', s <= 6 && s > 0);
+}
+function flashScore() {
+  const el = document.getElementById('hud-score');
+  el.classList.remove('scoreflash'); void el.offsetWidth; el.classList.add('scoreflash');
+}
+
+// =================================================================================
+// MODAL / JUDGING
+// =================================================================================
+function openModal(b) {
+  if (state.modalOpen || b.revealed || state.ended) return;
+  const useGood = Math.random() < 0.5;
+  const pool = useGood ? b.good : b.bad;
+  const v = pool[Math.floor(Math.random() * pool.length)];
+  b.isGood = useGood;
+  b.curPrinciple = v.principle;
+  state.activeBuilding = b;
+  state.modalOpen = true;
+  state.modalResolved = false;
+  state.modalEndTime = performance.now() + MODAL_TIME_MS;
+
+  document.getElementById('m-title').textContent = b.name;
+  document.getElementById('m-scenario').textContent = v.scenario;
+  document.getElementById('m-pre').classList.remove('hidden');
+  document.getElementById('m-result').classList.add('hidden');
+  document.querySelectorAll('.judge-btn').forEach(x => x.disabled = false);
+  const bar = document.getElementById('m-timer-bar');
+  bar.style.width = '100%'; bar.classList.remove('warn', 'danger');
+
+  const m = document.getElementById('modal');
+  m.classList.remove('hidden'); m.classList.add('flex');
+  Audio.sfxClick();
+}
+
+function judge(verdict) {
+  const b = state.activeBuilding;
+  if (!b || state.modalResolved) return;
+  state.modalResolved = true;
+  document.querySelectorAll('.judge-btn').forEach(x => x.disabled = true);
+
+  const correct = ((verdict === 'good') === b.isGood);
+  let pts, outcome;
+  if (correct) { pts = 100; outcome = 'correct'; state.judgmentsCorrect++; }
+  else { pts = -50; outcome = 'wrong'; state.judgmentsWrong++; }
+
+  b.outcome = outcome; b.revealed = true; b.inspected = true; state.inspectedCount++;
+  state.score += pts; state.judgePts += pts;
+  if (correct) Audio.sfxCorrect(); else Audio.sfxWrong();
+
+  showResult(b, outcome);
+  updateHUD(); flashScore();
+  setTimeout(closeModal, 2000);
+}
+
+function missJudgment() {
+  const b = state.activeBuilding;
+  if (!b || state.modalResolved) return;
+  state.modalResolved = true;
+  document.querySelectorAll('.judge-btn').forEach(x => x.disabled = true);
+
+  b.outcome = 'missed'; b.revealed = true; b.inspected = true; state.inspectedCount++;
+  state.judgmentsMissed++;
+  Audio.sfxTimeOut();
+
+  showResult(b, 'missed');
+  updateHUD();
+  setTimeout(closeModal, 2000);
+}
+
+function showResult(b, outcome) {
+  document.getElementById('m-pre').classList.add('hidden');
+  document.getElementById('m-result').classList.remove('hidden');
+
+  const banner = document.getElementById('m-banner');
+  const icon = document.getElementById('m-banner-icon');
+  const verdict = document.getElementById('m-verdict');
+  const points = document.getElementById('m-points');
+  const stamp = document.getElementById('m-stamp');
+  const principle = document.getElementById('m-principle');
+
+  let bg, ic, vt, pt, st, stbg;
+  if (outcome === 'correct') { bg = '#dff7e3'; ic = '✓'; vt = 'Spot on!'; pt = '+100 points'; st = 'NICE'; stbg = '#6dd47e'; }
+  else if (outcome === 'wrong') { bg = '#ffe2e2'; ic = '✗'; vt = 'Not quite…'; pt = '−50 points'; st = 'OOPS'; stbg = '#ff6b6b'; }
+  else { bg = '#fff3cf'; ic = '⌛'; vt = "Time's up!"; pt = '+0 points'; st = 'MISS'; stbg = '#ffcc33'; }
+
+  banner.style.background = bg;
+  icon.innerHTML = '<div style="font-size:30px;line-height:1">' + ic + '</div>';
+  verdict.textContent = vt; verdict.style.color = '#0a2540';
+  points.textContent = pt; points.style.color = '#0a2540';
+  stamp.textContent = st; stamp.style.background = stbg; stamp.style.color = '#0a2540';
+  principle.innerHTML = '<strong>' + (b.isGood ? 'These were GOOD controls.' : 'These were BAD controls.') + '</strong><br>' + b.curPrinciple;
+}
+
+function closeModal() {
+  const m = document.getElementById('modal');
+  m.classList.add('hidden'); m.classList.remove('flex');
+  state.modalOpen = false; state.modalResolved = false; state.activeBuilding = null;
+  document.getElementById('m-pre').classList.remove('hidden');
+  document.getElementById('m-result').classList.add('hidden');
+}
+
+// =================================================================================
+// GAME OVER
+// =================================================================================
+function endGame(reason) {
+  if (state.ended) return;
+  state.ended = true; state.endReason = reason;
+  state.walkEnabled = false; state.walking = false;
+  state.lateralLeft = false; state.lateralRight = false;
+
+  if (reason === 'finish') {
+    state.timeBonus = Math.round(state.timeLeft * 5);
+    state.score += state.timeBonus;
+    Audio.sfxFinish();
+  } else {
+    state.timeBonus = 0;
+    Audio.sfxTimeOut();
+  }
+  Audio.stopMusic();
+
+  document.getElementById('final-score').textContent = Math.max(0, state.score);
+  document.getElementById('bd-judge').textContent = (state.judgePts >= 0 ? '+' : '') + state.judgePts;
+  document.getElementById('bd-coins').textContent = '+' + (state.coinsCollected * 10);
+  document.getElementById('bd-time').textContent = '+' + state.timeBonus;
+
+  const s = state.score;
+  let msg, flav, st, stbg, conf;
+  if (s >= 1100) { msg = 'AUDIT ACE! 🏆'; flav = 'A flawless eye for financial controls — the auditors would weep with joy.'; st = 'PASS'; stbg = '#6dd47e'; conf = 140; }
+  else if (s >= 750) { msg = 'SHARP EYE! 👀'; flav = 'Strong control instincts — you spotted the red flags fast.'; st = 'PASS'; stbg = '#6dd47e'; conf = 90; }
+  else if (s >= 450) { msg = 'DECENT AUDIT 👍'; flav = 'Solid effort. A few controls slipped past — worth a second look.'; st = 'OK'; stbg = '#ffcc33'; conf = 40; }
+  else { msg = 'BACK TO BASICS 📋'; flav = 'Plenty of room to tighten those controls. Come and chat to us!'; st = 'REVIEW'; stbg = '#ff6b6b'; conf = 0; }
+  if (reason === 'timeout') flav = 'Time ran out! ' + flav;
+
+  document.getElementById('final-message').textContent = msg;
+  document.getElementById('final-flavour').textContent = flav;
+  const vs = document.getElementById('verdict-stamp');
+  vs.textContent = st; vs.style.background = stbg; vs.style.color = '#0a2540';
+
+  document.getElementById('name-entry').classList.remove('hidden');
+  document.getElementById('name-saved').classList.add('hidden');
+  document.getElementById('entry-name').value = '';
+
+  renderLeaderboard();
+  showScreen('screen-over');
+  if (conf > 0) spawnConfetti(conf);
+}
+
+function spawnConfetti(n) {
+  const c = document.getElementById('confetti');
+  c.innerHTML = '';
+  const colors = ['#ffcc33', '#6dd47e', '#ff6b6b', '#4a90c4', '#ffffff'];
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div');
+    d.className = 'confetti-piece';
+    d.style.left = (Math.random() * 100) + '%';
+    d.style.background = colors[i % colors.length];
+    const dur = 2.5 + Math.random() * 2.5;
+    d.style.animationDuration = dur + 's';
+    d.style.animationDelay = (Math.random() * 0.8) + 's';
+    if (Math.random() < 0.5) d.style.borderRadius = '50%';
+    c.appendChild(d);
+    setTimeout(() => { if (d.parentNode) d.parentNode.removeChild(d); }, (dur + 1) * 1000);
+  }
+}
+
+function renderLeaderboard() {
+  const data = Storage.load();
+  const wrap = document.getElementById('leaderboard-table');
+  wrap.innerHTML = '';
+  if (!data.length) {
+    const p = document.createElement('p');
+    p.className = 'text-center text-[#0a2540] font-semibold opacity-70';
+    p.textContent = 'No scores yet — be the first!';
+    wrap.appendChild(p);
+    return;
+  }
+  const table = document.createElement('table');
+  table.className = 'w-full';
+  data.forEach((e, i) => {
+    const tr = document.createElement('tr');
+    tr.className = 'border-b-2 border-dashed';
+    tr.style.borderColor = 'rgba(10,37,64,0.2)';
+    const rank = document.createElement('td');
+    rank.className = 'py-2 font-cartoon text-[#0a2540]';
+    rank.style.width = '46px';
+    rank.textContent = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '.';
+    const nm = document.createElement('td');
+    nm.className = 'py-2 font-bold text-[#0a2540]';
+    nm.textContent = e.name;
+    const sc = document.createElement('td');
+    sc.className = 'py-2 text-right font-cartoon text-[#0a2540]';
+    sc.textContent = e.score;
+    tr.append(rank, nm, sc);
+    table.appendChild(tr);
+  });
+  wrap.appendChild(table);
+}
+
+function saveScore() {
+  const inp = document.getElementById('entry-name');
+  let name = (inp.value || '').trim().slice(0, 20);
+  if (!name) name = 'Anonymous';
+  Storage.save({ name: name, score: Math.max(0, state.score) });
+  document.getElementById('name-entry').classList.add('hidden');
+  document.getElementById('name-saved').classList.remove('hidden');
+  renderLeaderboard();
+}
+
+// =================================================================================
+// COUNTDOWN + START
+// =================================================================================
+function runCountdown(cb) {
+  const ov = document.getElementById('countdown-overlay');
+  const num = document.getElementById('countdown-num');
+  ov.classList.remove('hidden');
+  const seq = ['3', '2', '1', 'GO!'];
+  let i = 0;
+  function step() {
+    num.textContent = seq[i];
+    num.classList.remove('countdown-num'); void num.offsetWidth; num.classList.add('countdown-num');
+    if (seq[i] === 'GO!') Audio.sfxCorrect(); else Audio.sfxTick();
+    i++;
+    if (i < seq.length) setTimeout(step, 800);
+    else setTimeout(() => { ov.classList.add('hidden'); cb(); }, 650);
+  }
+  step();
+}
+
+let loopRunning = false, lastT = 0;
+
+function startGame() {
+  resetState();
+  setupLevel();
+  closeModal();
+  showScreen('screen-game');
+  updateHUD();
+  fitCanvas();
+  Audio.resume();
+  if (!Audio.muted) Audio.startMusic();
+  if (!loopRunning) { loopRunning = true; lastT = 0; requestAnimationFrame(loop); }
+  runCountdown(() => { state.walkEnabled = true; });
+}
+
+// =================================================================================
+// UPDATE + LOOP
+// =================================================================================
+function update(dtMs, dtFrames) {
+  state.time += dtFrames;
+
+  // Modal countdown runs in real time (game clock is paused while it's open).
+  if (state.modalOpen && !state.modalResolved) {
+    const remain = state.modalEndTime - performance.now();
+    const frac = Math.max(0, remain / MODAL_TIME_MS);
+    const bar = document.getElementById('m-timer-bar');
+    if (bar) {
+      bar.style.width = (frac * 100) + '%';
+      bar.classList.toggle('warn', frac < 0.5 && frac >= 0.22);
+      bar.classList.toggle('danger', frac < 0.22);
+    }
+    if (remain <= 0) missJudgment();
+  }
+
+  if (state.ended || !state.walkEnabled || state.modalOpen) return;
+
+  // Game timer
+  state.timeLeft -= dtMs / 1000;
+  if (state.timeLeft <= 0) { state.timeLeft = 0; updateTimeHUD(); endGame('timeout'); return; }
+
+  // Forward / lateral movement
+  if (state.walking) {
+    state.playerZ += WALK_SPEED * dtFrames;
+    if (state.playerZ - state.lastFootstepZ > 42) { Audio.sfxFootstep(); state.lastFootstepZ = state.playerZ; }
+    state.walkBob = Math.sin(state.time * 0.35) * 3;
+  } else {
+    state.walkBob *= 0.85;
+  }
+  if (state.lateralLeft)  state.playerX = Math.max(-LATERAL_LIMIT, state.playerX - LATERAL_SPEED * dtFrames);
+  if (state.lateralRight) state.playerX = Math.min(LATERAL_LIMIT, state.playerX + LATERAL_SPEED * dtFrames);
+
+  // Coin pickup
+  for (const c of state.coins) {
+    if (!c.collected) {
+      const zRel = c.worldZ - state.playerZ;
+      if (zRel < 22 && zRel > -40 && Math.abs(c.worldX - state.playerX) < COIN_COLLECT_LATERAL) {
+        c.collected = true; state.coinsCollected++; state.score += 10;
+        Audio.sfxCoin(); flashScore(); updateHUD();
+      }
+    }
+  }
+
+  // Walked past an un-inspected building → counts as a miss
+  for (const b of state.buildings) {
+    if (!b.revealed) {
+      const zRel = b.worldZ - state.playerZ;
+      if (zRel < 14) {
+        b.revealed = true; b.outcome = 'missed';
+        state.judgmentsMissed++; state.inspectedCount++;
+        Audio.sfxMiss(); updateHUD();
+      }
+    }
+  }
+
+  updateTimeHUD();
+
+  if (!state.finishCrossed && state.playerZ >= FINISH_Z) {
+    state.finishCrossed = true;
+    endGame('finish');
+  }
+}
+
+function loop(ts) {
+  if (!lastT) lastT = ts;
+  let dtMs = ts - lastT; lastT = ts;
+  if (dtMs > 120) dtMs = 120;
+  const dtFrames = dtMs / 16.6667;
+  update(dtMs, dtFrames);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// =================================================================================
+// INPUT WIRING
+// =================================================================================
+function canvasCoords(evt) {
+  const r = canvas.getBoundingClientRect();
+  return {
+    x: (evt.clientX - r.left) * (W / r.width),
+    y: (evt.clientY - r.top) * (H / r.height)
+  };
+}
+
+canvas.addEventListener('click', e => {
+  if (!state.walkEnabled || state.modalOpen || state.ended) return;
+  const { x, y } = canvasCoords(e);
+  const b = hitBuilding(x, y);
+  if (b) openModal(b);
+});
+
+function bindHold(id, on, off) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = e => { e.preventDefault(); Audio.resume(); on(); };
+  const end = () => off();
+  el.addEventListener('pointerdown', start);
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointerleave', end);
+  el.addEventListener('pointercancel', end);
+}
+bindHold('walk-forward', () => state.walking = true, () => state.walking = false);
+bindHold('walk-left', () => state.lateralLeft = true, () => state.lateralLeft = false);
+bindHold('walk-right', () => state.lateralRight = true, () => state.lateralRight = false);
+
+document.querySelectorAll('.judge-btn').forEach(btn => {
+  btn.addEventListener('click', () => { Audio.resume(); judge(btn.getAttribute('data-judge')); });
+});
+
+window.addEventListener('keydown', e => {
+  if (state.modalOpen && !state.modalResolved) {
+    const k = e.key.toLowerCase();
+    if (e.key === '1' || k === 'g') judge('good');
+    else if (e.key === '2' || k === 'b') judge('bad');
+    return;
+  }
+  const k = e.key.toLowerCase();
+  if (e.key === 'ArrowUp' || e.key === ' ' || k === 'w') state.walking = true;
+  if (e.key === 'ArrowLeft' || k === 'a') state.lateralLeft = true;
+  if (e.key === 'ArrowRight' || k === 'd') state.lateralRight = true;
+});
+window.addEventListener('keyup', e => {
+  const k = e.key.toLowerCase();
+  if (e.key === 'ArrowUp' || e.key === ' ' || k === 'w') state.walking = false;
+  if (e.key === 'ArrowLeft' || k === 'a') state.lateralLeft = false;
+  if (e.key === 'ArrowRight' || k === 'd') state.lateralRight = false;
+});
+
+// =================================================================================
+// MUTE
+// =================================================================================
+let isMuted = false;
+function setMuteUI() {
+  ['title', 'game', 'over'].forEach(k => {
+    const on = document.getElementById('sound-on-' + k);
+    const off = document.getElementById('sound-off-' + k);
+    if (on) on.style.display = isMuted ? 'none' : 'block';
+    if (off) off.style.display = isMuted ? 'block' : 'none';
+  });
+}
+function toggleMute() {
+  isMuted = !isMuted;
+  Audio.setMuted(isMuted);
+  setMuteUI();
+  if (isMuted) {
+    Audio.stopMusic();
+  } else {
+    Audio.resume();
+    if (document.getElementById('screen-game').classList.contains('active') && !state.ended) Audio.startMusic();
+  }
+}
+['mute-title', 'mute-game', 'mute-over'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', e => { e.stopPropagation(); Audio.resume(); toggleMute(); });
+});
+
+// =================================================================================
+// BUTTONS + INIT
+// =================================================================================
+document.getElementById('btn-start').addEventListener('click', () => { Audio.init(); Audio.resume(); startGame(); });
+document.getElementById('btn-play-again').addEventListener('click', () => { Audio.resume(); startGame(); });
+document.getElementById('btn-save-score').addEventListener('click', saveScore);
+document.getElementById('entry-name').addEventListener('keydown', e => { if (e.key === 'Enter') saveScore(); });
+
+setMuteUI();
+fitCanvas();
+renderLeaderboard();
+
+</script>
+</body>
+</html>
