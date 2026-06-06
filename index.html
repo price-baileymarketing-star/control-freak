@@ -174,10 +174,59 @@
     50% { transform: rotate(1deg); }
   }
 </style>
+<style>
+  /* ===== Side-scroller additions ===== */
+  .scene-banner {
+    position: absolute; top: 78px; left: 50%; transform: translateX(-50%) translateY(-160%);
+    z-index: 25; width: min(680px, 94vw);
+    background: #fff; border: 4px solid #0a2540; border-radius: 18px;
+    box-shadow: 0 8px 0 #0a2540;
+    opacity: 0; transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .25s ease;
+    pointer-events: none;
+  }
+  .scene-banner.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .sb-close {
+    position: absolute; top: -14px; right: -14px; z-index: 2;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: #ff6b6b; color: #fff; border: 4px solid #0a2540;
+    box-shadow: 0 4px 0 #0a2540; cursor: pointer; pointer-events: auto;
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 18px; line-height: 1;
+  }
+  .sb-close:active { transform: translateY(2px); box-shadow: 0 2px 0 #0a2540; }
+  .sb-inner { padding: 14px 18px 16px; }
+  .sb-tag { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #0a2540; opacity: .65; text-transform: uppercase; }
+  .sb-title { font-family: 'Bungee', sans-serif; font-size: 22px; color: #0a2540; line-height: 1.1; }
+  .sb-scenario { margin-top: 6px; font-size: 17px; font-weight: 600; color: #0a2540; line-height: 1.3; }
+  .sb-timerwrap { margin-top: 12px; height: 12px; background: #0a2540; border: 3px solid #0a2540; border-radius: 7px; overflow: hidden; box-shadow: 0 3px 0 #0a2540; }
+  .sb-bar { height: 100%; width: 100%; background: #6dd47e; transition: width .1s linear; }
+  .sb-bar.warn { background: #ffcc33; }
+  .sb-bar.danger { background: #ff6b6b; }
+  .sb-result { margin-top: 12px; border-top: 3px dashed rgba(10,37,64,.25); padding-top: 10px; }
+  .sb-verdict { font-family: 'Bungee', sans-serif; font-size: 20px; }
+  .sb-principle { margin-top: 4px; font-size: 14px; font-weight: 600; color: #0a2540; line-height: 1.3; }
+
+  .ctrl-round, .ctrl-walk {
+    background: #ffcc33; color: #0a2540; border: 4px solid #0a2540;
+    box-shadow: 0 6px 0 #0a2540; cursor: pointer; pointer-events: auto;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    transition: transform .05s, box-shadow .05s;
+  }
+  .ctrl-round { width: 92px; height: 92px; border-radius: 50%; }
+  .ctrl-round svg { width: 38px; height: 38px; }
+  .ctrl-walk {
+    min-width: 240px; height: 110px; border-radius: 26px; flex-direction: row; gap: 10px;
+    animation: walkNudge 1.6s ease-in-out infinite;
+  }
+  .ctrl-walk svg { width: 46px; height: 46px; }
+  .ctrl-round:active, .ctrl-walk:active { transform: translateY(4px); box-shadow: 0 2px 0 #0a2540; }
+  .ctrl-lbl { font-size: 13px; letter-spacing: 1px; margin-top: 2px; }
+  .ctrl-walk .ctrl-lbl { font-size: 18px; margin-top: 0; }
+  @keyframes walkNudge { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+</style>
+
 </head>
 <body>
-
-<!-- ============================= TITLE SCREEN ============================= -->
 <div id="screen-title" class="screen active fixed inset-0 flex-col items-center justify-center overflow-hidden"
      style="background: linear-gradient(to bottom, #87ceeb 0%, #b8e3f5 60%, #6dd47e 60%, #5cc06d 100%);">
 
@@ -217,7 +266,7 @@
     </div>
 
     <p class="mt-8 text-xl md:text-2xl font-semibold text-[#0a2540] max-w-xl mx-auto leading-snug" style="text-shadow: 2px 2px 0 white;">
-      90 seconds. 10 buildings. Spot GOOD vs BAD controls<br/>
+      120 seconds. 14 buildings. Spot GOOD vs BAD controls<br/>
       and grab the coins as you walk!
     </p>
 
@@ -248,11 +297,12 @@
 </div>
 
 <!-- ============================= GAME SCREEN ============================= -->
-<div id="screen-game" class="screen fixed inset-0 flex-col items-center justify-center" style="background: #0a2540;">
+<div id="screen-game" class="screen fixed inset-0 flex-col items-center justify-center" style="background:#0a2540;">
 
-  <div class="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 py-3 pointer-events-none">
+  <!-- HUD -->
+  <div class="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 py-3 pointer-events-none">
     <div class="flex gap-3 items-center">
-      <div class="bg-white border-4 border-[#0a2540] rounded-xl p-1.5 pointer-events-auto" style="box-shadow: 0 4px 0 #0a2540;">
+      <div class="bg-white border-4 border-[#0a2540] rounded-xl p-1.5 pointer-events-auto" style="box-shadow:0 4px 0 #0a2540;">
         <img src="https://raw.githubusercontent.com/price-baileymarketing-star/control-freak/main/PB%20Box%20Logo.jpg" alt="Price Bailey" class="h-9 w-auto block rounded">
       </div>
       <button id="mute-game" class="mute-btn pointer-events-auto" title="Toggle sound">
@@ -260,19 +310,33 @@
         <svg id="sound-off-game" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
       </button>
     </div>
-
     <div class="flex gap-2">
-      <div class="bg-white border-4 border-[#0a2540] rounded-xl px-3 py-2" style="box-shadow: 0 4px 0 #0a2540;">
+      <div class="bg-white border-4 border-[#0a2540] rounded-xl px-3 py-2" style="box-shadow:0 4px 0 #0a2540;">
         <div class="text-[10px] uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">Done</div>
-        <div id="hud-progress" class="font-cartoon text-lg text-[#0a2540] text-center leading-none">0/10</div>
+        <div id="hud-progress" class="font-cartoon text-lg text-[#0a2540] text-center leading-none">0/14</div>
       </div>
-      <div class="bg-[#ffcc33] border-4 border-[#0a2540] rounded-xl px-3 py-2" style="box-shadow: 0 4px 0 #0a2540;">
+      <div class="bg-[#ffcc33] border-4 border-[#0a2540] rounded-xl px-3 py-2" style="box-shadow:0 4px 0 #0a2540;">
         <div class="text-[10px] uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">Score</div>
         <div id="hud-score" class="font-cartoon text-lg text-[#0a2540] text-center leading-none">0</div>
       </div>
-      <div class="bg-white border-4 border-[#0a2540] rounded-xl px-3 py-2" style="box-shadow: 0 4px 0 #0a2540;">
+      <div class="bg-white border-4 border-[#0a2540] rounded-xl px-3 py-2" style="box-shadow:0 4px 0 #0a2540;">
         <div class="text-[10px] uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">Time</div>
-        <div id="hud-time" class="font-cartoon text-lg text-[#0a2540] text-center leading-none">90s</div>
+        <div id="hud-time" class="font-cartoon text-lg text-[#0a2540] text-center leading-none">120s</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- In-scene scenario banner (slides down; scene stays visible below) -->
+  <div id="scene-banner" class="scene-banner">
+    <button id="sb-close" class="sb-close" aria-label="Close">✕</button>
+    <div class="sb-inner">
+      <div id="sb-tag" class="sb-tag">🔍 INSPECT THE CONTROLS</div>
+      <div id="sb-title" class="sb-title"></div>
+      <div id="sb-scenario" class="sb-scenario"></div>
+      <div id="sb-timerwrap" class="sb-timerwrap"><div id="sb-bar" class="sb-bar"></div></div>
+      <div id="sb-result" class="sb-result hidden">
+        <div id="sb-verdict" class="sb-verdict"></div>
+        <div id="sb-principle" class="sb-principle"></div>
       </div>
     </div>
   </div>
@@ -281,69 +345,31 @@
     <canvas id="game-canvas" width="1280" height="720"></canvas>
   </div>
 
-  <!-- Bottom controls: left, forward, right -->
-  <div class="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center gap-3 pointer-events-none">
-    <button id="walk-left" class="walk-btn pointer-events-auto" aria-label="Move left">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <button id="walk-forward" class="walk-btn big nudge pointer-events-auto" aria-label="Walk forward">
+  <!-- WALK / JUMP controls -->
+  <div id="controls-walk" class="absolute bottom-6 left-0 right-0 z-30 flex items-center justify-center gap-4 pointer-events-none">
+    <button id="btn-jump" class="ctrl-round pointer-events-auto" aria-label="Jump">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+      <span class="ctrl-lbl">JUMP</span>
     </button>
-    <button id="walk-right" class="walk-btn pointer-events-auto" aria-label="Move right">
+    <button id="btn-walk" class="ctrl-walk pointer-events-auto" aria-label="Walk">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="ctrl-lbl">HOLD&nbsp;TO&nbsp;WALK</span>
     </button>
   </div>
 
-  <!-- Countdown overlay -->
-  <div id="countdown-overlay" class="hidden absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+  <!-- GOOD / BAD controls (shown only while inspecting) -->
+  <div id="controls-judge" class="hidden absolute bottom-6 left-0 right-0 z-30 px-4 pointer-events-none">
+    <div class="max-w-xl mx-auto flex gap-3">
+      <button id="btn-good" class="judge-btn strong pointer-events-auto"><span class="big">✓ GOOD</span><span class="small">CONTROLS</span></button>
+      <button id="btn-bad" class="judge-btn weak pointer-events-auto"><span class="big">✗ BAD</span><span class="small">CONTROLS</span></button>
+    </div>
+  </div>
+
+  <!-- Countdown -->
+  <div id="countdown-overlay" class="hidden absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
     <div id="countdown-num" class="text-[#ffcc33] text-[200px] font-cartoon countdown-num leading-none">3</div>
   </div>
 </div>
-
-<!-- ============================= INSPECTION MODAL ============================= -->
-<div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
-  <div class="modal-back absolute inset-0" style="background: rgba(10, 37, 64, 0.7);"></div>
-  <div class="modal-pop relative bg-white border-4 border-[#0a2540] rounded-2xl max-w-xl w-full overflow-hidden"
-       style="box-shadow: 0 10px 0 #0a2540;">
-
-    <div class="bg-[#ffcc33] border-b-4 border-[#0a2540] px-5 py-3 rounded-t-2xl">
-      <div class="text-xs uppercase font-bold text-[#0a2540] opacity-70 tracking-wider">Quick! Make the call</div>
-      <h3 id="m-title" class="font-cartoon text-2xl text-[#0a2540] leading-tight"></h3>
-      <div id="m-timer-wrap"><div id="m-timer-bar"></div></div>
-    </div>
-
-    <div class="p-5">
-      <p id="m-scenario" class="text-[#0a2540] text-lg leading-snug font-semibold text-center"></p>
-    </div>
-
-    <div id="m-pre" class="px-5 pb-5">
-      <div class="flex gap-3">
-        <button class="judge-btn strong" data-judge="good">
-          <span class="big">✓ GOOD</span>
-          <span class="small">CONTROLS</span>
-        </button>
-        <button class="judge-btn weak" data-judge="bad">
-          <span class="big">✗ BAD</span>
-          <span class="small">CONTROLS</span>
-        </button>
-      </div>
-    </div>
-
-    <div id="m-result" class="hidden px-5 pb-5">
-      <div id="m-banner" class="relative rounded-xl border-4 border-[#0a2540] p-3 mb-3 flex items-center gap-3" style="box-shadow: 0 4px 0 #0a2540;">
-        <div id="m-banner-icon"></div>
-        <div class="flex-1">
-          <div id="m-verdict" class="font-cartoon text-lg"></div>
-          <div id="m-points" class="font-bold text-sm"></div>
-        </div>
-        <div id="m-stamp" class="stamp absolute -top-2 -right-2 font-cartoon text-xl px-3 py-1 rounded-lg" style="border: 3px solid #0a2540; transform: rotate(-8deg);"></div>
-      </div>
-      <p id="m-principle" class="text-[#0a2540] text-sm leading-snug text-center font-medium"></p>
-    </div>
-  </div>
-</div>
-
-<!-- ============================= GAME OVER / LEADERBOARD ============================= -->
 <div id="screen-over" class="screen fixed inset-0 flex-col items-center justify-center overflow-y-auto relative"
      style="background: linear-gradient(to bottom, #87ceeb 0%, #b8e3f5 100%);">
 
@@ -404,10 +430,8 @@
   </div>
 </div>
 
+
 <script>
-// =================================================================================
-// AUDIO MODULE
-// =================================================================================
 const Audio = {
   ctx: null, masterGain: null, musicGain: null, sfxGain: null,
   muted: false, musicPlaying: false,
@@ -555,9 +579,6 @@ const Audio = {
   }
 };
 
-// =================================================================================
-// BUILDING DATA — multi-variant scenarios
-// =================================================================================
 const BUILDINGS = [
   { id: 'charity-hq', name: 'Hopebridge Charity HQ', drawFn: 'drawCharityHQ',
     good: [
@@ -681,83 +702,6 @@ const BUILDINGS = [
   }
 ];
 
-// =================================================================================
-// CONSTANTS & STATE
-// =================================================================================
-const W = 1280, H = 720;
-const HORIZON_Y = 350;
-const CAMERA_HEIGHT = 110;
-const FOCAL = 520;
-
-// 10 buildings, alternating sides, ~160 units apart
-const BUILDING_LAYOUT = [
-  { side: 'left',  worldX: -240, worldZ: 280 },
-  { side: 'right', worldX:  240, worldZ: 440 },
-  { side: 'left',  worldX: -240, worldZ: 600 },
-  { side: 'right', worldX:  240, worldZ: 760 },
-  { side: 'left',  worldX: -240, worldZ: 920 },
-  { side: 'right', worldX:  240, worldZ: 1080 },
-  { side: 'left',  worldX: -240, worldZ: 1240 },
-  { side: 'right', worldX:  240, worldZ: 1400 },
-  { side: 'left',  worldX: -240, worldZ: 1560 },
-  { side: 'right', worldX:  240, worldZ: 1720 }
-];
-const FINISH_Z = 1920;
-const END_Z = 2020;
-
-const WALK_SPEED = 2.5;
-const LATERAL_SPEED = 3.5;
-const LATERAL_LIMIT = 80;
-const MODAL_TIME_MS = 7000;
-const TIME_LIMIT_S = 90;
-const COIN_COLLECT_LATERAL = 38;
-
-const state = {
-  playerZ: 0,
-  playerX: 0,
-  walking: false,
-  lateralLeft: false,
-  lateralRight: false,
-  walkBob: 0,
-  time: 0,
-  lastFootstepZ: 0,
-  score: 0,
-  coinsCollected: 0,
-  judgmentsCorrect: 0,
-  judgmentsWrong: 0,
-  judgmentsMissed: 0,
-  inspectedCount: 0,
-  buildings: [],
-  coins: [],
-  currentBuildingId: null,
-  modalOpen: false,
-  modalStartTime: 0,
-  modalEndTime: 0,
-  timeLeft: TIME_LIMIT_S,
-  gameStartTime: 0,
-  finishCrossed: false,
-  endReason: null,  // 'finish' | 'timeout'
-  ended: false,
-  walkEnabled: false,
-  timeBonus: 0
-};
-
-// Project (worldX, worldY, worldZ) to screen — accounts for playerX & playerZ
-function project(worldX, worldY, worldZ) {
-  const zRel = worldZ - state.playerZ;
-  if (zRel <= 5) return null;
-  const scale = FOCAL / zRel;
-  return {
-    x: W/2 + (worldX - state.playerX) * scale,
-    y: HORIZON_Y + (CAMERA_HEIGHT - worldY) * scale,
-    scale: scale,
-    zRel: zRel
-  };
-}
-
-// =================================================================================
-// STORAGE
-// =================================================================================
 const Storage = {
   KEY: 'controlFreakLeaderboard',
   cache: [],
@@ -775,36 +719,6 @@ const Storage = {
   }
 };
 
-// =================================================================================
-// CANVAS
-// =================================================================================
-const canvas = document.getElementById('game-canvas');
-const ctx = canvas.getContext('2d');
-
-function fitCanvas() {
-  const wrap = document.getElementById('canvas-wrap');
-  const cw = wrap.clientWidth, ch = wrap.clientHeight;
-  const targetRatio = W / H;
-  const containerRatio = cw / ch;
-  if (containerRatio > targetRatio) {
-    canvas.style.height = ch + 'px';
-    canvas.style.width = (ch * targetRatio) + 'px';
-  } else {
-    canvas.style.width = cw + 'px';
-    canvas.style.height = (cw / targetRatio) + 'px';
-  }
-}
-window.addEventListener('resize', fitCanvas);
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if (id === 'screen-game') setTimeout(fitCanvas, 50);
-}
-
-// =================================================================================
-// DRAWING HELPERS
-// =================================================================================
 function rect(x, y, w, h, fill, stroke = '#0a2540', strokeW = 4) {
   if (fill) { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); }
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = strokeW; ctx.strokeRect(x, y, w, h); }
@@ -1183,9 +1097,6 @@ const drawFns = {
   drawAccountancy, drawWarehouse, drawDataCentre, drawTownHall, drawCafe
 };
 
-// =================================================================================
-// SCENERY
-// =================================================================================
 function drawSky() {
   const g = ctx.createLinearGradient(0, 0, 0, HORIZON_Y);
   g.addColorStop(0, '#87ceeb');
@@ -1247,466 +1158,416 @@ function drawHills() {
   ctx.lineTo(W, HORIZON_Y); ctx.closePath(); ctx.fill();
 }
 
-function drawGround() {
-  ctx.fillStyle = '#7dc488';
-  ctx.fillRect(0, HORIZON_Y, W, H - HORIZON_Y);
 
-  const PAV_X = 130, ROAD_X = 100;
-  const farZ = 2000;
-  const farPavL = project(-PAV_X, 0, farZ + state.playerZ);
-  const farPavR = project(PAV_X, 0, farZ + state.playerZ);
-  const farRoadL = project(-ROAD_X, 0, farZ + state.playerZ);
-  const farRoadR = project(ROAD_X, 0, farZ + state.playerZ);
 
-  // Near edges drawn via straight extrapolation from far perspective points
-  // through the actual edge x-positions on the player's local frame
-  const nearZ = 30;
-  const nearScale = FOCAL / nearZ;
-  // Account for playerX so road shifts when player moves laterally
-  const nearPavLX = W/2 + (-PAV_X - state.playerX) * nearScale;
-  const nearPavRX = W/2 + (PAV_X - state.playerX) * nearScale;
-  const nearRoadLX = W/2 + (-ROAD_X - state.playerX) * nearScale;
-  const nearRoadRX = W/2 + (ROAD_X - state.playerX) * nearScale;
-  const nearY = HORIZON_Y + CAMERA_HEIGHT * nearScale;
+// =================================================================================
+// SIDE-SCROLLER ENGINE
+// =================================================================================
+const W = 1280, H = 720, HORIZON_Y = 350;   // HORIZON_Y kept for reused art helpers
+const GROUND_Y = 566;        // building bases + auditor feet sit here
+const AUDITOR_X = 340;       // fixed screen x of the auditor
+const FLAT = 1.18;           // building artwork scale in the flat view
+const WALK_SPEED = 5.2;
+const JUMP_V = -15.5, GRAV = 0.82;
+const FIRST_BX = 560, SPACING = 640;
+const FINISH_PAD = 560;
+const TIME_LIMIT_S = 120;
+const INSPECT_MS = 9000;
+const COIN_VALUE = 10;
 
-  ctx.fillStyle = '#d4c8b8';
-  ctx.beginPath();
-  ctx.moveTo(farPavL.x, farPavL.y); ctx.lineTo(farRoadL.x, farRoadL.y);
-  ctx.lineTo(nearRoadLX, nearY); ctx.lineTo(nearPavLX, nearY);
-  ctx.closePath(); ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(farPavR.x, farPavR.y); ctx.lineTo(farRoadR.x, farRoadR.y);
-  ctx.lineTo(nearRoadRX, nearY); ctx.lineTo(nearPavRX, nearY);
-  ctx.closePath(); ctx.fill();
+const state = {
+  mode: 'walk', time: 0, timeLeft: TIME_LIMIT_S,
+  auditorX: 0, walking: false, vy: 0, yOff: 0, grounded: true, lastFootX: 0,
+  score: 0, coinsCollected: 0, judgePts: 0,
+  judgmentsCorrect: 0, judgmentsWrong: 0, judgmentsMissed: 0, inspectedCount: 0,
+  curIndex: 0, activeBuilding: null, inspectEnd: 0, resolved: false,
+  buildings: [], coins: [], scenery: [],
+  walkEnabled: false, ended: false, endReason: null, timeBonus: 0, finishX: 0
+};
 
-  ctx.fillStyle = '#4a4a52';
-  ctx.beginPath();
-  ctx.moveTo(farRoadL.x, farRoadL.y); ctx.lineTo(farRoadR.x, farRoadR.y);
-  ctx.lineTo(nearRoadRX, nearY); ctx.lineTo(nearRoadLX, nearY);
-  ctx.closePath(); ctx.fill();
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
 
-  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(farRoadL.x, farRoadL.y); ctx.lineTo(nearRoadLX, nearY);
-  ctx.moveTo(farRoadR.x, farRoadR.y); ctx.lineTo(nearRoadRX, nearY);
-  ctx.moveTo(farPavL.x, farPavL.y); ctx.lineTo(nearPavLX, nearY);
-  ctx.moveTo(farPavR.x, farPavR.y); ctx.lineTo(nearPavRX, nearY);
-  ctx.stroke();
+function fitCanvas() {
+  const wrap = document.getElementById('canvas-wrap');
+  const cw = wrap.clientWidth, ch = wrap.clientHeight;
+  const tr = W / H, cr = cw / ch;
+  if (cr > tr) { canvas.style.height = ch + 'px'; canvas.style.width = (ch * tr) + 'px'; }
+  else { canvas.style.width = cw + 'px'; canvas.style.height = (cw / tr) + 'px'; }
+}
+window.addEventListener('resize', fitCanvas);
 
-  for (let z = 60; z < 1600; z += 80) {
-    const startWorldZ = state.playerZ + (z - (state.playerZ % 80));
-    const endWorldZ = startWorldZ + 40;
-    const p1 = project(-6, 0, startWorldZ);
-    const p2 = project(6, 0, startWorldZ);
-    const p3 = project(6, 0, endWorldZ);
-    const p4 = project(-6, 0, endWorldZ);
-    if (p1 && p2 && p3 && p4) {
-      ctx.fillStyle = '#ffcc33';
-      ctx.beginPath();
-      ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
-      ctx.lineTo(p3.x, p3.y); ctx.lineTo(p4.x, p4.y);
-      ctx.closePath(); ctx.fill();
-    }
-  }
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'screen-game') setTimeout(fitCanvas, 50);
 }
 
-function drawLamppost(worldZ, side) {
-  const xPos = side * 175;
-  const base = project(xPos, 0, worldZ);
-  const top  = project(xPos, 90, worldZ);
-  if (!base || !top) return;
-  const scale = base.scale;
-  ctx.fillStyle = '#0a2540';
-  ctx.fillRect(base.x - 2 * scale, top.y, 4 * scale, base.y - top.y);
-  ctx.beginPath();
-  ctx.arc(base.x, top.y - 6 * scale, 10 * scale, 0, Math.PI*2);
-  ctx.fillStyle = '#ffcc33'; ctx.fill();
-  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = Math.max(1, 2.5 * scale); ctx.stroke();
-  if (scale > 0.4) {
-    const g = ctx.createRadialGradient(base.x, top.y - 6 * scale, 2, base.x, top.y - 6 * scale, 30 * scale);
-    g.addColorStop(0, 'rgba(255,204,51,0.5)');
-    g.addColorStop(1, 'rgba(255,204,51,0)');
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(base.x, top.y - 6 * scale, 30 * scale, 0, Math.PI*2); ctx.fill();
-  }
-}
-
-function drawTree(worldX, worldZ) {
-  const base = project(worldX, 0, worldZ);
-  if (!base) return;
-  const scale = base.scale;
-  const h = 80 * scale, trunkW = 12 * scale;
-  ctx.fillStyle = '#7a4a2a';
-  ctx.fillRect(base.x - trunkW/2, base.y - h * 0.4, trunkW, h * 0.4);
-  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = Math.max(1, 2.5 * scale);
-  ctx.strokeRect(base.x - trunkW/2, base.y - h * 0.4, trunkW, h * 0.4);
-  ctx.fillStyle = '#5cc06d';
-  const fy = base.y - h * 0.55;
-  ctx.beginPath();
-  ctx.arc(base.x - h * 0.22, fy, h * 0.3, 0, Math.PI*2);
-  ctx.arc(base.x + h * 0.22, fy, h * 0.3, 0, Math.PI*2);
-  ctx.arc(base.x, fy - h * 0.3, h * 0.32, 0, Math.PI*2);
-  ctx.fill();
-  ctx.lineWidth = Math.max(1, 3 * scale); ctx.stroke();
-}
+const camX = () => state.auditorX - AUDITOR_X;
 
 // =================================================================================
-// COINS — Sonic-ring style, auto-collect on pass-through
-// =================================================================================
-function drawCoin(coin) {
-  if (coin.collected) return;
-  const proj = project(coin.worldX, coin.worldY, coin.worldZ);
-  if (!proj || proj.scale < 0.08) return;
-
-  const r = 22 * proj.scale;
-  const bob = Math.sin(state.time * 0.1 + coin.phase) * 4 * proj.scale;
-  const cy = proj.y - 40 * proj.scale + bob;
-
-  const spin = Math.cos(state.time * 0.15 + coin.phase * 2);
-  const rx = Math.max(0.2, Math.abs(spin)) * r;
-
-  if (proj.scale > 0.5) {
-    const g = ctx.createRadialGradient(proj.x, cy, r * 0.3, proj.x, cy, r * 2.2);
-    g.addColorStop(0, 'rgba(255, 204, 51, 0.7)');
-    g.addColorStop(1, 'rgba(255, 204, 51, 0)');
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(proj.x, cy, r * 2.2, 0, Math.PI*2); ctx.fill();
-  }
-
-  ctx.beginPath();
-  ctx.ellipse(proj.x, cy, rx, r, 0, 0, Math.PI*2);
-  ctx.fillStyle = spin > 0 ? '#ffcc33' : '#d49a1c';
-  ctx.fill();
-  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = Math.max(1, 3 * proj.scale); ctx.stroke();
-
-  if (spin > 0.3 && proj.scale > 0.25) {
-    ctx.fillStyle = '#0a2540';
-    ctx.font = `bold ${Math.round(28 * proj.scale)}px Bungee`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('£', proj.x, cy + 2 * proj.scale);
-  }
-}
-
-// =================================================================================
-// BUILDING HIT-TESTING (for clicks)
-// =================================================================================
-function buildingScreenBox(b) {
-  const base = project(b.worldX, 0, b.worldZ);
-  if (!base) return null;
-  const scale = base.scale;
-  return {
-    left: base.x - 110 * scale,
-    right: base.x + 110 * scale,
-    bottom: base.y,
-    top: base.y - 280 * scale,
-    scale: scale,
-    zRel: base.zRel,
-    center: { x: base.x, y: base.y }
-  };
-}
-
-function hitBuilding(canvasX, canvasY) {
-  const candidates = state.buildings
-    .filter(b => !b.revealed)
-    .map(b => ({ b, box: buildingScreenBox(b) }))
-    .filter(x => x.box && x.box.scale > 0.13)
-    .sort((a, b) => a.box.zRel - b.box.zRel);
-
-  for (const c of candidates) {
-    const box = c.box;
-    const pad = Math.max(0, 30 - box.scale * 20);
-    if (canvasX >= box.left - pad && canvasX <= box.right + pad &&
-        canvasY >= box.top - pad && canvasY <= box.bottom + pad) {
-      return c.b;
-    }
-  }
-  return null;
-}
-
-// =================================================================================
-// FINISH LINE
-// =================================================================================
-function drawFinishLine() {
-  const zRel = FINISH_Z - state.playerZ;
-  if (zRel <= 5) return;
-  const PAV_X = 130;
-  const tl = project(-PAV_X, 80, FINISH_Z);
-  const tr = project(PAV_X, 80, FINISH_Z);
-  const bl = project(-PAV_X, 0, FINISH_Z);
-  const br = project(PAV_X, 0, FINISH_Z);
-  if (!tl || !tr || !bl || !br) return;
-
-  const segs = 16;
-  for (let i = 0; i < segs; i++) {
-    const t1 = i / segs, t2 = (i + 1) / segs;
-    const x1 = tl.x + (tr.x - tl.x) * t1;
-    const x2 = tl.x + (tr.x - tl.x) * t2;
-    const y1Top = tl.y + (tr.y - tl.y) * t1;
-    const y1Bot = bl.y + (br.y - bl.y) * t1;
-    const y2Top = tl.y + (tr.y - tl.y) * t2;
-    const y2Bot = bl.y + (br.y - bl.y) * t2;
-    ctx.fillStyle = (i % 2 === 0) ? '#0a2540' : 'white';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1Top); ctx.lineTo(x2, y2Top);
-    ctx.lineTo(x2, y2Bot); ctx.lineTo(x1, y1Bot);
-    ctx.closePath(); ctx.fill();
-  }
-
-  const postZ = FINISH_Z;
-  const lp = project(-PAV_X - 10, 0, postZ);
-  const lpt = project(-PAV_X - 10, 130, postZ);
-  if (lp && lpt) {
-    ctx.fillStyle = '#ff6b6b';
-    ctx.fillRect(lp.x - 5 * lp.scale, lpt.y, 10 * lp.scale, lp.y - lpt.y);
-    ctx.strokeStyle = '#0a2540'; ctx.lineWidth = Math.max(1, 3 * lp.scale);
-    ctx.strokeRect(lp.x - 5 * lp.scale, lpt.y, 10 * lp.scale, lp.y - lpt.y);
-  }
-  const rp = project(PAV_X + 10, 0, postZ);
-  const rpt = project(PAV_X + 10, 130, postZ);
-  if (rp && rpt) {
-    ctx.fillStyle = '#ff6b6b';
-    ctx.fillRect(rp.x - 5 * rp.scale, rpt.y, 10 * rp.scale, rp.y - rpt.y);
-    ctx.strokeStyle = '#0a2540'; ctx.lineWidth = Math.max(1, 3 * rp.scale);
-    ctx.strokeRect(rp.x - 5 * rp.scale, rpt.y, 10 * rp.scale, rp.y - rpt.y);
-  }
-
-  if (lpt && rpt && lpt.scale > 0.3) {
-    const cx = (lpt.x + rpt.x) / 2;
-    const cy = lpt.y - 30 * lpt.scale;
-    ctx.font = `bold ${Math.round(36 * lpt.scale)}px Bungee`;
-    ctx.fillStyle = '#ffcc33';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('FINISH!', cx, cy);
-    ctx.lineWidth = Math.max(2, 4 * lpt.scale);
-    ctx.strokeStyle = '#0a2540';
-    ctx.strokeText('FINISH!', cx, cy);
-    ctx.fillText('FINISH!', cx, cy);
-  }
-}
-
-// =================================================================================
-// BUILDINGS WITH PERSPECTIVE
-// =================================================================================
-function drawBuildingsAndScenery() {
-  const items = [];
-
-  for (let z = 0; z <= END_Z + 200; z += 200) {
-    if (z > state.playerZ - 50) {
-      items.push({ worldZ: z, draw: () => drawLamppost(z, -1) });
-      items.push({ worldZ: z + 5, draw: () => drawLamppost(z, 1) });
-    }
-  }
-
-  for (let i = 0; i < state.buildings.length - 1; i++) {
-    const b = state.buildings[i];
-    const next = state.buildings[i + 1];
-    const midZ = (b.worldZ + next.worldZ) / 2;
-    const treeSide = b.side === 'left' ? 1 : -1;
-    items.push({ worldZ: midZ, draw: () => drawTree(treeSide * 320, midZ) });
-  }
-
-  state.coins.forEach(coin => {
-    if (!coin.collected) {
-      items.push({ worldZ: coin.worldZ - 1, draw: () => drawCoin(coin) });
-    }
-  });
-
-  state.buildings.forEach(b => {
-    items.push({ worldZ: b.worldZ, draw: () => drawOneBuilding(b) });
-  });
-
-  items.push({ worldZ: FINISH_Z, draw: drawFinishLine });
-
-  items.sort((a, b) => b.worldZ - a.worldZ);
-  items.forEach(item => item.draw());
-}
-
-function drawOneBuilding(b) {
-  const proj = project(b.worldX, 0, b.worldZ);
-  if (!proj || proj.scale < 0.05) return;
-
-  ctx.save();
-  ctx.translate(proj.x, proj.y);
-  ctx.scale(proj.scale, proj.scale);
-
-  // Pulsing yellow halo behind un-inspected buildings
-  if (!b.revealed) {
-    const pulse = 0.25 + 0.3 * (0.5 + 0.5 * Math.sin(state.time * 0.08 + b.worldZ * 0.01));
-    const g = ctx.createRadialGradient(0, -130, 30, 0, -130, 220);
-    g.addColorStop(0, `rgba(255, 204, 51, ${pulse * 0.7})`);
-    g.addColorStop(1, 'rgba(255, 204, 51, 0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(-220, -320, 440, 330);
-  }
-
-  drawFns[b.drawFn]();
-
-  if (b.revealed) {
-    ctx.save();
-    ctx.translate(0, -180);
-    ctx.rotate(-0.18);
-    let label, color;
-    if (b.outcome === 'correct') { label = '✓ +100'; color = '#6dd47e'; }
-    else if (b.outcome === 'wrong') { label = '✗ −50'; color = '#ff6b6b'; }
-    else { label = '⌛ MISS'; color = '#9a9a9a'; }
-    rrect(-70, -28, 140, 56, 12, color);
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 22px Bungee';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(label, 0, 2);
-    ctx.restore();
-  }
-  ctx.restore();
-
-  // Bouncing yellow arrow above un-inspected buildings (in screen pixel space)
-  if (!b.revealed && proj.scale > 0.2) {
-    const box = buildingScreenBox(b);
-    if (box) {
-      const bob = Math.sin(state.time * 0.14 + b.worldZ * 0.01) * 6;
-      const ay = box.top - 24 + bob;
-      const ax = box.center.x;
-      ctx.save();
-      ctx.fillStyle = '#ffcc33';
-      ctx.strokeStyle = '#0a2540';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(ax - 14, ay - 4);
-      ctx.lineTo(ax + 14, ay - 4);
-      ctx.lineTo(ax, ay + 16);
-      ctx.closePath();
-      ctx.fill(); ctx.stroke();
-      ctx.restore();
-    }
-  }
-}
-
-// =================================================================================
-// MAIN DRAW
-// =================================================================================
-// =================================================================================
-// MAIN DRAW
-// =================================================================================
-function draw() {
-  drawSky();
-  drawSun();
-  drawClouds();
-  drawHills();
-
-  ctx.save();
-  ctx.translate(0, state.walkBob);
-  drawGround();
-  drawBuildingsAndScenery();
-  ctx.restore();
-
-  drawProgressBar();
-  drawNextBuildingCallout();
-}
-
-// Slim journey bar across the top-centre, with a dot per building.
-function drawProgressBar() {
-  const frac = Math.min(1, state.playerZ / FINISH_Z);
-  const barW = W * 0.40, x = (W - barW) / 2, y = 108, h = 16;
-  rrect(x - 4, y - 4, barW + 8, h + 8, 12, 'rgba(255,255,255,0.85)', '#0a2540', 3);
-  rrect(x, y, barW, h, 8, '#e8eef3', '#0a2540', 2);
-  rrect(x, y, Math.max(h, barW * frac), h, 8, '#6dd47e', '#0a2540', 2);
-
-  for (const b of state.buildings) {
-    const t = Math.min(1, b.worldZ / FINISH_Z);
-    const tx = x + barW * t;
-    let col = '#ffffff';
-    if (b.outcome === 'correct') col = '#3ca94f';
-    else if (b.outcome === 'wrong') col = '#ff6b6b';
-    else if (b.outcome === 'missed') col = '#9a9a9a';
-    ctx.beginPath(); ctx.arc(tx, y + h / 2, 5, 0, Math.PI * 2);
-    ctx.fillStyle = col; ctx.fill();
-    ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 2; ctx.stroke();
-  }
-
-  // walker marker
-  const wx = x + barW * frac;
-  ctx.beginPath();
-  ctx.moveTo(wx, y - 8); ctx.lineTo(wx - 6, y - 18); ctx.lineTo(wx + 6, y - 18);
-  ctx.closePath();
-  ctx.fillStyle = '#0a2540'; ctx.fill();
-
-  ctx.font = '15px Fredoka'; ctx.fillStyle = '#0a2540';
-  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  ctx.fillText('🏁', x + barW + 8, y + h / 2);
-}
-
-// Big bouncing "TAP!" callout on the nearest un-inspected building.
-function drawNextBuildingCallout() {
-  if (state.modalOpen || state.ended || !state.walkEnabled) return;
-  let nearest = null, best = Infinity;
-  for (const b of state.buildings) {
-    if (b.revealed) continue;
-    const zRel = b.worldZ - state.playerZ;
-    if (zRel > 30 && zRel < best) { best = zRel; nearest = b; }
-  }
-  if (!nearest) return;
-  const box = buildingScreenBox(nearest);
-  if (!box || box.scale < 0.22) return;
-
-  const bob = Math.sin(state.time * 0.16) * 6;
-  const cx = box.center.x;
-  const cy = box.top - 46 + bob;
-  const text = '👆 TAP!';
-  ctx.font = 'bold 26px Bungee';
-  const tw = ctx.measureText(text).width;
-  const padX = 16, bw = tw + padX * 2, bh = 42;
-  rrect(cx - bw / 2, cy - bh / 2, bw, bh, 12, '#ffcc33', '#0a2540', 4);
-  ctx.beginPath();
-  ctx.moveTo(cx - 10, cy + bh / 2 - 2);
-  ctx.lineTo(cx + 10, cy + bh / 2 - 2);
-  ctx.lineTo(cx, cy + bh / 2 + 12);
-  ctx.closePath();
-  ctx.fillStyle = '#ffcc33'; ctx.fill();
-  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
-  ctx.fillStyle = '#0a2540'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(text, cx, cy + 1);
-}
-
-// =================================================================================
-// LEVEL SETUP
+// LEVEL
 // =================================================================================
 function setupLevel() {
-  const defs = [...BUILDINGS];
-  for (let i = defs.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [defs[i], defs[j]] = [defs[j], defs[i]];
-  }
-  state.buildings = BUILDING_LAYOUT.map((lay, i) => {
-    const d = defs[i % defs.length];
-    return {
-      id: d.id, name: d.name, drawFn: d.drawFn, good: d.good, bad: d.bad,
-      side: lay.side, worldX: lay.worldX, worldZ: lay.worldZ,
-      revealed: false, inspected: false, outcome: null, isGood: null, curPrinciple: ''
-    };
-  });
+  const N = 14;
+  // build a pool by repeatedly shuffling the deck so neighbours rarely repeat
+  function shuffled() { const a = [...BUILDINGS]; for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0;[a[i], a[j]] = [a[j], a[i]]; } return a; }
+  let pool = [];
+  while (pool.length < N) pool = pool.concat(shuffled());
+  state.buildings = pool.slice(0, N).map((d, i) => ({
+    id: d.id, name: d.name, drawFn: d.drawFn, good: d.good, bad: d.bad,
+    worldX: FIRST_BX + i * SPACING,
+    inspected: false, outcome: null, isGood: null, curScenario: '', curPrinciple: '', stampT: 0
+  }));
+  state.finishX = state.buildings[N - 1].worldX + FINISH_PAD;
 
+  // coins: random count / position / height in each gap (some gaps empty)
   state.coins = [];
-  for (let z = 150; z < FINISH_Z - 50; z += 68) {
-    const lane = [-50, 0, 50, 0][Math.floor(Math.random() * 4)];
-    state.coins.push({ worldX: lane, worldY: 0, worldZ: z, collected: false, phase: Math.random() * Math.PI * 2 });
+  for (let i = 0; i < state.buildings.length; i++) {
+    const bx = state.buildings[i].worldX;
+    const prev = i === 0 ? 0 : state.buildings[i - 1].worldX;
+    const gapA = prev + 150, gapB = bx - 150;
+    if (gapB <= gapA) continue;
+    const n = Math.floor(Math.random() * 5); // 0..4 coins
+    for (let k = 0; k < n; k++) {
+      const wx = gapA + Math.random() * (gapB - gapA);
+      const high = Math.random() < 0.38;
+      const baseY = high ? -(205 + Math.random() * 75) : -(80 + Math.random() * 95);
+      state.coins.push({ worldX: wx, baseY, collected: false, phase: Math.random() * 6.28, high: baseY < -175 });
+    }
+  }
+
+  state.scenery = [];
+  for (let x = 180; x < state.finishX + 200; x += 280) {
+    state.scenery.push({ worldX: x, type: ((x / 280) | 0) % 2 ? 'tree' : 'lamp' });
   }
 }
 
 function resetState() {
   Object.assign(state, {
-    playerZ: 0, playerX: 0, walking: false, lateralLeft: false, lateralRight: false,
-    walkBob: 0, time: 0, lastFootstepZ: 0, score: 0, coinsCollected: 0,
+    mode: 'walk', time: 0, timeLeft: TIME_LIMIT_S,
+    auditorX: 0, walking: false, vy: 0, yOff: 0, grounded: true, lastFootX: 0,
+    score: 0, coinsCollected: 0, judgePts: 0,
     judgmentsCorrect: 0, judgmentsWrong: 0, judgmentsMissed: 0, inspectedCount: 0,
-    currentBuildingId: null, modalOpen: false, modalResolved: false, modalEndTime: 0,
-    timeLeft: TIME_LIMIT_S, finishCrossed: false, endReason: null, ended: false,
-    walkEnabled: false, timeBonus: 0, judgePts: 0, activeBuilding: null
+    curIndex: 0, activeBuilding: null, inspectEnd: 0, resolved: false,
+    walkEnabled: false, ended: false, endReason: null, timeBonus: 0
   });
 }
 
 // =================================================================================
-// HUD
+// BACKGROUND + SCENERY
+// =================================================================================
+function drawBackground() {
+  const cam = camX();
+  const g = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+  g.addColorStop(0, '#87ceeb'); g.addColorStop(1, '#d9eef7');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, GROUND_Y);
+
+  drawSun();
+
+  // clouds (parallax)
+  const clouds = [[120, 80, 1], [430, 60, 1.2], [760, 100, .9], [1050, 70, 1.1], [1360, 110, 1]];
+  clouds.forEach(([bx, y, s]) => {
+    let x = ((bx - cam * 0.14) % 1600 + 1600) % 1600 - 160;
+    drawCloud(x, y, s);
+  });
+
+  // hills (two parallax layers)
+  function hills(par, col, amp, base) {
+    const off = cam * par;
+    ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(0, GROUND_Y);
+    for (let x = 0; x <= W; x += 30) {
+      const y = base - Math.sin((x + off) * 0.011) * amp - Math.sin((x + off) * 0.005 + 1) * amp * 0.5;
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(W, GROUND_Y); ctx.closePath(); ctx.fill();
+  }
+  hills(0.18, '#8ec98e', 34, GROUND_Y - 70);
+  hills(0.32, '#a9dba9', 22, GROUND_Y - 40);
+
+  // ground
+  ctx.fillStyle = '#7dc488'; ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+  // pavement band where buildings sit
+  ctx.fillStyle = '#cdbfa8'; ctx.fillRect(0, GROUND_Y, W, 26);
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(W, GROUND_Y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, GROUND_Y + 26); ctx.lineTo(W, GROUND_Y + 26); ctx.stroke();
+  // walking path with scrolling dashes (motion cue)
+  ctx.fillStyle = '#5a4a36'; ctx.fillRect(0, GROUND_Y + 26, W, H - GROUND_Y - 26);
+  ctx.fillStyle = '#ffcc33';
+  const dashW = 46, gap = 54, period = dashW + gap;
+  const start = -((cam % period) + period) % period;
+  for (let x = start; x < W; x += period) ctx.fillRect(x, GROUND_Y + 64, dashW, 8);
+}
+
+function drawScenery() {
+  const cam = camX();
+  for (const s of state.scenery) {
+    const x = s.worldX - cam;
+    if (x < -80 || x > W + 80) continue;
+    if (s.type === 'tree') {
+      ctx.fillStyle = '#7a4a2a'; ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3;
+      ctx.fillRect(x - 7, GROUND_Y - 54, 14, 54); ctx.strokeRect(x - 7, GROUND_Y - 54, 14, 54);
+      ctx.fillStyle = '#5cc06d';
+      ctx.beginPath();
+      ctx.arc(x - 22, GROUND_Y - 70, 26, 0, 6.3); ctx.arc(x + 22, GROUND_Y - 70, 26, 0, 6.3);
+      ctx.arc(x, GROUND_Y - 96, 30, 0, 6.3); ctx.fill(); ctx.stroke();
+    } else {
+      ctx.fillStyle = '#0a2540'; ctx.fillRect(x - 3, GROUND_Y - 96, 6, 96);
+      ctx.beginPath(); ctx.arc(x, GROUND_Y - 100, 10, 0, 6.3);
+      ctx.fillStyle = '#ffcc33'; ctx.fill(); ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3; ctx.stroke();
+      const gl = ctx.createRadialGradient(x, GROUND_Y - 100, 2, x, GROUND_Y - 100, 34);
+      gl.addColorStop(0, 'rgba(255,204,51,.45)'); gl.addColorStop(1, 'rgba(255,204,51,0)');
+      ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(x, GROUND_Y - 100, 34, 0, 6.3); ctx.fill();
+    }
+  }
+}
+
+// =================================================================================
+// BUILDINGS (flat)
+// =================================================================================
+function drawBuildings() {
+  const cam = camX();
+  state.buildings.forEach((b, i) => {
+    const x = b.worldX - cam;
+    if (x < -360 || x > W + 360) return;
+    const isActive = (i === state.curIndex) && !b.inspected;
+    const isUpcoming = !b.inspected && i > state.curIndex;
+
+    // Pulsing glow behind any un-inspected building so they read as "interactive"
+    if (!b.inspected) {
+      const pulse = 0.5 + 0.5 * Math.sin(state.time * 0.09 + i * 1.3);
+      const gy = GROUND_Y - 170 * FLAT;
+      const baseR = isActive ? 230 : 150;
+      const a = isActive ? (0.30 + 0.35 * pulse) : (0.10 + 0.14 * pulse);
+      const gg = ctx.createRadialGradient(x, gy, 20, x, gy, baseR);
+      gg.addColorStop(0, 'rgba(255,204,51,' + a + ')');
+      gg.addColorStop(1, 'rgba(255,204,51,0)');
+      ctx.fillStyle = gg;
+      ctx.beginPath(); ctx.arc(x, gy, baseR, 0, 6.3); ctx.fill();
+    }
+
+    // Spotlight pool on the ground for the active building
+    if (isActive) {
+      const sp = 0.5 + 0.5 * Math.sin(state.time * 0.12);
+      const r = 150 + sp * 18;
+      const gg = ctx.createRadialGradient(x, GROUND_Y, 10, x, GROUND_Y, r);
+      gg.addColorStop(0, 'rgba(255,204,51,.55)'); gg.addColorStop(1, 'rgba(255,204,51,0)');
+      ctx.fillStyle = gg; ctx.beginPath(); ctx.ellipse(x, GROUND_Y, r, r * 0.34, 0, 0, 6.3); ctx.fill();
+      // pulsing ground ring
+      ctx.strokeStyle = 'rgba(255,204,51,' + (0.5 + 0.4 * sp) + ')'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.ellipse(x, GROUND_Y, 96 + sp * 10, (96 + sp * 10) * 0.34, 0, 0, 6.3); ctx.stroke();
+    }
+
+    // Building artwork (active one gently throbs)
+    const sc = isActive ? FLAT * (1 + 0.03 * (0.5 + 0.5 * Math.sin(state.time * 0.13))) : FLAT;
+    ctx.save();
+    ctx.translate(x, GROUND_Y);
+    ctx.scale(sc, sc);
+    if (isUpcoming) ctx.globalAlpha = 0.92;
+    drawFns[b.drawFn]();
+
+    if (b.inspected) {
+      ctx.save();
+      ctx.translate(0, -150); ctx.rotate(-0.16);
+      let label, col;
+      if (b.outcome === 'correct') { label = '✓ +100'; col = '#6dd47e'; }
+      else if (b.outcome === 'wrong') { label = '✗ −50'; col = '#ff6b6b'; }
+      else { label = '⌛ MISS'; col = '#9a9a9a'; }
+      rrect(-64, -26, 128, 52, 12, col);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 22px Bungee';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, 0, 2);
+      ctx.restore();
+    }
+    ctx.restore();
+
+    // bobbing "INSPECT" arrow while walking toward the active building
+    if (isActive && state.mode === 'walk') {
+      const bob = Math.sin(state.time * 0.14) * 6;
+      const ay = GROUND_Y - 300 * FLAT - 30 + bob;
+      ctx.font = 'bold 22px Bungee';
+      const tw = ctx.measureText('INSPECT').width, bw = tw + 30;
+      rrect(x - bw / 2, ay - 26, bw, 38, 10, '#ffcc33', '#0a2540', 4);
+      ctx.fillStyle = '#0a2540'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('INSPECT', x, ay - 6);
+      ctx.beginPath(); ctx.moveTo(x - 10, ay + 12); ctx.lineTo(x + 10, ay + 12); ctx.lineTo(x, ay + 26);
+      ctx.closePath(); ctx.fillStyle = '#ffcc33'; ctx.fill(); ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 4; ctx.stroke();
+    }
+  });
+}
+
+// =================================================================================
+// COINS
+// =================================================================================
+function drawCoins() {
+  const cam = camX();
+  for (const c of state.coins) {
+    if (c.collected) continue;
+    const x = c.worldX - cam;
+    if (x < -40 || x > W + 40) continue;
+    const bob = Math.sin(state.time * 0.12 + c.phase) * 5;
+    const y = GROUND_Y + c.baseY + bob;
+    const spin = Math.cos(state.time * 0.16 + c.phase);
+    const rx = Math.max(3, Math.abs(spin) * 15);
+    const gl = ctx.createRadialGradient(x, y, 3, x, y, 30);
+    gl.addColorStop(0, 'rgba(255,204,51,.5)'); gl.addColorStop(1, 'rgba(255,204,51,0)');
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(x, y, 30, 0, 6.3); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x, y, rx, 15, 0, 0, 6.3);
+    ctx.fillStyle = spin > 0 ? '#ffcc33' : '#d49a1c'; ctx.fill();
+    ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3; ctx.stroke();
+    if (spin > 0.4) {
+      ctx.fillStyle = '#0a2540'; ctx.font = 'bold 16px Bungee';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('£', x, y + 1);
+    }
+  }
+}
+
+// =================================================================================
+// AUDITOR (friendly front-facing mascot: clipboard + lanyard)
+// =================================================================================
+function drawAuditor() {
+  const N = '#0a2540';
+  const cx = AUDITOR_X, feetY = GROUND_Y + state.yOff;
+  const moving = state.walking && state.walkEnabled && state.mode === 'walk' && state.grounded;
+  const ph = state.time * 0.34;
+  const bob = moving ? -Math.abs(Math.sin(ph)) * 5 : Math.sin(state.time * 0.05) * -2;
+
+  // ground shadow (shrinks as he jumps)
+  const lift = Math.max(0, -state.yOff);
+  ctx.fillStyle = 'rgba(10,37,64,.20)';
+  ctx.beginPath(); ctx.ellipse(cx, GROUND_Y + 16, 46 - lift * 0.05, 11 - lift * 0.02, 0, 0, 6.3); ctx.fill();
+
+  ctx.save();
+  ctx.translate(cx, feetY + bob);
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+
+  const bodyBottom = -50, bodyTop = -150, bodyW = 60;   // bodyW = half-width
+  const headR = 50, headCY = -180;
+
+  // ---- LEGS (front-facing, gentle alternating shuffle)
+  const lLift = moving ? Math.max(0, Math.sin(ph)) * 9 : 0;
+  const rLift = moving ? Math.max(0, Math.sin(ph + Math.PI)) * 9 : 0;
+  function legAt(x, lf) {
+    rrect(x - 14, bodyBottom - 4, 28, 54 - lf, 12, '#22344a', N, 5);
+    ctx.fillStyle = N;
+    ctx.beginPath(); ctx.ellipse(x + 2, -lf + 1, 18, 9, 0, 0, 6.3); ctx.fill();
+  }
+  legAt(-24, lLift);
+  legAt(24, rLift);
+
+  // ---- BODY (navy rounded block, like the mascot)
+  rrect(-bodyW, bodyTop, bodyW * 2, bodyBottom - bodyTop, 28, '#163a5f', N, 5);
+  rrect(-bodyW + 8, bodyTop + 8, bodyW * 2 - 16, 18, 9, '#21527f', null, 0); // shoulder highlight
+
+  // ---- LEFT ARM (resting at side)
+  rrect(-bodyW - 12, bodyTop + 22, 24, 62, 12, '#163a5f', N, 5);
+  ctx.fillStyle = '#f7d3a8';
+  ctx.beginPath(); ctx.arc(-bodyW, bodyTop + 86, 10, 0, 6.3); ctx.fill();
+  ctx.strokeStyle = N; ctx.lineWidth = 3; ctx.stroke();
+
+  // ---- LANYARD + ID BADGE
+  ctx.strokeStyle = '#ff5a5a'; ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(-20, bodyTop + 2); ctx.lineTo(-8, bodyTop + 40);
+  ctx.moveTo(20, bodyTop + 2); ctx.lineTo(-8, bodyTop + 40);
+  ctx.stroke();
+  rrect(-30, bodyTop + 40, 44, 32, 6, '#ffffff', N, 4);
+  ctx.fillStyle = '#4a90c4'; ctx.fillRect(-26, bodyTop + 45, 36, 9);
+  ctx.strokeStyle = '#aab4bd'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(-24, bodyTop + 60); ctx.lineTo(8, bodyTop + 60);
+  ctx.moveTo(-24, bodyTop + 66); ctx.lineTo(2, bodyTop + 66); ctx.stroke();
+
+  // ---- HEAD
+  // back hair
+  ctx.fillStyle = '#4a2e1c';
+  ctx.beginPath(); ctx.arc(0, headCY - 2, headR + 3, 0, 6.3); ctx.fill();
+  // ears
+  ctx.fillStyle = '#f7d3a8'; ctx.strokeStyle = N; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(-headR + 3, headCY + 8, 9, 0, 6.3); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(headR - 3, headCY + 8, 9, 0, 6.3); ctx.fill(); ctx.stroke();
+  // face
+  ctx.beginPath(); ctx.arc(0, headCY, headR, 0, 6.3);
+  ctx.fillStyle = '#f7d3a8'; ctx.fill(); ctx.lineWidth = 5; ctx.strokeStyle = N; ctx.stroke();
+  // hair cap (clipped to head, smooth side-swept fringe)
+  ctx.save();
+  ctx.beginPath(); ctx.arc(0, headCY, headR, 0, 6.3); ctx.clip();
+  ctx.fillStyle = '#4a2e1c';
+  ctx.beginPath();
+  ctx.moveTo(-headR, headCY - headR);
+  ctx.lineTo(headR, headCY - headR);
+  ctx.lineTo(headR, headCY - headR * 0.20);
+  ctx.bezierCurveTo(headR * 0.42, headCY - headR * 0.20, headR * 0.28, headCY - headR * 0.38, 0, headCY - headR * 0.34);
+  ctx.bezierCurveTo(-headR * 0.32, headCY - headR * 0.31, -headR * 0.62, headCY - headR * 0.30, -headR, headCY - headR * 0.22);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+  // eyes
+  ctx.fillStyle = N;
+  ctx.beginPath(); ctx.arc(-17, headCY + 3, 5.5, 0, 6.3); ctx.fill();
+  ctx.beginPath(); ctx.arc(17, headCY + 3, 5.5, 0, 6.3); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(-15, headCY + 1, 1.8, 0, 6.3); ctx.fill();
+  ctx.beginPath(); ctx.arc(19, headCY + 1, 1.8, 0, 6.3); ctx.fill();
+  // smile
+  ctx.strokeStyle = N; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(0, headCY + 13, 16, 0.12 * Math.PI, 0.88 * Math.PI); ctx.stroke();
+
+  // ---- RIGHT ARM + CLIPBOARD (front)
+  rrect(bodyW - 12, bodyTop + 22, 24, 52, 12, '#163a5f', N, 5);
+  ctx.save();
+  ctx.translate(bodyW + 26, bodyTop + 78); ctx.rotate(-0.08);
+  rrect(-32, -42, 64, 84, 7, '#caa46a', N, 5);
+  rrect(-26, -35, 52, 70, 4, '#fffdf5', N, 3);
+  rrect(-13, -49, 26, 13, 4, '#9aa0aa', N, 4);
+  ctx.strokeStyle = '#c4ccd4'; ctx.lineWidth = 2.5;
+  for (let i = 0; i < 5; i++) { const ly = -22 + i * 13; ctx.beginPath(); ctx.moveTo(-19, ly); ctx.lineTo(19, ly); ctx.stroke(); }
+  ctx.strokeStyle = '#3ca94f'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(-15, -22); ctx.lineTo(-9, -16); ctx.lineTo(2, -29); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-15, 4); ctx.lineTo(-9, 10); ctx.lineTo(2, -3); ctx.stroke();
+  ctx.restore();
+  // hand holding clipboard
+  ctx.fillStyle = '#f7d3a8'; ctx.strokeStyle = N; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(bodyW + 8, bodyTop + 70, 10, 0, 6.3); ctx.fill(); ctx.stroke();
+
+  ctx.restore();
+}
+
+// =================================================================================
+// FINISH
+// =================================================================================
+function drawFinish() {
+  if (state.curIndex < 10) return;
+  const x = state.finishX - camX();
+  if (x < -60 || x > W + 120) return;
+  // checkered banner pole
+  ctx.fillStyle = '#0a2540'; ctx.fillRect(x - 4, GROUND_Y - 220, 8, 220);
+  for (let r = 0; r < 6; r++) for (let c = 0; c < 4; c++) {
+    ctx.fillStyle = (r + c) % 2 ? '#fff' : '#0a2540';
+    ctx.fillRect(x + 6 + c * 16, GROUND_Y - 220 + r * 16, 16, 16);
+  }
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 3; ctx.strokeRect(x + 6, GROUND_Y - 220, 64, 96);
+  ctx.fillStyle = '#ffcc33'; ctx.font = 'bold 30px Bungee'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.strokeStyle = '#0a2540'; ctx.lineWidth = 5;
+  ctx.strokeText('FINISH', x + 38, GROUND_Y - 244); ctx.fillText('FINISH', x + 38, GROUND_Y - 244);
+}
+
+// =================================================================================
+// MAIN DRAW
+// =================================================================================
+function draw() {
+  drawBackground();
+  drawScenery();
+  drawBuildings();
+  drawFinish();
+  drawCoins();
+  drawAuditor();
+}
+
+// =================================================================================
+// HUD + BANNER
 // =================================================================================
 function updateHUD() {
-  document.getElementById('hud-progress').textContent = state.inspectedCount + '/10';
+  document.getElementById('hud-progress').textContent = state.inspectedCount + '/' + state.buildings.length;
   document.getElementById('hud-score').textContent = Math.max(0, state.score);
   updateTimeHUD();
 }
@@ -1722,99 +1583,110 @@ function flashScore() {
   el.classList.remove('scoreflash'); void el.offsetWidth; el.classList.add('scoreflash');
 }
 
+const banner = () => document.getElementById('scene-banner');
+function showWalkControls() {
+  document.getElementById('controls-walk').classList.remove('hidden');
+  document.getElementById('controls-judge').classList.add('hidden');
+}
+function showJudgeControls() {
+  document.getElementById('controls-walk').classList.add('hidden');
+  document.getElementById('controls-judge').classList.remove('hidden');
+}
+
 // =================================================================================
-// MODAL / JUDGING
+// INSPECT / JUDGE (in-scene)
 // =================================================================================
-function openModal(b) {
-  if (state.modalOpen || b.revealed || state.ended) return;
+function enterInspect() {
+  const b = state.buildings[state.curIndex];
+  if (!b) return;
   const useGood = Math.random() < 0.5;
   const pool = useGood ? b.good : b.bad;
-  const v = pool[Math.floor(Math.random() * pool.length)];
-  b.isGood = useGood;
-  b.curPrinciple = v.principle;
-  state.activeBuilding = b;
-  state.modalOpen = true;
-  state.modalResolved = false;
-  state.modalEndTime = performance.now() + MODAL_TIME_MS;
+  const v = pool[(Math.random() * pool.length) | 0];
+  b.isGood = useGood; b.curScenario = v.scenario; b.curPrinciple = v.principle;
+  state.activeBuilding = b; state.mode = 'inspect'; state.resolved = false;
+  state.walking = false;
+  state.inspectEnd = performance.now() + INSPECT_MS;
 
-  document.getElementById('m-title').textContent = b.name;
-  document.getElementById('m-scenario').textContent = v.scenario;
-  document.getElementById('m-pre').classList.remove('hidden');
-  document.getElementById('m-result').classList.add('hidden');
-  document.querySelectorAll('.judge-btn').forEach(x => x.disabled = false);
-  const bar = document.getElementById('m-timer-bar');
-  bar.style.width = '100%'; bar.classList.remove('warn', 'danger');
-
-  const m = document.getElementById('modal');
-  m.classList.remove('hidden'); m.classList.add('flex');
+  document.getElementById('sb-title').textContent = b.name;
+  document.getElementById('sb-scenario').textContent = v.scenario;
+  document.getElementById('sb-result').classList.add('hidden');
+  document.getElementById('sb-timerwrap').classList.remove('hidden');
+  const bar = document.getElementById('sb-bar'); bar.style.width = '100%'; bar.classList.remove('warn', 'danger');
+  document.getElementById('btn-good').disabled = false;
+  document.getElementById('btn-bad').disabled = false;
+  banner().classList.add('show');
+  showJudgeControls();
   Audio.sfxClick();
 }
 
 function judge(verdict) {
   const b = state.activeBuilding;
-  if (!b || state.modalResolved) return;
-  state.modalResolved = true;
-  document.querySelectorAll('.judge-btn').forEach(x => x.disabled = true);
-
+  if (!b || state.mode !== 'inspect' || state.resolved) return;
+  state.resolved = true;
+  document.getElementById('btn-good').disabled = true;
+  document.getElementById('btn-bad').disabled = true;
   const correct = ((verdict === 'good') === b.isGood);
   let pts, outcome;
   if (correct) { pts = 100; outcome = 'correct'; state.judgmentsCorrect++; }
   else { pts = -50; outcome = 'wrong'; state.judgmentsWrong++; }
-
-  b.outcome = outcome; b.revealed = true; b.inspected = true; state.inspectedCount++;
-  state.score += pts; state.judgePts += pts;
-  if (correct) Audio.sfxCorrect(); else Audio.sfxWrong();
-
+  b.outcome = outcome; b.inspected = true; b.stampT = state.time;
+  state.score += pts; state.judgePts += pts; state.inspectedCount++;
+  correct ? Audio.sfxCorrect() : Audio.sfxWrong();
   showResult(b, outcome);
   updateHUD(); flashScore();
-  setTimeout(closeModal, 2000);
+  state.mode = 'result';
+  state.resultTimer = setTimeout(resumeWalk, 2100);
 }
 
-function missJudgment() {
+function missInspect() {
   const b = state.activeBuilding;
-  if (!b || state.modalResolved) return;
-  state.modalResolved = true;
-  document.querySelectorAll('.judge-btn').forEach(x => x.disabled = true);
-
-  b.outcome = 'missed'; b.revealed = true; b.inspected = true; state.inspectedCount++;
-  state.judgmentsMissed++;
+  if (!b || state.resolved) return;
+  state.resolved = true;
+  document.getElementById('btn-good').disabled = true;
+  document.getElementById('btn-bad').disabled = true;
+  b.outcome = 'missed'; b.inspected = true; b.stampT = state.time;
+  state.judgmentsMissed++; state.inspectedCount++;
   Audio.sfxTimeOut();
-
   showResult(b, 'missed');
   updateHUD();
-  setTimeout(closeModal, 2000);
+  state.mode = 'result';
+  state.resultTimer = setTimeout(resumeWalk, 2100);
 }
 
 function showResult(b, outcome) {
-  document.getElementById('m-pre').classList.add('hidden');
-  document.getElementById('m-result').classList.remove('hidden');
-
-  const banner = document.getElementById('m-banner');
-  const icon = document.getElementById('m-banner-icon');
-  const verdict = document.getElementById('m-verdict');
-  const points = document.getElementById('m-points');
-  const stamp = document.getElementById('m-stamp');
-  const principle = document.getElementById('m-principle');
-
-  let bg, ic, vt, pt, st, stbg;
-  if (outcome === 'correct') { bg = '#dff7e3'; ic = '✓'; vt = 'Spot on!'; pt = '+100 points'; st = 'NICE'; stbg = '#6dd47e'; }
-  else if (outcome === 'wrong') { bg = '#ffe2e2'; ic = '✗'; vt = 'Not quite…'; pt = '−50 points'; st = 'OOPS'; stbg = '#ff6b6b'; }
-  else { bg = '#fff3cf'; ic = '⌛'; vt = "Time's up!"; pt = '+0 points'; st = 'MISS'; stbg = '#ffcc33'; }
-
-  banner.style.background = bg;
-  icon.innerHTML = '<div style="font-size:30px;line-height:1">' + ic + '</div>';
-  verdict.textContent = vt; verdict.style.color = '#0a2540';
-  points.textContent = pt; points.style.color = '#0a2540';
-  stamp.textContent = st; stamp.style.background = stbg; stamp.style.color = '#0a2540';
-  principle.innerHTML = '<strong>' + (b.isGood ? 'These were GOOD controls.' : 'These were BAD controls.') + '</strong><br>' + b.curPrinciple;
+  document.getElementById('sb-timerwrap').classList.add('hidden');
+  const res = document.getElementById('sb-result'); res.classList.remove('hidden');
+  const v = document.getElementById('sb-verdict'), p = document.getElementById('sb-principle');
+  let txt, col;
+  if (outcome === 'correct') { txt = '✓ Spot on!  +100'; col = '#3ca94f'; }
+  else if (outcome === 'wrong') { txt = '✗ Not quite…  −50'; col = '#e23b3b'; }
+  else { txt = "⌛ Time's up!  +0"; col = '#c79a1c'; }
+  v.textContent = txt; v.style.color = col;
+  p.innerHTML = '<strong>' + (b.isGood ? 'These were GOOD controls. ' : 'These were BAD controls. ') + '</strong>' + b.curPrinciple;
 }
 
-function closeModal() {
-  const m = document.getElementById('modal');
-  m.classList.add('hidden'); m.classList.remove('flex');
-  state.modalOpen = false; state.modalResolved = false; state.activeBuilding = null;
-  document.getElementById('m-pre').classList.remove('hidden');
-  document.getElementById('m-result').classList.add('hidden');
+function resumeWalk() {
+  if (state.resultTimer) { clearTimeout(state.resultTimer); state.resultTimer = null; }
+  if (state.ended) return;
+  banner().classList.remove('show');
+  state.activeBuilding = null; state.resolved = false;
+  state.curIndex++; state.mode = 'walk';
+  showWalkControls();
+}
+
+// X on the banner: skip the building (counts as a miss) or dismiss the result early
+function closeBanner() {
+  if (state.ended) return;
+  if (state.mode === 'inspect' && !state.resolved) {
+    const b = state.activeBuilding;
+    if (b) { b.outcome = 'missed'; b.inspected = true; b.stampT = state.time; state.judgmentsMissed++; state.inspectedCount++; }
+    state.resolved = true;
+    Audio.sfxMiss();
+    updateHUD();
+    resumeWalk();
+  } else if (state.mode === 'result') {
+    resumeWalk();
+  }
 }
 
 // =================================================================================
@@ -1822,23 +1694,14 @@ function closeModal() {
 // =================================================================================
 function endGame(reason) {
   if (state.ended) return;
-  state.ended = true; state.endReason = reason;
-  state.walkEnabled = false; state.walking = false;
-  state.lateralLeft = false; state.lateralRight = false;
-
-  if (reason === 'finish') {
-    state.timeBonus = Math.round(state.timeLeft * 5);
-    state.score += state.timeBonus;
-    Audio.sfxFinish();
-  } else {
-    state.timeBonus = 0;
-    Audio.sfxTimeOut();
-  }
+  state.ended = true; state.endReason = reason; state.walkEnabled = false; state.walking = false;
+  if (reason === 'finish') { state.timeBonus = Math.round(state.timeLeft * 5); state.score += state.timeBonus; Audio.sfxFinish(); }
+  else { state.timeBonus = 0; Audio.sfxTimeOut(); }
   Audio.stopMusic();
 
   document.getElementById('final-score').textContent = Math.max(0, state.score);
   document.getElementById('bd-judge').textContent = (state.judgePts >= 0 ? '+' : '') + state.judgePts;
-  document.getElementById('bd-coins').textContent = '+' + (state.coinsCollected * 10);
+  document.getElementById('bd-coins').textContent = '+' + (state.coinsCollected * COIN_VALUE);
   document.getElementById('bd-time').textContent = '+' + state.timeBonus;
 
   const s = state.score;
@@ -1848,33 +1711,26 @@ function endGame(reason) {
   else if (s >= 450) { msg = 'DECENT AUDIT 👍'; flav = 'Solid effort. A few controls slipped past — worth a second look.'; st = 'OK'; stbg = '#ffcc33'; conf = 40; }
   else { msg = 'BACK TO BASICS 📋'; flav = 'Plenty of room to tighten those controls. Come and chat to us!'; st = 'REVIEW'; stbg = '#ff6b6b'; conf = 0; }
   if (reason === 'timeout') flav = 'Time ran out! ' + flav;
-
   document.getElementById('final-message').textContent = msg;
   document.getElementById('final-flavour').textContent = flav;
-  const vs = document.getElementById('verdict-stamp');
-  vs.textContent = st; vs.style.background = stbg; vs.style.color = '#0a2540';
+  const vs = document.getElementById('verdict-stamp'); vs.textContent = st; vs.style.background = stbg; vs.style.color = '#0a2540';
 
   document.getElementById('name-entry').classList.remove('hidden');
   document.getElementById('name-saved').classList.add('hidden');
   document.getElementById('entry-name').value = '';
-
   renderLeaderboard();
   showScreen('screen-over');
   if (conf > 0) spawnConfetti(conf);
 }
 
 function spawnConfetti(n) {
-  const c = document.getElementById('confetti');
-  c.innerHTML = '';
-  const colors = ['#ffcc33', '#6dd47e', '#ff6b6b', '#4a90c4', '#ffffff'];
+  const c = document.getElementById('confetti'); c.innerHTML = '';
+  const cols = ['#ffcc33', '#6dd47e', '#ff6b6b', '#4a90c4', '#ffffff'];
   for (let i = 0; i < n; i++) {
-    const d = document.createElement('div');
-    d.className = 'confetti-piece';
-    d.style.left = (Math.random() * 100) + '%';
-    d.style.background = colors[i % colors.length];
+    const d = document.createElement('div'); d.className = 'confetti-piece';
+    d.style.left = (Math.random() * 100) + '%'; d.style.background = cols[i % cols.length];
     const dur = 2.5 + Math.random() * 2.5;
-    d.style.animationDuration = dur + 's';
-    d.style.animationDelay = (Math.random() * 0.8) + 's';
+    d.style.animationDuration = dur + 's'; d.style.animationDelay = (Math.random() * 0.8) + 's';
     if (Math.random() < 0.5) d.style.borderRadius = '50%';
     c.appendChild(d);
     setTimeout(() => { if (d.parentNode) d.parentNode.removeChild(d); }, (dur + 1) * 1000);
@@ -1883,42 +1739,27 @@ function spawnConfetti(n) {
 
 function renderLeaderboard() {
   const data = Storage.load();
-  const wrap = document.getElementById('leaderboard-table');
-  wrap.innerHTML = '';
+  const wrap = document.getElementById('leaderboard-table'); wrap.innerHTML = '';
   if (!data.length) {
-    const p = document.createElement('p');
-    p.className = 'text-center text-[#0a2540] font-semibold opacity-70';
-    p.textContent = 'No scores yet — be the first!';
-    wrap.appendChild(p);
-    return;
+    const p = document.createElement('p'); p.className = 'text-center text-[#0a2540] font-semibold opacity-70';
+    p.textContent = 'No scores yet — be the first!'; wrap.appendChild(p); return;
   }
-  const table = document.createElement('table');
-  table.className = 'w-full';
+  const table = document.createElement('table'); table.className = 'w-full';
   data.forEach((e, i) => {
-    const tr = document.createElement('tr');
-    tr.className = 'border-b-2 border-dashed';
-    tr.style.borderColor = 'rgba(10,37,64,0.2)';
-    const rank = document.createElement('td');
-    rank.className = 'py-2 font-cartoon text-[#0a2540]';
-    rank.style.width = '46px';
-    rank.textContent = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '.';
-    const nm = document.createElement('td');
-    nm.className = 'py-2 font-bold text-[#0a2540]';
-    nm.textContent = e.name;
-    const sc = document.createElement('td');
-    sc.className = 'py-2 text-right font-cartoon text-[#0a2540]';
-    sc.textContent = e.score;
-    tr.append(rank, nm, sc);
-    table.appendChild(tr);
+    const tr = document.createElement('tr'); tr.className = 'border-b-2 border-dashed'; tr.style.borderColor = 'rgba(10,37,64,.2)';
+    const rk = document.createElement('td'); rk.className = 'py-2 font-cartoon text-[#0a2540]'; rk.style.width = '46px';
+    rk.textContent = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '.';
+    const nm = document.createElement('td'); nm.className = 'py-2 font-bold text-[#0a2540]'; nm.textContent = e.name;
+    const sc = document.createElement('td'); sc.className = 'py-2 text-right font-cartoon text-[#0a2540]'; sc.textContent = e.score;
+    tr.append(rk, nm, sc); table.appendChild(tr);
   });
   wrap.appendChild(table);
 }
 
 function saveScore() {
   const inp = document.getElementById('entry-name');
-  let name = (inp.value || '').trim().slice(0, 20);
-  if (!name) name = 'Anonymous';
-  Storage.save({ name: name, score: Math.max(0, state.score) });
+  let name = (inp.value || '').trim().slice(0, 20); if (!name) name = 'Anonymous';
+  Storage.save({ name, score: Math.max(0, state.score) });
   document.getElementById('name-entry').classList.add('hidden');
   document.getElementById('name-saved').classList.remove('hidden');
   renderLeaderboard();
@@ -1928,28 +1769,24 @@ function saveScore() {
 // COUNTDOWN + START
 // =================================================================================
 function runCountdown(cb) {
-  const ov = document.getElementById('countdown-overlay');
-  const num = document.getElementById('countdown-num');
-  ov.classList.remove('hidden');
-  const seq = ['3', '2', '1', 'GO!'];
-  let i = 0;
-  function step() {
+  const ov = document.getElementById('countdown-overlay'), num = document.getElementById('countdown-num');
+  ov.classList.remove('hidden'); const seq = ['3', '2', '1', 'GO!']; let i = 0;
+  (function step() {
     num.textContent = seq[i];
     num.classList.remove('countdown-num'); void num.offsetWidth; num.classList.add('countdown-num');
-    if (seq[i] === 'GO!') Audio.sfxCorrect(); else Audio.sfxTick();
+    seq[i] === 'GO!' ? Audio.sfxCorrect() : Audio.sfxTick();
     i++;
-    if (i < seq.length) setTimeout(step, 800);
-    else setTimeout(() => { ov.classList.add('hidden'); cb(); }, 650);
-  }
-  step();
+    if (i < seq.length) setTimeout(step, 750);
+    else setTimeout(() => { ov.classList.add('hidden'); cb(); }, 620);
+  })();
 }
 
 let loopRunning = false, lastT = 0;
-
 function startGame() {
   resetState();
   setupLevel();
-  closeModal();
+  banner().classList.remove('show');
+  showWalkControls();
   showScreen('screen-game');
   updateHUD();
   fitCanvas();
@@ -1965,130 +1802,99 @@ function startGame() {
 function update(dtMs, dtFrames) {
   state.time += dtFrames;
 
-  // Modal countdown runs in real time (game clock is paused while it's open).
-  if (state.modalOpen && !state.modalResolved) {
-    const remain = state.modalEndTime - performance.now();
-    const frac = Math.max(0, remain / MODAL_TIME_MS);
-    const bar = document.getElementById('m-timer-bar');
-    if (bar) {
-      bar.style.width = (frac * 100) + '%';
-      bar.classList.toggle('warn', frac < 0.5 && frac >= 0.22);
-      bar.classList.toggle('danger', frac < 0.22);
-    }
-    if (remain <= 0) missJudgment();
+  if (state.mode === 'inspect' && !state.resolved && !state.ended) {
+    const remain = state.inspectEnd - performance.now();
+    const frac = Math.max(0, remain / INSPECT_MS);
+    const bar = document.getElementById('sb-bar');
+    bar.style.width = (frac * 100) + '%';
+    bar.classList.toggle('warn', frac < 0.5 && frac >= 0.22);
+    bar.classList.toggle('danger', frac < 0.22);
+    if (remain <= 0) missInspect();
   }
 
-  if (state.ended || !state.walkEnabled || state.modalOpen) return;
+  if (state.ended || !state.walkEnabled) return;
 
-  // Game timer
+  // total game clock keeps running even while inspecting / judging
   state.timeLeft -= dtMs / 1000;
   if (state.timeLeft <= 0) { state.timeLeft = 0; updateTimeHUD(); endGame('timeout'); return; }
-
-  // Forward / lateral movement
-  if (state.walking) {
-    state.playerZ += WALK_SPEED * dtFrames;
-    if (state.playerZ - state.lastFootstepZ > 42) { Audio.sfxFootstep(); state.lastFootstepZ = state.playerZ; }
-    state.walkBob = Math.sin(state.time * 0.35) * 3;
-  } else {
-    state.walkBob *= 0.85;
-  }
-  if (state.lateralLeft)  state.playerX = Math.max(-LATERAL_LIMIT, state.playerX - LATERAL_SPEED * dtFrames);
-  if (state.lateralRight) state.playerX = Math.min(LATERAL_LIMIT, state.playerX + LATERAL_SPEED * dtFrames);
-
-  // Coin pickup
-  for (const c of state.coins) {
-    if (!c.collected) {
-      const zRel = c.worldZ - state.playerZ;
-      if (zRel < 22 && zRel > -40 && Math.abs(c.worldX - state.playerX) < COIN_COLLECT_LATERAL) {
-        c.collected = true; state.coinsCollected++; state.score += 10;
-        Audio.sfxCoin(); flashScore(); updateHUD();
-      }
-    }
-  }
-
-  // Walked past an un-inspected building → counts as a miss
-  for (const b of state.buildings) {
-    if (!b.revealed) {
-      const zRel = b.worldZ - state.playerZ;
-      if (zRel < 14) {
-        b.revealed = true; b.outcome = 'missed';
-        state.judgmentsMissed++; state.inspectedCount++;
-        Audio.sfxMiss(); updateHUD();
-      }
-    }
-  }
-
   updateTimeHUD();
 
-  if (!state.finishCrossed && state.playerZ >= FINISH_Z) {
-    state.finishCrossed = true;
-    endGame('finish');
+  if (state.mode !== 'walk') return;   // movement only while free-walking
+
+  // movement
+  if (state.walking) {
+    state.auditorX += WALK_SPEED * dtFrames;
+    if (state.grounded && state.auditorX - state.lastFootX > 52) { Audio.sfxFootstep(); state.lastFootX = state.auditorX; }
   }
+  // jump physics
+  state.vy += GRAV * dtFrames;
+  state.yOff += state.vy * dtFrames;
+  if (state.yOff >= 0) { state.yOff = 0; state.vy = 0; state.grounded = true; } else state.grounded = false;
+
+  // stop at next building / reach finish
+  if (state.curIndex < 10) {
+    const b = state.buildings[state.curIndex];
+    const stopX = b.worldX - 96;
+    if (state.auditorX >= stopX) { state.auditorX = stopX; enterInspect(); }
+  } else if (state.auditorX >= state.finishX) {
+    endGame('finish'); return;
+  }
+
+  // coins
+  for (const c of state.coins) {
+    if (c.collected) continue;
+    if (Math.abs(c.worldX - state.auditorX) < 46 && (!c.high || state.yOff < -150)) {
+      c.collected = true; state.coinsCollected++; state.score += COIN_VALUE;
+      Audio.sfxCoin(); flashScore(); updateHUD();
+    }
+  }
+  updateTimeHUD();
 }
 
 function loop(ts) {
   if (!lastT) lastT = ts;
-  let dtMs = ts - lastT; lastT = ts;
-  if (dtMs > 120) dtMs = 120;
-  const dtFrames = dtMs / 16.6667;
-  update(dtMs, dtFrames);
+  let dtMs = ts - lastT; lastT = ts; if (dtMs > 120) dtMs = 120;
+  update(dtMs, dtMs / 16.6667);
   draw();
   requestAnimationFrame(loop);
 }
 
 // =================================================================================
-// INPUT WIRING
+// INPUT
 // =================================================================================
-function canvasCoords(evt) {
-  const r = canvas.getBoundingClientRect();
-  return {
-    x: (evt.clientX - r.left) * (W / r.width),
-    y: (evt.clientY - r.top) * (H / r.height)
-  };
-}
-
-canvas.addEventListener('click', e => {
-  if (!state.walkEnabled || state.modalOpen || state.ended) return;
-  const { x, y } = canvasCoords(e);
-  const b = hitBuilding(x, y);
-  if (b) openModal(b);
-});
-
 function bindHold(id, on, off) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const start = e => { e.preventDefault(); Audio.resume(); on(); };
-  const end = () => off();
-  el.addEventListener('pointerdown', start);
-  el.addEventListener('pointerup', end);
-  el.addEventListener('pointerleave', end);
-  el.addEventListener('pointercancel', end);
+  const el = document.getElementById(id); if (!el) return;
+  const s = e => { e.preventDefault(); Audio.resume(); on(); };
+  const o = () => off();
+  el.addEventListener('pointerdown', s);
+  el.addEventListener('pointerup', o);
+  el.addEventListener('pointerleave', o);
+  el.addEventListener('pointercancel', o);
 }
-bindHold('walk-forward', () => state.walking = true, () => state.walking = false);
-bindHold('walk-left', () => state.lateralLeft = true, () => state.lateralLeft = false);
-bindHold('walk-right', () => state.lateralRight = true, () => state.lateralRight = false);
+bindHold('btn-walk', () => state.walking = true, () => state.walking = false);
 
-document.querySelectorAll('.judge-btn').forEach(btn => {
-  btn.addEventListener('click', () => { Audio.resume(); judge(btn.getAttribute('data-judge')); });
-});
+function doJump() {
+  if (state.mode === 'walk' && state.walkEnabled && state.grounded) { state.vy = JUMP_V; state.grounded = false; Audio.sfxClick(); }
+}
+document.getElementById('btn-jump').addEventListener('pointerdown', e => { e.preventDefault(); Audio.resume(); doJump(); });
+document.getElementById('btn-good').addEventListener('click', () => { Audio.resume(); judge('good'); });
+document.getElementById('btn-bad').addEventListener('click', () => { Audio.resume(); judge('bad'); });
+document.getElementById('sb-close').addEventListener('click', e => { e.stopPropagation(); Audio.resume(); closeBanner(); });
 
 window.addEventListener('keydown', e => {
-  if (state.modalOpen && !state.modalResolved) {
+  if (state.mode === 'inspect' && !state.resolved) {
     const k = e.key.toLowerCase();
     if (e.key === '1' || k === 'g') judge('good');
     else if (e.key === '2' || k === 'b') judge('bad');
     return;
   }
   const k = e.key.toLowerCase();
-  if (e.key === 'ArrowUp' || e.key === ' ' || k === 'w') state.walking = true;
-  if (e.key === 'ArrowLeft' || k === 'a') state.lateralLeft = true;
-  if (e.key === 'ArrowRight' || k === 'd') state.lateralRight = true;
+  if (e.key === 'ArrowRight' || k === 'd' || e.key === ' ') state.walking = true;
+  if (e.key === 'ArrowUp' || k === 'w') doJump();
 });
 window.addEventListener('keyup', e => {
   const k = e.key.toLowerCase();
-  if (e.key === 'ArrowUp' || e.key === ' ' || k === 'w') state.walking = false;
-  if (e.key === 'ArrowLeft' || k === 'a') state.lateralLeft = false;
-  if (e.key === 'ArrowRight' || k === 'd') state.lateralRight = false;
+  if (e.key === 'ArrowRight' || k === 'd' || e.key === ' ') state.walking = false;
 });
 
 // =================================================================================
@@ -2097,22 +1903,15 @@ window.addEventListener('keyup', e => {
 let isMuted = false;
 function setMuteUI() {
   ['title', 'game', 'over'].forEach(k => {
-    const on = document.getElementById('sound-on-' + k);
-    const off = document.getElementById('sound-off-' + k);
+    const on = document.getElementById('sound-on-' + k), off = document.getElementById('sound-off-' + k);
     if (on) on.style.display = isMuted ? 'none' : 'block';
     if (off) off.style.display = isMuted ? 'block' : 'none';
   });
 }
 function toggleMute() {
-  isMuted = !isMuted;
-  Audio.setMuted(isMuted);
-  setMuteUI();
-  if (isMuted) {
-    Audio.stopMusic();
-  } else {
-    Audio.resume();
-    if (document.getElementById('screen-game').classList.contains('active') && !state.ended) Audio.startMusic();
-  }
+  isMuted = !isMuted; Audio.setMuted(isMuted); setMuteUI();
+  if (isMuted) Audio.stopMusic();
+  else { Audio.resume(); if (document.getElementById('screen-game').classList.contains('active') && !state.ended) Audio.startMusic(); }
 }
 ['mute-title', 'mute-game', 'mute-over'].forEach(id => {
   const el = document.getElementById(id);
@@ -2120,7 +1919,7 @@ function toggleMute() {
 });
 
 // =================================================================================
-// BUTTONS + INIT
+// INIT
 // =================================================================================
 document.getElementById('btn-start').addEventListener('click', () => { Audio.init(); Audio.resume(); startGame(); });
 document.getElementById('btn-play-again').addEventListener('click', () => { Audio.resume(); startGame(); });
