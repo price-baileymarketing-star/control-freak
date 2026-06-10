@@ -1253,7 +1253,9 @@ function setupLevel() {
       const wx = a + Math.random() * (b - a);
       const r = Math.random();
       const type = r < 0.5 ? 'barrel' : (r < 0.75 ? 'cat' : 'dog');
-      const speed = type === 'barrel' ? (1.3 + Math.random() * 1.3) : 0;
+      const speed = type === 'barrel' ? (1.3 + Math.random() * 1.3)
+                  : type === 'dog' ? (1.6 + Math.random() * 1.2)   // dogs scamper a bit faster
+                  : (1.1 + Math.random() * 1.0);                   // cats trot
       state.obstacles.push({ worldX: wx, type, speed, phase: Math.random() * 6.28, hit: false });
     }
   }
@@ -1461,12 +1463,19 @@ function drawBarrel(x, o) {
   ctx.fillStyle = 'rgba(200,190,170,.6)';
   ctx.beginPath(); ctx.arc(x + 26 + Math.sin(o.phase + state.time * 0.2) * 3, GROUND_Y - 6, 6, 0, 6.3); ctx.fill();
 }
-function drawCat(x) {
+function drawCat(x, o) {
   const N = '#0a2540';
-  ctx.save(); ctx.translate(x, GROUND_Y);
-  // tail
-  ctx.strokeStyle = '#e8923a'; ctx.lineWidth = 8; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(20, -16); ctx.quadraticCurveTo(46, -24, 40, -2); ctx.stroke();
+  const t = state.time * 0.5 + (o ? o.phase : 0);
+  const bob = Math.abs(Math.sin(t)) * -2;
+  const sw = Math.sin(t) * 7;
+  ctx.save(); ctx.translate(x, GROUND_Y + bob);
+  // running legs (behind body)
+  ctx.strokeStyle = N; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-8, -8); ctx.lineTo(-8 + sw, -bob); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(12, -8); ctx.lineTo(12 - sw, -bob); ctx.stroke();
+  // tail (swishes)
+  ctx.strokeStyle = '#e8923a'; ctx.lineWidth = 8;
+  ctx.beginPath(); ctx.moveTo(20, -16); ctx.quadraticCurveTo(46, -22 + Math.sin(t) * 5, 40, -2); ctx.stroke();
   // body + head (orange)
   ctx.fillStyle = '#e8923a'; ctx.strokeStyle = N; ctx.lineWidth = 4;
   ctx.beginPath(); ctx.ellipse(2, -16, 24, 16, 0, 0, 6.3); ctx.fill(); ctx.stroke();
@@ -1476,16 +1485,21 @@ function drawCat(x) {
   // face
   ctx.fillStyle = N; ctx.beginPath(); ctx.arc(-21, -30, 2, 0, 6.3); ctx.arc(-12, -30, 2, 0, 6.3); ctx.fill();
   ctx.strokeStyle = N; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-16, -26); ctx.lineTo(-16, -23); ctx.stroke();
-  // legs
-  ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(-6, -2); ctx.lineTo(-6, 0); ctx.moveTo(12, -2); ctx.lineTo(12, 0); ctx.stroke();
   ctx.restore();
 }
-function drawDog(x) {
+function drawDog(x, o) {
   const N = '#0a2540';
-  ctx.save(); ctx.translate(x, GROUND_Y);
-  // wagging tail
-  ctx.strokeStyle = '#8a5a32'; ctx.lineWidth = 8; ctx.lineCap = 'round';
+  const t = state.time * 0.55 + (o ? o.phase : 0);
+  const bob = Math.abs(Math.sin(t)) * -3;
+  const sw = Math.sin(t) * 8;
   const wag = Math.sin(state.time * 0.4) * 8;
+  ctx.save(); ctx.translate(x, GROUND_Y + bob);
+  // running legs
+  ctx.strokeStyle = N; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-6, -8); ctx.lineTo(-6 + sw, -bob); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(14, -8); ctx.lineTo(14 - sw, -bob); ctx.stroke();
+  // wagging tail
+  ctx.strokeStyle = '#8a5a32'; ctx.lineWidth = 8;
   ctx.beginPath(); ctx.moveTo(22, -18); ctx.quadraticCurveTo(42, -30 + wag, 40, -10 + wag); ctx.stroke();
   // body + head (brown)
   ctx.fillStyle = '#a06a3c'; ctx.strokeStyle = N; ctx.lineWidth = 4;
@@ -1494,12 +1508,11 @@ function drawDog(x) {
   // snout
   ctx.beginPath(); ctx.ellipse(-30, -24, 8, 6, 0, 0, 6.3); ctx.fill(); ctx.stroke();
   ctx.fillStyle = N; ctx.beginPath(); ctx.arc(-37, -24, 3, 0, 6.3); ctx.fill();
-  // floppy ear
-  ctx.fillStyle = '#7a4f2c'; ctx.beginPath(); ctx.ellipse(-12, -34, 6, 12, -0.4, 0, 6.3); ctx.fill(); ctx.strokeStyle = N; ctx.lineWidth = 3; ctx.stroke();
+  // floppy ear (flaps a little)
+  ctx.fillStyle = '#7a4f2c'; ctx.save(); ctx.translate(-12, -34); ctx.rotate(Math.sin(t) * 0.18);
+  ctx.beginPath(); ctx.ellipse(0, 0, 6, 12, -0.4, 0, 6.3); ctx.fill(); ctx.strokeStyle = N; ctx.lineWidth = 3; ctx.stroke(); ctx.restore();
   // eye
   ctx.fillStyle = N; ctx.beginPath(); ctx.arc(-20, -30, 2.2, 0, 6.3); ctx.fill();
-  // legs
-  ctx.strokeStyle = N; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(-6, -2); ctx.lineTo(-6, 0); ctx.moveTo(14, -2); ctx.lineTo(14, 0); ctx.stroke();
   ctx.restore();
 }
 function drawObstacles() {
@@ -1512,8 +1525,8 @@ function drawObstacles() {
     ctx.save();
     ctx.translate(x, GROUND_Y); ctx.scale(S, S); ctx.translate(-x, -GROUND_Y);
     if (o.type === 'barrel') drawBarrel(x, o);
-    else if (o.type === 'cat') drawCat(x);
-    else drawDog(x);
+    else if (o.type === 'cat') drawCat(x, o);
+    else drawDog(x, o);
     ctx.restore();
   }
 }
