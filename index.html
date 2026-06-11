@@ -410,11 +410,6 @@
       </div>
     </div>
 
-    <div class="bg-white border-4 border-[#0a2540] rounded-2xl p-6 mb-5" style="box-shadow: 0 10px 0 #0a2540;">
-      <h3 class="font-cartoon text-2xl text-[#0a2540] mb-3 text-center">🏆 LEADERBOARD</h3>
-      <div id="leaderboard-table" class="overflow-x-auto"></div>
-    </div>
-
     <button id="btn-play-again" class="btn-cartoon w-full py-5 text-2xl mb-6">PLAY AGAIN</button>
 
     <!-- BIG CTA -->
@@ -1830,7 +1825,6 @@ function endGame(reason) {
   document.getElementById('final-flavour').textContent = flav;
   const vs = document.getElementById('verdict-stamp'); vs.textContent = st; vs.style.background = stbg; vs.style.color = '#0a2540';
 
-  renderLeaderboard();
   showScreen('screen-over');
   if (conf > 0) spawnConfetti(conf);
 }
@@ -1849,24 +1843,7 @@ function spawnConfetti(n) {
   }
 }
 
-function renderLeaderboard() {
-  const data = Storage.load();
-  const wrap = document.getElementById('leaderboard-table'); wrap.innerHTML = '';
-  if (!data.length) {
-    const p = document.createElement('p'); p.className = 'text-center text-[#0a2540] font-semibold opacity-70';
-    p.textContent = 'No scores yet — be the first!'; wrap.appendChild(p); return;
-  }
-  const table = document.createElement('table'); table.className = 'w-full';
-  data.forEach((e, i) => {
-    const tr = document.createElement('tr'); tr.className = 'border-b-2 border-dashed'; tr.style.borderColor = 'rgba(10,37,64,.2)';
-    const rk = document.createElement('td'); rk.className = 'py-2 font-cartoon text-[#0a2540]'; rk.style.width = '46px';
-    rk.textContent = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '.';
-    const nm = document.createElement('td'); nm.className = 'py-2 font-bold text-[#0a2540]'; nm.textContent = e.name;
-    const sc = document.createElement('td'); sc.className = 'py-2 text-right font-cartoon text-[#0a2540]'; sc.textContent = e.score;
-    tr.append(rk, nm, sc); table.appendChild(tr);
-  });
-  wrap.appendChild(table);
-}
+function renderLeaderboard() { /* leaderboard removed from end screen */ }
 
 function saveScore() { /* name entry removed — details are captured via the form button */ }
 
@@ -2081,7 +2058,6 @@ document.getElementById('btn-form').addEventListener('click', () => {
 
 setMuteUI();
 fitCanvas();
-renderLeaderboard();
 
 </script>
 </body>
