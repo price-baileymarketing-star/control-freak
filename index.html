@@ -405,17 +405,8 @@
 
       <div id="verdict-stamp" class="verdict-stamp absolute -top-4 -right-4 font-cartoon text-lg px-4 py-2 rounded-xl" style="border: 4px solid #0a2540; box-shadow: 0 4px 0 #0a2540;"></div>
 
-      <div id="name-entry" class="border-t-4 border-dashed border-[#0a2540] pt-5">
-        <p class="text-sm font-bold text-[#0a2540] mb-3">Pop your name on the board (optional):</p>
-        <div class="flex gap-2">
-          <input id="entry-name" type="text" maxlength="20" placeholder="Your name"
-                 class="flex-1 px-4 py-3 border-4 border-[#0a2540] rounded-xl font-bold text-[#0a2540] focus:outline-none focus:bg-[#fffbeb]">
-          <button id="btn-save-score" class="btn-cartoon px-6">SAVE</button>
-        </div>
-      </div>
-
-      <div id="name-saved" class="hidden border-t-4 border-dashed border-[#0a2540] pt-5">
-        <p class="font-cartoon text-lg text-[#6dd47e]">✓ Added to the board!</p>
+      <div class="border-t-4 border-dashed border-[#0a2540] pt-5">
+        <button id="btn-form" class="btn-cartoon w-full py-5 text-xl md:text-2xl">📝 LEAVE YOUR DETAILS →</button>
       </div>
     </div>
 
@@ -1839,9 +1830,6 @@ function endGame(reason) {
   document.getElementById('final-flavour').textContent = flav;
   const vs = document.getElementById('verdict-stamp'); vs.textContent = st; vs.style.background = stbg; vs.style.color = '#0a2540';
 
-  document.getElementById('name-entry').classList.remove('hidden');
-  document.getElementById('name-saved').classList.add('hidden');
-  document.getElementById('entry-name').value = '';
   renderLeaderboard();
   showScreen('screen-over');
   if (conf > 0) spawnConfetti(conf);
@@ -1880,14 +1868,7 @@ function renderLeaderboard() {
   wrap.appendChild(table);
 }
 
-function saveScore() {
-  const inp = document.getElementById('entry-name');
-  let name = (inp.value || '').trim().slice(0, 20); if (!name) name = 'Anonymous';
-  Storage.save({ name, score: Math.max(0, state.score) });
-  document.getElementById('name-entry').classList.add('hidden');
-  document.getElementById('name-saved').classList.remove('hidden');
-  renderLeaderboard();
-}
+function saveScore() { /* name entry removed — details are captured via the form button */ }
 
 // =================================================================================
 // COUNTDOWN + START
@@ -2087,8 +2068,16 @@ function toggleMute() {
 // =================================================================================
 document.getElementById('btn-start').addEventListener('click', () => { Audio.init(); Audio.resume(); startGame(); });
 document.getElementById('btn-play-again').addEventListener('click', () => { Audio.resume(); startGame(); });
-document.getElementById('btn-save-score').addEventListener('click', saveScore);
-document.getElementById('entry-name').addEventListener('keydown', e => { if (e.key === 'Enter') saveScore(); });
+
+// Open the Price Bailey enquiry form, passing the final score into the {{highscore}} placeholder
+const FORM_URL = 'https://www.pricebailey.co.uk/enquiry-form/game/?wpf72332_23=%7B%7Bhighscore%7D%7D';
+document.getElementById('btn-form').addEventListener('click', () => {
+  Audio.resume();
+  const sc = encodeURIComponent(Math.max(0, state.score));
+  const url = FORM_URL.replace('%7B%7Bhighscore%7D%7D', sc).replace('{{highscore}}', sc);
+  const w = window.open(url, '_blank');
+  if (!w) window.location.href = url;
+});
 
 setMuteUI();
 fitCanvas();
