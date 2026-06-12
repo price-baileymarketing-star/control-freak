@@ -2046,14 +2046,18 @@ function toggleMute() {
 document.getElementById('btn-start').addEventListener('click', () => { Audio.init(); Audio.resume(); startGame(); });
 document.getElementById('btn-play-again').addEventListener('click', () => { Audio.resume(); startGame(); });
 
-// Open the Price Bailey enquiry form, passing the final score into the {{highscore}} placeholder
-const FORM_URL = 'https://www.pricebailey.co.uk/enquiry-form/game/?wpf72332_23=%7B%7Bhighscore%7D%7D';
+// Price Bailey enquiry form. Passes the final score and the game's own URL
+// (so the form's "Play again" can send them back here) as WPForms prefill params.
+const FORM_BASE = 'https://www.pricebailey.co.uk/enquiry-form/game/';
+const SCORE_FIELD = 'wpf72332_23';                 // score field
+const GAMEURL_FIELD = 'wpf72332_XX';               // <<< REPLACE XX with the hidden game-URL field's WPForms id
+const GAME_URL = 'https://price-baileymarketing-star.github.io/control-freak/';
 document.getElementById('btn-form').addEventListener('click', () => {
   Audio.resume();
-  const sc = encodeURIComponent(Math.max(0, state.score));
-  const url = FORM_URL.replace('%7B%7Bhighscore%7D%7D', sc).replace('{{highscore}}', sc);
-  const w = window.open(url, '_blank');
-  if (!w) window.location.href = url;
+  const params = new URLSearchParams();
+  params.set(SCORE_FIELD, Math.max(0, state.score));
+  params.set(GAMEURL_FIELD, GAME_URL);
+  window.location.href = FORM_BASE + '?' + params.toString();   // same tab
 });
 
 setMuteUI();
