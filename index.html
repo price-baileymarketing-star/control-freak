@@ -4,10 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Control Freak | Price Bailey</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Bungee&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tailwind.css">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
 <style>
   html, body {
     font-family: 'Fredoka', sans-serif;
@@ -19,6 +17,12 @@
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
+  /* The kit (lib/screen-kit.js) draws the title, details form and end screens. Keep only the sky behind the title. */
+  #screen-over { display: none !important; }
+  #screen-title .text-center, #screen-title > div.absolute.top-6, #mute-title { display: none !important; }
+  .pb-remote #controls-walk, .pb-remote #controls-judge, .pb-remote #sb-close { display: none !important; }
+  .cf-bd { display: flex; justify-content: space-between; gap: 18px; padding: 4px 0; font-size: 1.05em; }
+  .cf-bd b { color: var(--k-accent2, #ffcc33); }
   .screen { display: none; }
   .screen.active { display: flex; }
   .font-cartoon { font-family: 'Bungee', sans-serif; }
@@ -225,6 +229,7 @@
   @keyframes walkNudge { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 </style>
 
+<link rel="icon" href="assets/pb-box-logo.jpg">
 </head>
 <body>
 <div id="screen-title" class="screen active fixed inset-0 flex-col items-center justify-center overflow-hidden"
@@ -251,7 +256,7 @@
   </div>
 
   <div class="absolute top-6 left-6 bg-white border-4 border-[#0a2540] rounded-xl p-2" style="box-shadow: 0 4px 0 #0a2540;">
-    <img src="https://raw.githubusercontent.com/price-baileymarketing-star/control-freak/main/PB%20Box%20Logo.jpg" alt="Price Bailey" class="h-12 w-auto block rounded-md">
+    <img src="assets/pb-box-logo.jpg" alt="Price Bailey" class="h-12 w-auto block rounded-md">
   </div>
 
   <button id="mute-title" class="mute-btn absolute top-6 right-6" title="Toggle sound">
@@ -303,7 +308,7 @@
   <div class="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 py-3 pointer-events-none">
     <div class="flex gap-3 items-center">
       <div class="bg-white border-4 border-[#0a2540] rounded-xl p-1.5 pointer-events-auto" style="box-shadow:0 4px 0 #0a2540;">
-        <img src="https://raw.githubusercontent.com/price-baileymarketing-star/control-freak/main/PB%20Box%20Logo.jpg" alt="Price Bailey" class="h-9 w-auto block rounded">
+        <img src="assets/pb-box-logo.jpg" alt="Price Bailey" class="h-9 w-auto block rounded">
       </div>
       <button id="mute-game" class="mute-btn pointer-events-auto" title="Toggle sound">
         <svg id="sound-on-game" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
@@ -380,7 +385,7 @@
   <div id="confetti" class="absolute inset-0 pointer-events-none overflow-hidden z-10"></div>
 
   <div class="absolute top-6 left-6 bg-white border-4 border-[#0a2540] rounded-xl p-2 z-20" style="box-shadow: 0 4px 0 #0a2540;">
-    <img src="https://raw.githubusercontent.com/price-baileymarketing-star/control-freak/main/PB%20Box%20Logo.jpg" alt="Price Bailey" class="h-12 w-auto block rounded-md">
+    <img src="assets/pb-box-logo.jpg" alt="Price Bailey" class="h-12 w-auto block rounded-md">
   </div>
 
   <button id="mute-over" class="mute-btn absolute top-6 right-6 z-20" title="Toggle sound">
@@ -404,10 +409,6 @@
       <p id="final-flavour" class="text-[#0a2540] font-medium leading-relaxed mb-5"></p>
 
       <div id="verdict-stamp" class="verdict-stamp absolute -top-4 -right-4 font-cartoon text-lg px-4 py-2 rounded-xl" style="border: 4px solid #0a2540; box-shadow: 0 4px 0 #0a2540;"></div>
-
-      <div class="border-t-4 border-dashed border-[#0a2540] pt-5">
-        <button id="btn-form" class="btn-cartoon w-full py-5 text-xl md:text-2xl">📝 LEAVE YOUR DETAILS →</button>
-      </div>
     </div>
 
     <button id="btn-play-again" class="btn-cartoon w-full py-5 text-2xl mb-6">PLAY AGAIN</button>
@@ -421,6 +422,11 @@
 </div>
 
 
+<script src="lib/mqtt.min.js"></script>
+<script src="lib/qrcode.js"></script>
+<script src="lib/link.js"></script>
+<script src="lib/hubspot.js"></script>
+<script src="lib/screen-kit.js"></script>
 <script>
 const Audio = {
   ctx: null, masterGain: null, musicGain: null, sfxGain: null,
@@ -691,23 +697,6 @@ const BUILDINGS = [
     ]
   }
 ];
-
-const Storage = {
-  KEY: 'controlFreakLeaderboard',
-  cache: [],
-  load() {
-    try { const raw = localStorage.getItem(this.KEY); this.cache = raw ? (JSON.parse(raw) || []) : []; }
-    catch(e) {}
-    return this.cache;
-  },
-  save(entry) {
-    this.cache.push(entry);
-    this.cache.sort((a,b) => b.score - a.score);
-    this.cache = this.cache.slice(0, 10);
-    try { localStorage.setItem(this.KEY, JSON.stringify(this.cache)); } catch(e){}
-    return this.cache;
-  }
-};
 
 function rect(x, y, w, h, fill, stroke = '#0a2540', strokeW = 4) {
   if (fill) { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); }
@@ -1809,10 +1798,10 @@ function endGame(reason) {
   else { state.timeBonus = 0; Audio.sfxTimeOut(); }
   Audio.stopMusic();
 
-  document.getElementById('final-score').textContent = Math.max(0, state.score);
-  document.getElementById('bd-judge').textContent = (state.judgePts >= 0 ? '+' : '') + state.judgePts;
-  document.getElementById('bd-coins').textContent = '+' + (state.coinsCollected * COIN_VALUE);
-  document.getElementById('bd-time').textContent = '+' + state.timeBonus;
+  const bd = document.getElementById('cfBreakdown');
+  if (bd) bd.innerHTML = '<div class="cf-bd"><span>Judgements</span><b>' + (state.judgePts >= 0 ? '+' : '') + state.judgePts + '</b></div>' +
+    '<div class="cf-bd"><span>Coins</span><b>+' + (state.coinsCollected * COIN_VALUE) + '</b></div>' +
+    '<div class="cf-bd"><span>Time bonus</span><b>+' + state.timeBonus + '</b></div>';
 
   const s = state.score;
   let msg, flav, st, stbg, conf;
@@ -1821,12 +1810,7 @@ function endGame(reason) {
   else if (s >= 450) { msg = 'DECENT AUDIT 👍'; flav = 'Solid effort. A few controls slipped past — worth a second look.'; st = 'OK'; stbg = '#ffcc33'; conf = 40; }
   else { msg = 'BACK TO BASICS 📋'; flav = 'Plenty of room to tighten those controls. Come and chat to us!'; st = 'REVIEW'; stbg = '#ff6b6b'; conf = 0; }
   if (reason === 'timeout') flav = 'Time ran out! ' + flav;
-  document.getElementById('final-message').textContent = msg;
-  document.getElementById('final-flavour').textContent = flav;
-  const vs = document.getElementById('verdict-stamp'); vs.textContent = st; vs.style.background = stbg; vs.style.color = '#0a2540';
-
-  showScreen('screen-over');
-  if (conf > 0) spawnConfetti(conf);
+  PBScreen.ended({ sc: Math.max(0, state.score), ttl: msg, msg: flav });
 }
 
 function spawnConfetti(n) {
@@ -1864,7 +1848,8 @@ function runCountdown(cb) {
 }
 
 let loopRunning = false, lastT = 0;
-function startGame() {
+function startGame() { PBScreen.requestStart(); }   // every old start button lands here
+function beginGame() {
   resetState();
   setupLevel();
   banner().classList.remove('show');
@@ -1976,7 +1961,7 @@ function update(dtMs, dtFrames) {
 function loop(ts) {
   if (!lastT) lastT = ts;
   let dtMs = ts - lastT; lastT = ts; if (dtMs > 120) dtMs = 120;
-  update(dtMs, dtMs / 16.6667);
+  if (!PBScreen.paused) update(dtMs, dtMs / 16.6667);
   draw();
   requestAnimationFrame(loop);
 }
@@ -2005,6 +1990,7 @@ document.getElementById('btn-bad').addEventListener('click', () => { Audio.resum
 document.getElementById('sb-close').addEventListener('click', e => { e.stopPropagation(); Audio.resume(); closeBanner(); });
 
 window.addEventListener('keydown', e => {
+  if (PBScreen.state !== 'playing' || PBScreen.mode !== 'screen') return;
   if (state.mode === 'inspect' && !state.resolved) {
     const k = e.key.toLowerCase();
     if (e.key === '1' || k === 'g') judge('good');
@@ -2049,23 +2035,50 @@ function toggleMute() {
 document.getElementById('btn-start').addEventListener('click', () => { Audio.init(); Audio.resume(); startGame(); });
 document.getElementById('btn-play-again').addEventListener('click', () => { Audio.resume(); startGame(); });
 
-// Price Bailey enquiry form. Passes the final score and the game's own URL
-// (so the form's "Play again" can send them back here) as WPForms prefill params.
-const FORM_BASE = 'https://www.pricebailey.co.uk/enquiry-form/game/';
-const SCORE_FIELD = 'wpf72332_23';                 // score field
-const GAMEURL_FIELD = 'wpf72332_31';               // Game_URL field (field id 31, from the form source)
-const GAME_URL = 'https://price-baileymarketing-star.github.io/control-freak/';
-document.getElementById('btn-form').addEventListener('click', () => {
-  Audio.resume();
-  const params = new URLSearchParams();
-  params.set(SCORE_FIELD, Math.max(0, state.score));
-  params.set(GAMEURL_FIELD, GAME_URL);
-  window.location.href = FORM_BASE + '?' + params.toString();   // same tab
-});
+// Lead capture is handled by lib/screen-kit.js and lib/hubspot.js (see the two-screen setup at the end of this script).
 
 setMuteUI();
 fitCanvas();
 
+/* ---- Two-screen setup: QR code, details form, phone controller, end screen ----
+   Event name and consent wording live in lib/hubspot.js. Timings live in lib/screen-kit.js. */
+PBScreen.init({
+  logo: 'assets/pb-box-logo.jpg',
+  title: 'Control Freak',
+  tagline: 'A financial controls game for charities and NFPs',
+  blurb: TIME_LIMIT_S + ' seconds. 14 buildings. Spot good and bad controls.',
+  titleExtraHtml: '<p>1. <b>Hold to walk</b> along the street and jump the barrels, cats and dogs.</p>' +
+    '<p>2. Grab coins as you go.</p><p>3. At each building, read the scenario and judge the controls <b>good</b> or <b>bad</b> before the bar runs out.</p>' +
+    '<p>4. Right call +100. Wrong call -50. Reach the end with time to spare for a bonus.</p>',
+  endExtraHtml: '<div id="cfBreakdown"></div>',
+  hint: 'Play on your phone, or here with the arrow keys, G and B (or 1 and 2).',
+  scoreLabel: 'Score',
+  theme: { bg1: '#0a2540', bg2: '#12406b', text: '#ffffff', dim: '#9ec3e6', accent: '#ffcc33', accent2: '#ffcc33', warn: '#ff6b6b',
+           btnText: '#0a2540', font: '"Fredoka", sans-serif', titleBg: 'rgba(10,37,64,.80)' },
+  titleDrift: false,
+  start: function (who) {
+    document.body.classList.toggle('pb-remote', who === 'phone');   // hide the on-screen buttons when a phone is playing
+    Audio.init(); Audio.resume(); beginGame();
+  },
+  hud: function () {
+    return { sc: state.score,
+             pad: (state.mode === 'inspect' || state.mode === 'result') ? 'judge' : 'walk',
+             ln: Math.ceil(state.timeLeft) + 's  |  Done ' + state.inspectedCount + '/' + state.buildings.length };
+  },
+  press: function (k) {                                  // buttons from the phone
+    if (k === 'walk') { state.walking = true; state.facing = 1; }
+    else if (k === 'back') { state.movingBack = true; state.facing = -1; }
+    else if (k === 'jump') doJump();
+    else if (k === 'good') judge('good');
+    else if (k === 'bad') judge('bad');
+  },
+  release: function (k) {
+    if (k === 'walk') state.walking = false;
+    else if (k === 'back') state.movingBack = false;
+  },
+  pause: function (on, gap) { if (!on && state.inspectEnd) state.inspectEnd += gap; },   // keep the inspect bar fair after a phone drop
+  unlockAudio: function () { Audio.init(); Audio.resume(); }
+});
 </script>
 </body>
 </html>
